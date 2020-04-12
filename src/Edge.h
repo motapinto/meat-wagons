@@ -19,7 +19,7 @@ class Edge {
             this->weight = 0;
         }
 
-        Edge(Vertex *orig, Vertex *dest, double weight) {
+        Edge(Vertex *orig, Vertex *dest, const double &weight) {
             this->id = Edge::serial + 1;
             this->orig = orig;
             this->dest = dest;
@@ -28,7 +28,7 @@ class Edge {
             this->serial += 1;
         }
 
-        Edge(int id, Vertex *orig, Vertex *dest, double weight) {
+        Edge(const int &id, Vertex *orig, Vertex *dest, const double &weight) {
             this->id = id;
             this->orig = orig;
             this->dest = dest;

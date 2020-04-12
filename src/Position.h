@@ -14,7 +14,7 @@ class Position {
             this->y = 0;
         }
 
-        Position(double x, double y) {
+        Position(const double &x, const double &y) {
             this->x = x;
             this->y = y;
         }

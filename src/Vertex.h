@@ -9,34 +9,44 @@
 using namespace std;
 
 class Vertex {
-        static int serial;          // number of Vertex objects shared with all vertices
-        int id;                     // identifier of the vertex
-        Position pos;			    // content of the vertex
-        vector<Edge> adj;		    // outgoing edges
+        static int serial;              // number of Vertex objects shared with all vertices
+        int id;                         // identifier of the vertex
+        Position pos;			        // content of the vertex
+        vector<Edge> adj;		        // outgoing edges
         
         double dist = 0;
-        Vertex *path = NULL;
-        int queueIndex = 0; 		// required by MutablePriorityQueue
-        double heuristicValue = 0;  // oriented search optimization (a*)
+        Vertex *path = nullptr;
+        Vertex *invPath = nullptr;
+        Edge edgePath;
+        Edge invEdgePath;
+        int queueIndex = 0; 		    // required by MutablePriorityQueue
+        double heuristicValue = 0;      // oriented search optimization (a*)
 
-        bool visited = false;		// auxiliary field
-        bool processing = false;	// auxiliary field
+        bool visited = false;		    // auxiliary field
+        bool invertedVisited = false;   // auxiliary field
+        bool processing = false;	    // auxiliary field
 
-        void addEdge(int id, Vertex *dest, double weight);
+        void addEdge(const int &id, Vertex *dest, const double &weight);
 
     public:
-        Vertex(int x, int y) {
+        Vertex(const int &x, const int &y) {
             this->id = serial;
             this->pos = Position(x, y);
 
             this->serial += 1;
         }
 
-        Vertex(int id, int x, int y) {
+        Vertex(const int &id, const int &x, const int &y) {
             this->id = id;
             this->pos = Position(x, y);
 
             this->serial += 1;
+        }
+
+        ~Vertex() {
+            this->path = nullptr;
+            for(auto it = adj.begin(); it != adj.end(); it++)
+                it = adj.erase(it) - 1;
         }
         
         /* get methods */
@@ -47,20 +57,22 @@ class Vertex {
         Vertex *getPath() const;
         bool getVisited() const;
 
-        bool operator<(Vertex & vertex) const; //required by MutablePriorityQueue
+        bool operator<(Vertex &vertex) const; //required by MutablePriorityQueue
         friend class Graph;
         friend class MutablePriorityQueue<Vertex>;
+
+        friend class Graph;
 };
 
 /**
  * Auxiliary function to add an outgoing edge to a vertex (this),
  * with a given destination vertex (dest) and edge weight (weight).
  */
-void Vertex::addEdge(int id, Vertex *dest, double weight) {
+void Vertex::addEdge(const int &id, Vertex *dest, const double &weight) {
 	adj.push_back(Edge(id, this, dest, weight));
 }
 
-bool Vertex::operator<(Vertex & vertex) const {
+bool Vertex::operator<(Vertex &vertex) const {
 	return this->dist < vertex.dist;
 }
 
