@@ -2,11 +2,11 @@
 
 int main(int argc, char* argv[]) {
     try {
-        Application application = new Application(argc, argv);
+        Application application = Application(argc, argv);
         application.run();
-    } catch (string exception) {
-        cout << exception << endl;
+    } catch (AppException e) {
+        cout << e.getMessage() << endl;
         cout << "See usage below" << endl << endl;
-        Application.usage();
+        Application::usage();
     }
 }

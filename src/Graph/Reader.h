@@ -13,21 +13,21 @@ class Reader {
     private:
         string path;
     public:
-        Reader(string path) {
+        explicit Reader(string &path) {
             this->path = path;
         }
 
-        Graph read() const;
+        [[nodiscard]] Graph* read() const;
 };
 
-Graph Reader::read() const {
+Graph* Reader::read() const {
     ifstream nodesStream(this->path + "/nodes.txt");
     ifstream edgesStream(this->path + "edges.txt");
 
-    if(!nodesStream.is_open() || |edgesStream.is_open())
-        return NULL;
+    if(!nodesStream.is_open() || edgesStream.is_open())
+        return nullptr;
 
-    Graph graph;
+    static Graph graph = Graph();
 
     int id, origin, dest;
     int numNodes, numEdges;
@@ -37,19 +37,19 @@ Graph Reader::read() const {
     nodesStream >> numNodes;
     for (int i = 0; i < numNodes; i++) {
         nodesStream >> c >> id >> c >> x >> c >> y >> c;
-        graph->addVertex(id, x, y);
+        graph.addVertex(id, x, y);
     }
 
     edgesStream >> numEdges;
     for (int i = 0; i < numEdges; i++) {
         edgesStream >> c >> origin >> c >> dest >> c;
-        graph->addEdge(i*2+1, origin, dest);
+        graph.addEdge(i*2+1, origin, dest);
     }
 
     nodesStream.close();
     edgesStream.close();
 
-    return Graph;
+    return &graph;
 }
 
 #endif //MEAT_WAGONS_READER_H
