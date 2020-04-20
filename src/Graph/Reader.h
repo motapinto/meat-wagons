@@ -14,7 +14,7 @@ class Reader {
         string path;
     public:
         explicit Reader(string &path) {
-            this->path = path;
+            //this->path = path;
         }
 
         [[nodiscard]] Graph* read() const;
@@ -38,7 +38,7 @@ Graph* Reader::read() const {
     nodesStream >> numNodes;
     for (int i = 1; i <= numNodes; i++) {
         nodesStream >> c >> id >> c >> x >> c >> y >> c;
-        graph.addVertex(i, x, y);
+        graph.addVertex(id, x, y);
     }
 
     edgesStream >> numEdges;

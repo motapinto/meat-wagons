@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <utility>
+#include <sstream>
 #include "../Graph/Reader.h"
 #include "../GraphViewer/GraphVisualizer.h"
 
@@ -26,85 +27,98 @@ class Application {
     private:
         GraphVisualizer *viewer = nullptr;
         Graph *graph = nullptr;
+
         operationType operation;
-        vector<string> operands;
+        vector<int> operands;
+        string graphPath;
 
     public:
-        Application(int argc, char* argv[]) {
-            if(argc < 2) throw AppException("Incorrect number of parameters");
-
-            if(strcmp(argv[1], "readGraph") == 0) {
-                if(argc < 3) throw AppException("Incorrect number of parameters");
-                this->operation = READ_GRAPH;
-                this->operands.emplace_back(argv[2]);
-            }
-
-            else if(strcmp(argv[1], "preProcess") == 0) {
-                if(argc < 3) throw AppException("Incorrect number of parameters");
-                this->operation = PRE_PROCESS;
-                this->operands.emplace_back(argv[2]);
-            }
-
-            else if(strcmp(argv[1], "shortestPath") == 0) {
-
-                if(strcmp(argv[2], "dijkstra") == 0) {
-                    if(argc < 4) throw AppException("Incorrect number of parameters");
-                    this->operation = SHORTEST_PATH_1;
-                    this->operands.emplace_back(argv[3]);
-                }
-
-                else if(strcmp(argv[1], "dijkstra") == 0) {
-                    if(argc < 5) throw AppException("Incorrect number of parameters");
-                    this->operation = SHORTEST_PATH_1;
-                    this->operands.emplace_back(argv[3]);
-                    this->operands.emplace_back(argv[4]);
-                }
-
-                else if(strcmp(argv[1], "dijkstraOriented") == 0) {
-                    if(argc < 5) throw AppException("Incorrect number of parameters");
-                    this->operation = SHORTEST_PATH_2;
-                    this->operands.emplace_back(argv[3]);
-                    this->operands.emplace_back(argv[4]);
-                }
-
-                else if(strcmp(argv[1], "dijkstraBidirectional") == 0) {
-                    if(argc < 5) throw AppException("Incorrect number of parameters");
-                    this->operation = SHORTEST_PATH_3;
-                    this->operands.emplace_back(argv[3]);
-                    this->operands.emplace_back(argv[4]);
-                }
-
-                else if(strcmp(argv[1], "dijkstraOrientedBidirectional") == 0) {
-                    if(argc < 5) throw AppException("Incorrect number of parameters");
-                    this->operation = SHORTEST_PATH_4;
-                    this->operands.emplace_back(argv[3]);
-                    this->operands.emplace_back(argv[4]);
-                }
-            }
-
-            else
-                usage();
+        Application(char *graphPath) {
+            this->graphPath = graphPath;
         }
 
         static void usage();
+        bool start();
         void run();
 };
 
 void Application::usage() {
-    cout << "Usage:" << endl;
-    cout << "./meat-wagons readGraph <folder path>" << endl;
-    cout << "./meat-wagons preProcess <node id>" << endl;
-    cout << "./meat-wagons shortestPath dijkstra <origin node>" << endl;
-    cout << "./meat-wagons shortestPath dijkstra <origin node> <destination node>" << endl;
-    cout << "./meat-wagons shortestPath dijkstraOriented <origin node> <destination node>" << endl;
-    cout << "./meat-wagons shortestPath dijkstraBidirectional <origin node> <destination node>" << endl;
-    cout << "./meat-wagons shortestPath dijkstraOrientedBidirectional <origin node> <destination node>" << endl;
+    cout << "Menu Options:" << endl;
+    cout << "readGraph <folder path>" << endl;
+    cout << "preProcess <node id>" << endl;
+    cout << "shortestPath dijkstra <origin node>" << endl;
+    cout << "shortestPath dijkstra <origin node> <destination node>" << endl;
+    cout << "shortestPath dijkstraOriented <origin node> <destination node>" << endl;
+    cout << "shortestPath dijkstraBidirectional <origin node> <destination node>" << endl;
+    cout << "shortestPath dijkstraOrientedBidirectional <origin node> <destination node>" << endl;
+    cout << "exit" << endl;
+}
+
+bool Application::start() {
+    string l, operation;
+
+    usage();
+
+    getline(cin, l);
+    stringstream line(l);
+
+    line >> operation;
+
+    if (operation == "exit") return false;
+
+    else if (operation == "readGraph") {
+        string fileName;
+        if (!(line >> fileName)) throw AppException("Incorrect number of parameters");
+        this->operation = READ_GRAPH;
+        this->graphPath = fileName;
+    } else if (operation == "preProcess") {
+        int vertex;
+        if (!(line >> vertex)) throw AppException("Incorrect number of parameters");
+        this->operation = PRE_PROCESS;
+        this->operands.push_back(vertex);
+    } else if (operation == "shortestPath") {
+        string variant;
+        int vertex1, vertex2;
+
+        if (!(line >> variant)) throw AppException("Incorrect number of parameters");
+        if (!(line >> vertex1)) throw AppException("Incorrect number of parameters");
+
+        if (variant == "dijkstra") {
+            if (!(line >> vertex2)) {
+                this->operation = SHORTEST_PATH_1;
+                this->operands.push_back(vertex1);
+            } else {
+                this->operation = SHORTEST_PATH_1;
+                this->operands.push_back(vertex1);
+                this->operands.push_back(vertex2);
+            }
+        } else if (variant == "dijkstraOriented") {
+            if (!(line >> vertex2)) throw AppException("Incorrect number of parameters");
+            this->operation = SHORTEST_PATH_2;
+            this->operands.push_back(vertex1);
+            this->operands.push_back(vertex2);
+        } else if (variant == "dijkstraBidirectional") {
+            if (!(line >> vertex2)) throw AppException("Incorrect number of parameters");
+            this->operation = SHORTEST_PATH_3;
+            this->operands.push_back(vertex1);
+            this->operands.push_back(vertex2);
+        } else if (variant == "dijkstraOrientedBidirectional") {
+            if (!(line >> vertex2)) throw AppException("Incorrect number of parameters");
+            this->operation = SHORTEST_PATH_4;
+            this->operands.push_back(vertex1);
+            this->operands.push_back(vertex2);
+        }
+    }
+
+    return true;
 }
 
 void Application::run() {
-    switch(this->operation) {
+    start();
+
+    switch (this->operation) {
         case READ_GRAPH: {
-            Reader graphReader = Reader(operands.at(0));
+            Reader graphReader = Reader(graphPath);
             graph = graphReader.read();
 
             viewer = new GraphVisualizer(600, 600);
@@ -117,8 +131,8 @@ void Application::run() {
             if(graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
-            Vertex *origin = graph->findVertex(stoi(operands.at(1)));
-            graph->removeUnvisited(origin);
+            Vertex *origin = graph->findVertex(operands.at(1));
+            origin != nullptr ? graph->removeUnvisited(origin) : throw AppException("vertex does not exist");
 
             viewer = new GraphVisualizer(600, 600);
             viewer->draw(graph);
@@ -126,28 +140,38 @@ void Application::run() {
         }
 
         case SHORTEST_PATH_1: {
-            if(this->graph == nullptr)
+            if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
+
+            if(operands.size() == 1)
+                if (!graph->dijkstraSingleSource(operands.at(1)))
+                    throw AppException("Vertex not found");
+            else
+                if (!graph->dijkstraSingleSource(operands.at(1), operands.at(2)))
+                    throw AppException("One of the Vertexes was not found");
+
+            viewer = new GraphVisualizer(600, 600);
+            viewer->draw(graph);
 
             break;
         }
 
         case SHORTEST_PATH_2: {
-            if(this->graph == nullptr)
+            if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
             break;
         }
 
         case SHORTEST_PATH_3: {
-            if(this->graph == nullptr)
+            if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
             break;
         }
 
         case SHORTEST_PATH_4: {
-            if(this->graph == nullptr)
+            if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
             break;
@@ -157,5 +181,6 @@ void Application::run() {
             break;
     }
 }
+
 
 #endif //MEAT_WAGONS_APPLICATION_H

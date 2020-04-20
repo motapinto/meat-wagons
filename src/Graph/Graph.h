@@ -38,9 +38,9 @@ class Graph {
         void removeUnvisited(Vertex *origin);
 
         // dijkstra
-        Vertex* dijkstraInit(const int origin, bool isOriented = false);
-        void dijkstraSingleSource(const int origin);
-        void dijkstraSingleSource(const int origin, const int dest);
+        Vertex* dijkstraInit(const int origin);
+        bool dijkstraSingleSource(const int origin);
+        bool dijkstraSingleSource(const int origin, const int dest);
         vector<int> getPathTo(const int origin, const int dest) const;
 
         // dijkstra related
@@ -115,26 +115,27 @@ vector<Vertex*> Graph::getVertexSet() const {
 }
 
 /**************** Dijkstra ************/
-/*
-Vertex* Graph::dijkstraInit(const int origin, bool isOriented = true) {
+
+Vertex* Graph::dijkstraInit(const int origin) {
      for(auto vertex : vertexSet) {
         vertex->visited = false;
         vertex->invertedVisited = false;
 	    vertex->dist = infinite;
 	    vertex->path = NULL;
         vertex->edgePath = Edge();
-        if(isOriented) vertex->heuristicValue = 0;
+        vertex->heuristicValue = 0;
 	}
 
 	auto start = findVertex(origin);
 	start->dist = 0;
-    if(isOriented) start->heuristicValue = 0;
+    start->heuristicValue = 0;
 
     return start;
 }
 
-void Graph::dijkstraSingleSource(const int origin)  {
-    auto start = dijkstraInit(origin, false);
+bool Graph::dijkstraSingleSource(const int origin)  {
+    auto start = dijkstraInit(origin);
+    if(start == nullptr) return false;
 
 	MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
@@ -162,12 +163,15 @@ void Graph::dijkstraSingleSource(const int origin)  {
             }
         }
     }
-
+    return true;
 }
 
-void Graph::dijkstraSingleSource(const int origin, const int dest)  {
-    auto start = dijkstraInit(origin, false);
-    auto dest =  findVertex(dest);
+bool Graph::dijkstraSingleSource(const int origin, const int dest)  {
+    auto start = dijkstraInit(origin);
+    auto final =  findVertex(dest);
+
+    if(start == nullptr || final == nullptr)
+        return false;
 
 	MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
@@ -176,7 +180,7 @@ void Graph::dijkstraSingleSource(const int origin, const int dest)  {
         auto min = minQueue.extractMin();
         min->visited = true;
 
-        if(min == dest) return;
+        if(min == final) return true;
 
         for(auto edge : min->adj) {
             auto elem = edge.dest;
@@ -198,7 +202,7 @@ void Graph::dijkstraSingleSource(const int origin, const int dest)  {
     }
 
 }
-
+/*
 vector<int> Graph::getPathTo(const int sourc, const int dest) const {
 	vector<int> res;
     Vertex *start = findVertex(sourc);
