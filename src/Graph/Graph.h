@@ -14,16 +14,14 @@
 
 using namespace std;
 
-#define INF std::numeric_limits<double>::max()
-
 class Graph {
     private:
         vector<Vertex*> vertexSet;   
         unordered_map<int, Vertex*> vertexIndexes; //search for id and return vertex (much faster)
 
-        vector<vector<double>> minDistance;      // used for floyd Warshall algorithm
-        vector<vector<Vertex*>> next;            // used for floyd Warshall algorithm
-        void dfsVisit(Vertex *v) const;
+        vector<vector<double>> minDistance;       // used for floyd Warshall algorithm
+        vector<vector<Vertex*>> next;             // used for floyd Warshall algorithm
+        void dfsVisit(Vertex *origin) const;      // pre processing
 
         const static int infinite = 99999999;
 
@@ -37,19 +35,19 @@ class Graph {
 
         Vertex* findVertex(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
-        bool addEdge(const int &id, const int &sourc, const int &dest);
+        bool addEdge(const int &id, const int &orig, const int &dest);
         
         int getNumVertex() const;
         vector<Vertex*> getVertexSet() const;
 
         // pre processing
-        void removeUnvisited(Vertex *v) const;
+        void removeUnvisited(Vertex *origin);
 
         // dijkstra
         Vertex* dijkstraInit(const int origin, bool isOriented = false);
-        void dijkstraSingleSource(const int sour);
+        void dijkstraSingleSource(const int origin);
         void dijkstraSingleSource(const int origin, const int dest);
-        vector<int> getPathTo(const int sourc, const int dest) const; 
+        vector<int> getPathTo(const int origin, const int dest) const;
 
         // dijkstra related
         void reverseGraph();
@@ -58,26 +56,26 @@ class Graph {
         void dijkstraBidirectional(const int origin, const int dest);
         
         // all pairs
-        void floydWarshallShortestPath();  
-        vector<int> Graph::getfloydWarshallPath(const int orig, const int dest) const;
+        void floydWarshallShortestPath();
+        vector<int> getfloydWarshallPath(const int origin, const int dest) const;
 };
 
 /**************** Pre processing ************/
-void Graph::dfsVisit(Vertex *v) const {
-	v->visited = true;
+void Graph::dfsVisit(Vertex *origin) const {
+    origin->visited = true;
 
-	for(auto edge : v->adj) {
+	for(auto edge : origin->adj) {
 	    if(!edge.dest->visited) {
 	        dfsVisit(edge.dest);
 	    }
 	}
 }
 
-void Graph::removeUnvisited(Vertex *v) const {
-    for(auto v : vertexSet)
-        v->visited = false;
+void Graph::removeUnvisited(Vertex *origin) {
+    for(auto origin : vertexSet)
+        origin->visited = false;
     
-    dfsVisit(v);
+    dfsVisit(origin);
 
     // Removes vertices and calls for each his Vertex deconstructor (erasing the edges also)
     for(auto it = vertexSet.begin(); it != vertexSet.end(); it++) {

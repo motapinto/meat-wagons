@@ -2,7 +2,7 @@
 #include <string>
 #include<sstream>
 
-#ifdef linux
+#if defined(__linux__) || defined(__APPLE__)
 pid_t GraphViewer::procId = NULL;
 #endif
 short GraphViewer::port = 7772;
@@ -20,14 +20,14 @@ void GraphViewer::initialize(int width, int height, bool dynamic, int port_n) {
 	this->width = width;
 	this->height = height;
 	this->isDynamic = dynamic;
-	string command = "java -jar GraphViewerController.jar";
+	string command = "java -jar ../lib/GraphViewerController.jar";
 	std::stringstream ss;
 	ss << port_n;
 	string port_string = ss.str();
 	command += " --port ";
 	command += port_string;
 
-#ifdef linux
+#if defined(__linux__) || defined(__APPLE__)
 	if (!(procId = fork())) {
 		system(command.c_str());
 		kill(getppid(), SIGINT);

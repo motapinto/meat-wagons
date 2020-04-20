@@ -5,18 +5,17 @@
 #include <iostream>
 #include <utility>
 #include "../Graph/Reader.h"
+#include "../GraphViewer/GraphVisualizer.h"
 
 using namespace std;
 
 class AppException : public std::exception {
+    public:
+        explicit AppException(string  msg) : msg_(std::move(msg)) {}
 
-public:
-    explicit AppException(string  msg) : msg_(std::move(msg)) {}
-    ~AppException() override = default;
-
-    [[nodiscard]] string getMessage() const {return(msg_);}
-private:
-    string msg_;
+        [[nodiscard]] string getMessage() const {return(msg_);}
+    private:
+        string msg_;
 };
 
 class Application {
@@ -25,57 +24,58 @@ class Application {
         LIST_WAGONS, GRAPH_CONNECTIVITY, INTERESTS_POINTS_CONNECTIVITY};
 
     private:
+        GraphVisualizer *viewer = nullptr;
+        Graph *graph = nullptr;
         operationType operation;
         vector<string> operands;
-        Graph *graph;
 
     public:
         Application(int argc, char* argv[]) {
             if(argc < 2) throw AppException("Incorrect number of parameters");
 
-            if((string)argv[1] == "readGraph") {
+            if(strcmp(argv[1], "readGraph") == 0) {
                 if(argc < 3) throw AppException("Incorrect number of parameters");
                 this->operation = READ_GRAPH;
                 this->operands.emplace_back(argv[2]);
             }
 
-            else if((string)argv[1] == "preProcess") {
+            else if(strcmp(argv[1], "preProcess") == 0) {
                 if(argc < 3) throw AppException("Incorrect number of parameters");
                 this->operation = PRE_PROCESS;
                 this->operands.emplace_back(argv[2]);
             }
 
-            else if((string)argv[1] == "shortestPath") {
+            else if(strcmp(argv[1], "shortestPath") == 0) {
 
-                if(argv[2] == "dijkstra") {
+                if(strcmp(argv[2], "dijkstra") == 0) {
                     if(argc < 4) throw AppException("Incorrect number of parameters");
                     this->operation = SHORTEST_PATH_1;
                     this->operands.emplace_back(argv[3]);
                 }
 
-                else if(argv[1] == "dijkstra") {
+                else if(strcmp(argv[1], "dijkstra") == 0) {
                     if(argc < 5) throw AppException("Incorrect number of parameters");
                     this->operation = SHORTEST_PATH_1;
                     this->operands.emplace_back(argv[3]);
                     this->operands.emplace_back(argv[4]);
                 }
 
-                else if(argv[1] == "dijkstraOriented") {
+                else if(strcmp(argv[1], "dijkstraOriented") == 0) {
                     if(argc < 5) throw AppException("Incorrect number of parameters");
                     this->operation = SHORTEST_PATH_2;
                     this->operands.emplace_back(argv[3]);
                     this->operands.emplace_back(argv[4]);
                 }
 
-                else if(argv[1] == "dijkstraBidirectional") {
+                else if(strcmp(argv[1], "dijkstraBidirectional") == 0) {
                     if(argc < 5) throw AppException("Incorrect number of parameters");
                     this->operation = SHORTEST_PATH_3;
                     this->operands.emplace_back(argv[3]);
                     this->operands.emplace_back(argv[4]);
                 }
 
-                else if(argv[1] == "dijkstraOrientedBidirectional") {
-                    if(argc < 5) throw "Incorrect number of parameters";
+                else if(strcmp(argv[1], "dijkstraOrientedBidirectional") == 0) {
+                    if(argc < 5) throw AppException("Incorrect number of parameters");
                     this->operation = SHORTEST_PATH_4;
                     this->operands.emplace_back(argv[3]);
                     this->operands.emplace_back(argv[4]);
@@ -104,15 +104,24 @@ void Application::usage() {
 void Application::run() {
     switch(this->operation) {
         case READ_GRAPH: {
-            //Reader graphReader = Reader(this->operands.at(0));
-            //this->graph = graphReader.read();
+            Reader graphReader = Reader(operands.at(0));
+            graph = graphReader.read();
+
+            viewer = new GraphVisualizer(600, 600);
+            viewer->draw(graph);
+
             break;
         }
 
         case PRE_PROCESS: {
-            if(this->graph == nullptr)
+            if(graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
+            Vertex *origin = graph->findVertex(stoi(operands.at(1)));
+            graph->removeUnvisited(origin);
+
+            viewer = new GraphVisualizer(600, 600);
+            viewer->draw(graph);
             break;
         }
 

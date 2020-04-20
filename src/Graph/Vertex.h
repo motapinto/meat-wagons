@@ -9,10 +9,15 @@
 using namespace std;
 
 class Vertex {
+    public:
+        enum Tag {CENTRAL, INTEREST_POINT, DEFAULT};
+
+    private:
         static int serial;              // number of Vertex objects shared with all vertices
         int id;                         // identifier of the vertex
         Position pos;			        // content of the vertex
         vector<Edge> adj;		        // outgoing edges
+        Tag tag;                        // vertex Tag
         
         double dist = 0;
         Vertex *path = nullptr;
@@ -52,10 +57,11 @@ class Vertex {
         /* get methods */
         int getId() const;
         Position getPosition() const;
-        vector<Edge> Vertex::getAdj() const;
+        vector<Edge> getAdj() const;
         double getDist() const;
         Vertex *getPath() const;
         bool getVisited() const;
+        Tag getTag() const;
 
         bool operator<(Vertex &vertex) const; //required by MutablePriorityQueue
         friend class Graph;
@@ -98,6 +104,10 @@ Vertex* Vertex::getPath() const {
 
 bool Vertex::getVisited() const {
     return this->visited;
+}
+
+Vertex::Tag Vertex::getTag() const {
+    return this->tag;
 }
 
 #endif
