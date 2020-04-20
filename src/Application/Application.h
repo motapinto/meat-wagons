@@ -35,6 +35,9 @@ class Application {
     public:
         Application(char *graphPath) {
             this->graphPath = graphPath;
+
+            Reader graphReader = Reader(this->graphPath);
+            graph = graphReader.read();
         }
 
         static void usage();
@@ -43,15 +46,16 @@ class Application {
 };
 
 void Application::usage() {
-    cout << "Menu Options:" << endl;
-    cout << "readGraph <folder path>" << endl;
-    cout << "preProcess <node id>" << endl;
-    cout << "shortestPath dijkstra <origin node>" << endl;
-    cout << "shortestPath dijkstra <origin node> <destination node>" << endl;
-    cout << "shortestPath dijkstraOriented <origin node> <destination node>" << endl;
-    cout << "shortestPath dijkstraBidirectional <origin node> <destination node>" << endl;
-    cout << "shortestPath dijkstraOrientedBidirectional <origin node> <destination node>" << endl;
-    cout << "exit" << endl;
+    cout << "\tMenu Options:" << endl;
+    cout << "\treadGraph <folder path>" << endl;
+    cout << "\tpreProcess <node id>" << endl;
+    cout << "\tshortestPath dijkstra <origin node>" << endl;
+    cout << "\tshortestPath dijkstra <origin node> <destination node>" << endl;
+    cout << "\tshortestPath dijkstraOriented <origin node> <destination node>" << endl;
+    cout << "\tshortestPath dijkstraBidirectional <origin node> <destination node>" << endl;
+    cout << "\tshortestPath dijkstraOrientedBidirectional <origin node> <destination node>" << endl;
+    cout << "\texit" << endl << endl;
+    cout << "Input:  ";
 }
 
 bool Application::start() {
@@ -110,6 +114,7 @@ bool Application::start() {
         }
     }
 
+    cout << endl;
     return true;
 }
 
@@ -121,8 +126,8 @@ void Application::run() {
             Reader graphReader = Reader(graphPath);
             graph = graphReader.read();
 
-            viewer = new GraphVisualizer(600, 600);
-            viewer->draw(graph);
+            //viewer = new GraphVisualizer(600, 600);
+            //viewer->draw(graph);
 
             break;
         }
@@ -131,11 +136,11 @@ void Application::run() {
             if(graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
-            Vertex *origin = graph->findVertex(operands.at(1));
+            Vertex *origin = graph->findVertex(operands.at(0));
             origin != nullptr ? graph->removeUnvisited(origin) : throw AppException("vertex does not exist");
 
-            viewer = new GraphVisualizer(600, 600);
-            viewer->draw(graph);
+            //viewer = new GraphVisualizer(600, 600);
+            //viewer->draw(graph);
             break;
         }
 
@@ -143,15 +148,17 @@ void Application::run() {
             if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
-            if(operands.size() == 1)
-                if (!graph->dijkstraSingleSource(operands.at(1)))
-                    throw AppException("Vertex not found");
-            else
-                if (!graph->dijkstraSingleSource(operands.at(1), operands.at(2)))
-                    throw AppException("One of the Vertexes was not found");
 
-            viewer = new GraphVisualizer(600, 600);
-            viewer->draw(graph);
+            if(operands.size() == 1) {
+                if (!graph->dijkstraSingleSource(operands.at(0)))
+                    throw AppException("Vertex not found");
+            } else {
+                if (!graph->dijkstraSingleSource(operands.at(0), operands.at(1)))
+                    throw AppException("One of the Vertexes was not found");
+            }
+
+            //viewer = new GraphVisualizer(600, 600);
+            //viewer->draw(graph);
 
             break;
         }
@@ -159,6 +166,9 @@ void Application::run() {
         case SHORTEST_PATH_2: {
             if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
+
+            if (!graph->dijkstraSingleSource(operands.at(1), operands.at(2)))
+            throw AppException("One of the Vertexes was not found");
 
             break;
         }

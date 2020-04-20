@@ -152,8 +152,8 @@ bool Graph::dijkstraSingleSource(const int origin)  {
                 elem->path = min;
                 elem->edgePath = edge;
 
-                // if elem is not in queue
-                if(elem->queueIndex == 0) { //old dist(w) was infinite
+                // if elem is not in queue (old dist(w) was infinite)
+                if(elem->queueIndex == 0) {
                     minQueue.insert(elem);
                 }
 
@@ -189,8 +189,8 @@ bool Graph::dijkstraSingleSource(const int origin, const int dest)  {
                 elem->dist = min->dist + edge.weight;
                 elem->path = min;
 
-                // if elem is not in queue
-                if(elem->queueIndex == 0) { //old dist(w) was infinite
+                // if elem is not in queue (old dist(w) was infinite)
+                if(elem->queueIndex == 0) {
                     minQueue.insert(elem);
                 }
 
@@ -200,25 +200,25 @@ bool Graph::dijkstraSingleSource(const int origin, const int dest)  {
             }
         }
     }
-
+    return true;
 }
-/*
-vector<int> Graph::getPathTo(const int sourc, const int dest) const {
-	vector<int> res;
-    Vertex *start = findVertex(sourc);
-    Vertex *end = findVertex(dest);
 
-    if(start == nullptr || end == nullptr || start->dist == infinite) 
+vector<int> Graph::getPathTo(const int origin, const int dest) const {
+	vector<int> res;
+    Vertex *start = findVertex(origin);
+    Vertex *final = findVertex(dest);
+
+    if(start == nullptr || final == nullptr || start->dist == infinite)
         return res;
 
-    res.insert(res.begin(), end->getId());
-    while(end->path != nullptr) {
-        end = end->path;
-        res.insert(res.begin(), end->getId());
+    res.insert(res.begin(), final->getId());
+    while(final->path != nullptr) {
+        final = final->path;
+        res.insert(res.begin(), final->getId());
 	}
 
 	return res;
-}*/
+}
 
 
 /**************** Optimizing Dijkstra ************/
