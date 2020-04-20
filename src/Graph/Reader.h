@@ -21,10 +21,11 @@ class Reader {
 };
 
 Graph* Reader::read() const {
-    ifstream nodesStream(this->path + "/nodes_x_y.txt");
-    ifstream edgesStream(this->path + "edges.txt");
+    //PROBLEMA COM OS CAMINHOS RELATIVOS -> ALGUEM QUE RESOLVA PF
+    ifstream nodesStream("C:\\Users\\Martim\\Desktop\\meat-wagons\\maps\\PortugalMaps\\Porto\\nodes_x_y.txt");
+    ifstream edgesStream("C:\\Users\\Martim\\Desktop\\meat-wagons\\maps\\PortugalMaps\\Porto\\edges.txt");
 
-    if(!nodesStream.is_open() || edgesStream.is_open())
+    if(!nodesStream.is_open() || !edgesStream.is_open())
         return nullptr;
 
     static Graph graph = Graph();
@@ -35,13 +36,13 @@ Graph* Reader::read() const {
     char c;
 
     nodesStream >> numNodes;
-    for (int i = 0; i < numNodes; i++) {
+    for (int i = 1; i <= numNodes; i++) {
         nodesStream >> c >> id >> c >> x >> c >> y >> c;
         graph.addVertex(i, x, y);
     }
 
     edgesStream >> numEdges;
-    for (int i = 0; i < numEdges; i++) {
+    for (int i = 1; i <= numEdges; i++) {
         edgesStream >> c >> origin >> c >> dest >> c;
         graph.addEdge(i, origin, dest);
     }

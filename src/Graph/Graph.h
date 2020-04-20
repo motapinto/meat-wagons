@@ -78,7 +78,6 @@ void Graph::removeUnvisited(Vertex *origin) {
             it = vertexSet.erase(it) - 1;
         }
     }
-
 }
 
 /**************** Usual operations ************/
