@@ -2,11 +2,11 @@
 #ifndef GRAPH_H_
 #define GRAPH_H_
 
-#include <vector>
 #include <unordered_map>
 #include <queue>
 #include <list>
 #include <limits>
+#include <algorithm>
 #include <cmath>
 #include "MutablePriorityQueue.h"
 #include "Vertex.h"
@@ -41,13 +41,13 @@ class Graph {
         Vertex* dijkstraInit(const int origin);
         bool dijkstraSingleSource(const int origin);
         bool dijkstraSingleSource(const int origin, const int dest);
-        vector<int> getPathTo(const int origin, const int dest) const;
+        bool getPathTo(const int origin, const int dest, vector<int> &vert, vector<int> &edges) const;
 
         // dijkstra related
         void reverseGraph();
         double heuristicDistance(Vertex *origin, Vertex *dest);
-        void dijkstraOrientedSearch(const int origin, const int dest) ; 
-        void dijkstraBidirectional(const int origin, const int dest);
+        bool dijkstraOrientedSearch(const int origin, const int dest) ;
+        bool dijkstraBidirectional(const int origin, const int dest);
         
         // all pairs
         void floydWarshallShortestPath();
@@ -115,7 +115,6 @@ vector<Vertex*> Graph::getVertexSet() const {
 }
 
 /**************** Dijkstra ************/
-
 Vertex* Graph::dijkstraInit(const int origin) {
      for(auto vertex : vertexSet) {
         vertex->visited = false;
@@ -203,41 +202,49 @@ bool Graph::dijkstraSingleSource(const int origin, const int dest)  {
     return true;
 }
 
-vector<int> Graph::getPathTo(const int origin, const int dest) const {
-	vector<int> res;
+bool Graph::getPathTo(const int origin, const int dest, vector<int> &vert, vector<int> &edges) const {
     Vertex *start = findVertex(origin);
     Vertex *final = findVertex(dest);
 
     if(start == nullptr || final == nullptr || start->dist == infinite)
-        return res;
+        return false;
 
-    res.insert(res.begin(), final->getId());
+
+    vert.push_back(final->getId());
+    edges.push_back(final->path->getId());
+
     while(final->path != nullptr) {
         final = final->path;
-        res.insert(res.begin(), final->getId());
+        vert.push_back(final->getId());
+        edges.push_back(final->path->getId());
 	}
 
-	return res;
+    reverse(vert.begin(), vert.end());
+    reverse(edges.begin(), edges.end());
+
+	return true;
 }
 
-
 /**************** Optimizing Dijkstra ************/
-/*void Graph::reverseGraph() {
+void Graph::reverseGraph() {
     for(auto vert : vertexSet)
         for(auto edge : vert->adj)
-            addEdge(edge.id, edge.dest, edge.orig);
-}*/
+            addEdge(edge.id, vert->getId(), edge.dest->getId());
+}
 
-/*double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
+double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
     return origin->getPosition().euclideanDistance(dest->getPosition());
-}*/
+}
 
-// Uses a heurisitc to optimize dijkstra(A*)
-/*void Graph::dijkstraOrientedSearch(const int origin, const int dest) {
+// Uses a heuristic to optimize dijkstra(A*)
+bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
    auto start = dijkstraInit(origin);
    auto final = findVertex(dest);
 
-   start->dist = start->getPosition.euclidianDistance(final->getPosition());
+    if(start == nullptr || final == nullptr)
+        return false;
+
+   start->dist = start->getPosition().euclideanDistance(final->getPosition());
 
 	MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
@@ -246,18 +253,18 @@ vector<int> Graph::getPathTo(const int origin, const int dest) const {
         auto min = minQueue.extractMin();
         min->visited = true;
 
-        if(min == final) return;
+        if(min == final) return false;
 
         for(auto edge : min->adj) {
-            auto elem = edge->dest;
-            auto weight = edge->weight;
+            auto elem = edge.dest;
+            auto weight = edge.weight;
 
             if(elem->visited) continue;
 
 
-            if(min->dist + weight + heurisitc(elem, dest) < elem->heuristicValue) {
+            if(min->dist + weight + heuristicDistance(elem, min) < elem->heuristicValue) {
                 
-                elem->heuristicValue =  min->heuristicValue + weight + heurisitc(elem, dest);
+                elem->heuristicValue =  min->heuristicValue + weight + heuristicDistance(elem, min);
                 elem->dist = min->heuristicValue + weight; 
                 elem->path = min;
                 elem->edgePath = edge;
@@ -273,7 +280,8 @@ vector<int> Graph::getPathTo(const int origin, const int dest) const {
             }
         }
     }
-}*/
+    return true;
+}
 
 // Upgrades the optimization using a* with bidirectional search
 /*void Graph::dijkstraBidirectional(const int origin, const int dest) {
@@ -366,7 +374,7 @@ vector<int> Graph::getPathTo(const int origin, const int dest) const {
 
 /**************** All Pairs Shortest Path  ***************/
 
-/*void Graph::floydWarshallShortestPath() {
+void Graph::floydWarshallShortestPath() {
 	int vertSize = this->vertexSet.size();
 
 	this->minDistance.resize(vertSize);
@@ -416,9 +424,9 @@ vector<int> Graph::getPathTo(const int origin, const int dest) const {
             }
         }
     }
-}*/
+}
 
-/*vector<int> Graph::getfloydWarshallPath(const int orig, const int dest) const {
+vector<int> Graph::getfloydWarshallPath(const int orig, const int dest) const {
 	vector<int> res;
     int vertSize = this->vertexSet.size();
 
@@ -445,6 +453,6 @@ vector<int> Graph::getPathTo(const int origin, const int dest) const {
     }
 
 	return res;
-}*/
+}
 
 #endif 

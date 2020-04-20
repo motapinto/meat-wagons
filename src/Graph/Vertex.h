@@ -2,7 +2,6 @@
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
-#include <vector>
 #include "../Position/Position.h"
 #include "Edge.h"
 

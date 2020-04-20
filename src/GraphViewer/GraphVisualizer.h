@@ -22,13 +22,15 @@ class GraphVisualizer {
         }
 
         void draw(Graph *graph);
+        void setPath(vector<int> vert, vector<int> edges);
 };
 
+// no final tentar fazer animacao como na tp com sleeps
 void GraphVisualizer::draw(Graph *graph) {
     gv->createWindow(width, height);
 
     //vertexes settings
-    gv->defineVertexColor("blue");
+    gv->defineVertexColor("black");
     gv->defineVertexSize(1);
     //edges settings
     gv->defineEdgeColor("black");
@@ -37,13 +39,30 @@ void GraphVisualizer::draw(Graph *graph) {
     for(Vertex *origin : graph->getVertexSet()) {
         gv->addNode(origin->getId(), origin->getPosition().getX(), origin->getPosition().getY());
 
-        if(origin->getTag() == Vertex::Tag::CENTRAL)
+        if(origin->getTag() == Vertex::Tag::CENTRAL) {
             gv->setVertexColor(origin->getId(), "red");
-        else if(origin->getTag() == Vertex::Tag::INTEREST_POINT)
+            gv->setVertexLabel(origin->getId(), "Meat Wagons Central");
+        }
+
+        else if(origin->getTag() == Vertex::Tag::INTEREST_POINT) {
             gv->setVertexColor(origin->getId(), "yellow");
+            gv->setVertexLabel(origin->getId(), "Point of interest");
+        }
 
         for(Edge e : origin->getAdj())
             gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::DIRECTED);
+    }
+}
+
+void GraphVisualizer::setPath(vector<int> vert, vector<int> edges) {
+    for(int id : vert) {
+        this->gv->setVertexColor(id, "green");
+        this->gv->setVertexSize(id, 2);
+    }
+
+    for(int id : edges) {
+        this->gv->setEdgeColor(id, "blue");
+        this->gv->setEdgeThickness(id, 10);
     }
 }
 

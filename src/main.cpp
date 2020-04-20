@@ -1,4 +1,9 @@
+#include <iostream>
+#include <sstream>
+#include <string>
 #include "Application/Application.h"
+
+using namespace std;
 
 int main(int argc, char* argv[]) {
     try {

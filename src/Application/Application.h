@@ -2,13 +2,9 @@
 #ifndef MEAT_WAGONS_APPLICATION_H
 #define MEAT_WAGONS_APPLICATION_H
 
-#include <iostream>
-#include <utility>
-#include <sstream>
+#include <fstream>
 #include "../Graph/Reader.h"
 #include "../GraphViewer/GraphVisualizer.h"
-
-using namespace std;
 
 class AppException : public std::exception {
     public:
@@ -126,8 +122,8 @@ void Application::run() {
             Reader graphReader = Reader(graphPath);
             graph = graphReader.read();
 
-            //viewer = new GraphVisualizer(600, 600);
-            //viewer->draw(graph);
+            viewer = new GraphVisualizer(600, 600);
+            viewer->draw(graph);
 
             break;
         }
@@ -139,15 +135,14 @@ void Application::run() {
             Vertex *origin = graph->findVertex(operands.at(0));
             origin != nullptr ? graph->removeUnvisited(origin) : throw AppException("vertex does not exist");
 
-            //viewer = new GraphVisualizer(600, 600);
-            //viewer->draw(graph);
+            viewer = new GraphVisualizer(600, 600);
+            viewer->draw(graph);
             break;
         }
 
         case SHORTEST_PATH_1: {
             if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
-
 
             if(operands.size() == 1) {
                 if (!graph->dijkstraSingleSource(operands.at(0)))
@@ -157,8 +152,12 @@ void Application::run() {
                     throw AppException("One of the Vertexes was not found");
             }
 
-            //viewer = new GraphVisualizer(600, 600);
-            //viewer->draw(graph);
+            vector<int> vert, edges;
+            graph->getPathTo(operands.at(1), operands.at(2), vert, edges); //isto esta mal.... fazer get path to no caso de receber so 1 operando
+
+            viewer = new GraphVisualizer(600, 600);
+            viewer->setPath(vert, edges);
+            viewer->draw(graph);
 
             break;
         }
@@ -168,7 +167,14 @@ void Application::run() {
                 throw AppException("You must read the graph firstly, before running this operation");
 
             if (!graph->dijkstraSingleSource(operands.at(1), operands.at(2)))
-            throw AppException("One of the Vertexes was not found");
+                throw AppException("One of the Vertexes was not found");
+
+            vector<int> vert, edges;
+            graph->getPathTo(operands.at(1), operands.at(2), vert, edges);
+
+            viewer = new GraphVisualizer(600, 600);
+            viewer->setPath(vert, edges);
+            viewer->draw(graph);
 
             break;
         }
@@ -176,6 +182,16 @@ void Application::run() {
         case SHORTEST_PATH_3: {
             if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
+
+            if (!graph->dijkstraOrientedSearch(operands.at(1), operands.at(2)))
+                throw AppException("One of the Vertexes was not found");
+
+            vector<int> vert, edges;
+            graph->getPathTo(operands.at(1), operands.at(2), vert, edges);
+
+            viewer = new GraphVisualizer(600, 600);
+            viewer->setPath(vert, edges);
+            viewer->draw(graph);
 
             break;
         }

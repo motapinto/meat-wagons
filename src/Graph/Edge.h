@@ -6,7 +6,6 @@ class Vertex;
 
 class Edge {
     private:
-        //static int serial;        // number of Edge objects shared with all edges
         int id;
         Vertex *dest;             // origin and destination vertex
         double weight;            // edge weight
@@ -18,20 +17,10 @@ class Edge {
             this->weight = 0;
         }
 
-        /*Edge(Vertex *dest, const double &weight) {
-            this->id = Edge::serial + 1;
-            this->dest = dest;
-            this->weight = weight;
-
-            this->serial += 1;
-        }*/
-
         Edge(const int &id, Vertex *dest, const double &weight) {
             this->id = id;
             this->dest = dest;
             this->weight = weight;
-
-            //this->serial += 1;
         }
 
         /* get methods */
@@ -41,6 +30,7 @@ class Edge {
 
         friend class Graph;
         friend class Vertex;
+
 };
 
 int Edge::getId() const {

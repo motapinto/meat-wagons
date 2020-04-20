@@ -2,8 +2,6 @@
 #ifndef MEAT_WAGONS_READER_H
 #define MEAT_WAGONS_READER_H
 
-#include <string>
-#include <vector>
 #include <fstream>
 #include "Graph.h"
 
@@ -14,7 +12,7 @@ class Reader {
         string path;
     public:
         explicit Reader(string &path) {
-            //this->path = path;
+            this->path = path;
         }
 
         [[nodiscard]] Graph* read() const;
