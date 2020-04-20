@@ -37,13 +37,13 @@ Graph* Reader::read() const {
     nodesStream >> numNodes;
     for (int i = 0; i < numNodes; i++) {
         nodesStream >> c >> id >> c >> x >> c >> y >> c;
-        graph.addVertex(id, x, y);
+        graph.addVertex(i, x, y);
     }
 
     edgesStream >> numEdges;
     for (int i = 0; i < numEdges; i++) {
         edgesStream >> c >> origin >> c >> dest >> c;
-        graph.addEdge(i*2+1, origin, dest);
+        graph.addEdge(i, origin, dest);
     }
 
     nodesStream.close();

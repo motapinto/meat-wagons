@@ -1,7 +1,7 @@
 ﻿#ifndef _GRAPH_VIEWER_H_
 #define _GRAPH_VIEWER_H_
 
-#if defined(__linux__) || defined(__APPLE__)
+#ifdef linux
 #include <unistd.h>
 #else
 #include <winsock2.h>
@@ -368,7 +368,7 @@ public:
 	 */
 	bool rearrange();
 
-#if defined(__linux__) || defined(__APPLE__)
+#ifdef linux
 	static pid_t procId;
 #endif
 

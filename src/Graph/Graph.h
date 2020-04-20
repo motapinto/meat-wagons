@@ -25,8 +25,7 @@ class Graph {
         const static int infinite = 99999999;
 
     public:
-        Graph() {
-        }
+        Graph() {}
 
         Vertex* findVertex(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
