@@ -10,7 +10,6 @@
 #include <cmath>
 #include "MutablePriorityQueue.h"
 #include "Vertex.h"
-#include<bits/stdc++.h> 
 
 using namespace std;
 
@@ -29,13 +28,9 @@ class Graph {
         Graph() {
         }
 
-        Graph(vector<Vertex*> vertexSet) {
-            this->vertexSet = vertexSet;
-        }
-
         Vertex* findVertex(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
-        bool addEdge(const int &id, const int &orig, const int &dest);
+        bool addEdge(const int &id, const int &origin, const int &dest);
         
         int getNumVertex() const;
         vector<Vertex*> getVertexSet() const;
@@ -72,8 +67,8 @@ void Graph::dfsVisit(Vertex *origin) const {
 }
 
 void Graph::removeUnvisited(Vertex *origin) {
-    for(auto origin : vertexSet)
-        origin->visited = false;
+    for(auto vertex : vertexSet)
+        vertex->visited = false;
     
     dfsVisit(origin);
 
@@ -86,6 +81,7 @@ void Graph::removeUnvisited(Vertex *origin) {
     }
 
 }
+
 /**************** Usual operations ************/
 Vertex* Graph::findVertex(const int &id) const {
     auto it = vertexIndexes.find(id);
@@ -97,19 +93,18 @@ bool Graph::addVertex(const int &id, const int &x, const int &y) {
 		return false;
     
     auto vertex = new Vertex(id, x, y);
-	vertexSet.push_back(vertex));
+	vertexSet.push_back(vertex);
     vertexIndexes.insert(pair<int, Vertex*>(id, vertex));
 	return true;
 }
 
-bool Graph::addEdge(const int &id, const int &sourc, const int &dest) {
-	auto v1 = findVertex(sourc);
+bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
+	auto v1 = findVertex(origin);
 	auto v2 = findVertex(dest);
 	if (v1 == nullptr || v2 == nullptr)
 		return false;
 	
-    v1->addEdge(id, v2, v1->pos.euclidianDistance(v2->pos));
-    v2->addEdge(id + 1, v1, v2->pos.euclidianDistance(v2->pos));
+    v1->addEdge(id, v2, v1->pos.euclideanDistance(v2->pos));
 	return true;
 }
 
@@ -122,7 +117,7 @@ vector<Vertex*> Graph::getVertexSet() const {
 }
 
 /**************** Dijkstra ************/
-
+/*
 Vertex* Graph::dijkstraInit(const int origin, bool isOriented = true) {
      for(auto vertex : vertexSet) {
         vertex->visited = false;
@@ -221,22 +216,22 @@ vector<int> Graph::getPathTo(const int sourc, const int dest) const {
 	}
 
 	return res;
-}
+}*/
 
 
 /**************** Optimizing Dijkstra ************/
-void Graph::reverseGraph() {
+/*void Graph::reverseGraph() {
     for(auto vert : vertexSet)
         for(auto edge : vert->adj)
             addEdge(edge.id, edge.dest, edge.orig);
-}
+}*/
 
-double Graph::heuristicDistance(Vertex *origin, Vetrex *dest) {
-    return origin->getPosition().euclidianDistance(dest->getPosition());
-}
+/*double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
+    return origin->getPosition().euclideanDistance(dest->getPosition());
+}*/
 
 // Uses a heurisitc to optimize dijkstra(A*)
-void Graph::dijkstraOrientedSearch(const int origin, const int dest) {
+/*void Graph::dijkstraOrientedSearch(const int origin, const int dest) {
    auto start = dijkstraInit(origin);
    auto final = findVertex(dest);
 
@@ -276,11 +271,10 @@ void Graph::dijkstraOrientedSearch(const int origin, const int dest) {
             }
         }
     }
-
-}
+}*/
 
 // Upgrades the optimization using a* with bidirectional search
-void Graph::dijkstraBidirectional(const int origin, const int dest) {
+/*void Graph::dijkstraBidirectional(const int origin, const int dest) {
     reverseGraph();
 
     auto start = dijkstraInit(origin);
@@ -366,11 +360,11 @@ void Graph::dijkstraBidirectional(const int origin, const int dest) {
             }
         }
     }
-}
+}*/
 
 /**************** All Pairs Shortest Path  ***************/
 
-void Graph::floydWarshallShortestPath() {
+/*void Graph::floydWarshallShortestPath() {
 	int vertSize = this->vertexSet.size();
 
 	this->minDistance.resize(vertSize);
@@ -420,9 +414,9 @@ void Graph::floydWarshallShortestPath() {
             }
         }
     }
-}
+}*/
 
-vector<int> Graph::getfloydWarshallPath(const int orig, const int dest) const {
+/*vector<int> Graph::getfloydWarshallPath(const int orig, const int dest) const {
 	vector<int> res;
     int vertSize = this->vertexSet.size();
 
@@ -449,6 +443,6 @@ vector<int> Graph::getfloydWarshallPath(const int orig, const int dest) const {
     }
 
 	return res;
-}
+}*/
 
 #endif 

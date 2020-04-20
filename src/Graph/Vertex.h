@@ -3,7 +3,7 @@
 #define VERTEX_H_
 
 #include <vector>
-#include "Position.h"
+#include "../Position/Position.h"
 #include "Edge.h"
 
 using namespace std;
@@ -13,7 +13,7 @@ class Vertex {
         enum Tag {CENTRAL, INTEREST_POINT, DEFAULT};
 
     private:
-        static int serial;              // number of Vertex objects shared with all vertices
+        //static int serial;             // number of Vertex objects shared with all vertices
         int id;                         // identifier of the vertex
         Position pos;			        // content of the vertex
         vector<Edge> adj;		        // outgoing edges
@@ -34,22 +34,23 @@ class Vertex {
         void addEdge(const int &id, Vertex *dest, const double &weight);
 
     public:
-        Vertex(const int &x, const int &y) {
+        /*Vertex(const int &x, const int &y) {
             this->id = serial;
             this->pos = Position(x, y);
 
             this->serial += 1;
-        }
+        }*/
 
         Vertex(const int &id, const int &x, const int &y) {
             this->id = id;
             this->pos = Position(x, y);
 
-            this->serial += 1;
+            //this->serial += 1;
         }
 
         ~Vertex() {
             this->path = nullptr;
+            this->invPath = nullptr;
             for(auto it = adj.begin(); it != adj.end(); it++)
                 it = adj.erase(it) - 1;
         }
@@ -75,7 +76,7 @@ class Vertex {
  * with a given destination vertex (dest) and edge weight (weight).
  */
 void Vertex::addEdge(const int &id, Vertex *dest, const double &weight) {
-	adj.push_back(Edge(id, this, dest, weight));
+	adj.push_back(Edge(id, dest, weight));
 }
 
 bool Vertex::operator<(Vertex &vertex) const {

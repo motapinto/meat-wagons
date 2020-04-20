@@ -11,7 +11,7 @@ class GraphVisualizer {
         GraphViewer *gv;
 
     public:
-        GraphVisualizer(int width, int height) {
+        GraphVisualizer(const int width, const int height) {
             this->width = width;
             this->height = height;
             this->gv = new GraphViewer(width, height, false);

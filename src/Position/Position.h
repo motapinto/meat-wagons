@@ -19,25 +19,25 @@ class Position {
             this->y = y;
         }
 
-        double getX() const {
+        [[nodiscard]] double getX() const {
             return this->x;
         }
 
-         void setX(int x) const {
+         void setX(double x) {
             this->x = x;
         }
 
-         double getY() const {
+         [[nodiscard]] double getY() const {
             return this->y;
         }
 
-         void setY() const {
+         void setY(double y) {
             this->y = y;
         }
 
-        double euclidianDistance(const Position &pos2) {
+        [[nodiscard]] double euclideanDistance(const Position &pos2) const {
             return sqrt(pow(pos2.x - x, 2) + pow(pos2.y - y, 2));
         }
-}
+};
 
 #endif
