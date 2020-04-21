@@ -43,13 +43,16 @@ class Application {
 
 void Application::usage() {
     cout << "\tMenu Options:" << endl;
-    cout << "\treadGraph <folder path>" << endl;
+    cout << "\treadGraph <graph folder path>" << endl;
     cout << "\tpreProcess <node id>" << endl;
     cout << "\tshortestPath dijkstra <origin node>" << endl;
-    cout << "\tshortestPath dijkstra <origin node> <destination node>" << endl;
-    cout << "\tshortestPath dijkstraOriented <origin node> <destination node>" << endl;
-    cout << "\tshortestPath dijkstraBidirectional <origin node> <destination node>" << endl;
-    cout << "\tshortestPath dijkstraOrientedBidirectional <origin node> <destination node>" << endl;
+    cout << "\tshortestPath {dijkstra, dijkstraOriented, dijkstraBidirectional, dijkstraOrientedBidirectional} <origin node> <destination node>" << endl;
+    cout << "\tsetCentral <node id>"<< endl;
+    cout << "\tdeliver <requests folder path>"<< endl;
+    cout << "\taddRequest <requests folder path>"<< endl;
+    cout << "\tremoveRequest <requests folder path>"<< endl;
+    cout << "\tlistRequests <requests folder path>"<< endl;
+
     cout << "\texit" << endl << endl;
     cout << "Input:  ";
 }
@@ -108,6 +111,22 @@ bool Application::start() {
             this->operands.push_back(vertex1);
             this->operands.push_back(vertex2);
         }
+    } else if(operation == "setCentral") {
+
+    } else if(operation == "deliver") {
+
+    } else if(operation == "addRequest") {
+
+    } else if(operation == "removeRequest") {
+
+    } else if(operation == "listRequests") {
+
+    } else if(operation == "addWagon") {
+
+    } else if(operation == "removeWagon") {
+
+    } else if(operation == "listWagons") {
+
     }
 
     cout << endl;
@@ -144,6 +163,11 @@ void Application::run() {
             if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
+            char proceed;
+            cout << "Note that if you want to execute this algorithm with the pre processed graph you should have done that first" << endl;
+            cout << "Proceed(Y/N)?: ";
+            if((cin>>proceed) && proceed != 'Y') break;
+
             if(operands.size() == 1) {
                 if (!graph->dijkstraSingleSource(operands.at(0)))
                     throw AppException("Vertex not found");
@@ -166,7 +190,12 @@ void Application::run() {
             if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
-            if (!graph->dijkstraSingleSource(operands.at(1), operands.at(2)))
+            char proceed;
+            cout << "Note that if you want to execute this algorithm with the pre processed graph you should have done that first" << endl;
+            cout << "Proceed(Y/N)?: ";
+            if((cin>>proceed) && proceed != 'Y') break;
+
+            if (!graph->dijkstraOrientedSearch(operands.at(1), operands.at(2)))
                 throw AppException("One of the Vertexes was not found");
 
             vector<int> vert, edges;
@@ -183,7 +212,12 @@ void Application::run() {
             if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
-            if (!graph->dijkstraOrientedSearch(operands.at(1), operands.at(2)))
+            char proceed;
+            cout << "Note that if you want to execute this algorithm with the pre processed graph you should have done that first" << endl;
+            cout << "Proceed(Y/N)?: ";
+            if((cin>>proceed) && proceed != 'Y') break;
+
+            if (!graph->dijkstraBidirectional(operands.at(1), operands.at(2))) //make dijkstraBidirectional withouth a*
                 throw AppException("One of the Vertexes was not found");
 
             vector<int> vert, edges;
@@ -199,6 +233,21 @@ void Application::run() {
         case SHORTEST_PATH_4: {
             if (this->graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
+
+            char proceed;
+            cout << "Note that if you want to execute this algorithm with the pre processed graph you should have done that first" << endl;
+            cout << "Proceed(Y/N)?: ";
+            if((cin>>proceed) && proceed != 'Y') break;
+
+            if (!graph->dijkstraBidirectional(operands.at(1), operands.at(2)))
+                throw AppException("One of the Vertexes was not found");
+
+            vector<int> vert, edges;
+            graph->getPathTo(operands.at(1), operands.at(2), vert, edges);
+
+            viewer = new GraphVisualizer(600, 600);
+            viewer->setPath(vert, edges);
+            viewer->draw(graph);
 
             break;
         }

@@ -284,13 +284,13 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
 }
 
 // Upgrades the optimization using a* with bidirectional search
-/*void Graph::dijkstraBidirectional(const int origin, const int dest) {
+bool Graph::dijkstraBidirectional(const int origin, const int dest) {
     reverseGraph();
 
     auto start = dijkstraInit(origin);
     auto final = dijkstraInit(dest);
 
-    if(start == nullptr || final == nullptr) return;
+    if(start == nullptr || final == nullptr) return false;
 
     MutablePriorityQueue<Vertex> forwardMinQueue;
     forwardMinQueue.insert(start);
@@ -309,17 +309,17 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
             break;
         processed.push_back(forwardMin->id);
 
-        if(forwardMin == final) return;
+        if(forwardMin == final) return true;
 
         for(auto edge : forwardMin->adj) {
-            auto elem = edge->dest;
-            auto weight = edge->weight;
+            auto elem = edge.dest;
+            auto weight = edge.weight;
 
             if(elem->visited) continue;
 
-            if(forwardMin->dist + weight + heurisitc(elem, dest) < elem->heuristicValue) {
+            if(forwardMin->dist + weight + heuristicDistance(elem, forwardMin) < elem->heuristicValue) {
                 
-                elem->heuristicValue =  forwardMin->heuristicValue + weight + heurisitc(elem, dest);
+                elem->heuristicValue =  forwardMin->heuristicValue + weight + heuristicDistance(elem, forwardMin);
                 elem->dist = forwardMin->heuristicValue + weight; 
                 elem->path = forwardMin;
                 elem->edgePath = edge;
@@ -344,17 +344,17 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
             break;
         processed.push_back(backwardMin->id);
 
-        if(backwardMin == final) return;
+        if(backwardMin == final) return true;
 
         for(auto edge : backwardMin->adj) {
-            auto elem = edge->dest;
-            auto weight = edge->weight;
+            auto elem = edge.dest;
+            auto weight = edge.weight;
 
             if(elem->visited) continue;
 
-            if(backwardMin->dist + weight + heurisitc(elem, dest) < elem->heuristicValue) {
+            if(backwardMin->dist + weight + heuristicDistance(elem, backwardMin) < elem->heuristicValue) {
                 
-                elem->heuristicValue =  backwardMin->heuristicValue + weight + heurisitc(elem, dest);
+                elem->heuristicValue =  backwardMin->heuristicValue + weight + heuristicDistance(elem, backwardMin);
                 elem->dist = backwardMin->heuristicValue + weight; 
                 elem->invPath = backwardMin;
                 elem->invEdgePath = edge;
@@ -370,7 +370,8 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
             }
         }
     }
-}*/
+    return true;
+}
 
 /**************** All Pairs Shortest Path  ***************/
 
