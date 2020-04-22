@@ -47,7 +47,6 @@ Graph* Reader::read() const {
     graph.setWidth(maxX - minX);
     graph.setHeight(maxY - minY);
     graph.setOffsetX(1.01*minX);
-    cout << minY << endl;
     graph.setOffsetY(1.0005*minY);
 
     edgesStream >> numEdges;

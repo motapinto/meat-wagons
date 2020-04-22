@@ -155,8 +155,10 @@ void Application::run() {
             if(graph == nullptr)
                 throw AppException("You must read the graph firstly, before running this operation");
 
+            cout << graph->getVertexSet().size() << endl;
             Vertex *origin = graph->findVertex(operands.at(0));
             origin != nullptr ? graph->removeUnvisited(origin) : throw AppException("vertex does not exist");
+            cout << graph->getVertexSet().size() << endl;
 
             viewer = new GraphVisualizer(graph->getWidth(), graph->getHeight());
             viewer->draw(graph);

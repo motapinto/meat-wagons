@@ -14,7 +14,7 @@ class GraphVisualizer {
         GraphVisualizer(const int width, const int height) {
             this->width = width;
             this->height = height;
-            this->gv = new GraphViewer(10000, 10000, false);
+            this->gv = new GraphViewer(1, 1, false);
         }
 
         ~GraphVisualizer() {
