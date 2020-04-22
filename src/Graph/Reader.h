@@ -19,9 +19,8 @@ class Reader {
 };
 
 Graph* Reader::read() const {
-    //PROBLEMA COM OS CAMINHOS RELATIVOS -> ALGUEM QUE RESOLVA PF
-    ifstream nodesStream("C:\\Users\\Martim\\Desktop\\meat-wagons\\maps\\PortugalMaps\\Porto\\nodes_x_y.txt");
-    ifstream edgesStream("C:\\Users\\Martim\\Desktop\\meat-wagons\\maps\\PortugalMaps\\Porto\\edges.txt");
+    ifstream nodesStream(path + "/nodes_x_y.txt");
+    ifstream edgesStream(path + "/edges.txt");
 
     if(!nodesStream.is_open() || !edgesStream.is_open())
         return nullptr;
