@@ -1,6 +1,6 @@
+#pragma once
 #ifndef MEAT_WAGONS_REQUEST_H
 #define MEAT_WAGONS_REQUEST_H
-
 
 class Request {
     private:
@@ -16,32 +16,31 @@ class Request {
             this->assigned = false;
         }
 
-        string getPrisioner();
-        string getDest();
-        string getPriority();
-        string getAssigned();
-        string setAssigned(bool assigned);
-    };
+        const string getPrisioner() const;
+        const int getDest() const;
+        const int getPriority() const;
+        const bool getAssigned() const;
+        void setAssigned(bool assigned);
+};
 
-string Request::getPrisioner() const {
+const string Request::getPrisioner() const {
     return this->prisioner;
 }
 
-string Request::getDest() const {
+const int Request::getDest() const {
     return this->dest;
 }
 
-string Request::getPriority() const {
+const int Request::getPriority() const {
     return this->priority;
 }
 
-string Request::getAssigned() const {
+const bool Request::getAssigned() const {
     return this->assigned;
 }
 
-string Request::setAssigned(bool assigned) {
+void Request::setAssigned(bool assigned) {
     this->assigned = assigned;
 }
-
 
 #endif //MEAT_WAGONS_REQUEST_H

@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include "../Graph/Reader.h"
+#include "../MeatWagons/Wagon.h"
 #include "../GraphViewer/GraphVisualizer.h"
 
 class AppException : public std::exception {
