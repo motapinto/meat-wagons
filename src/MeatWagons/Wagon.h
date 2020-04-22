@@ -9,6 +9,8 @@ class Wagon {
         int id, capacity;
         Delivery delivery;
 
+
+
     public:
 };
 

@@ -37,17 +37,18 @@ Graph* Reader::read() const {
     nodesStream >> numNodes;
     for (int i = 1; i <= numNodes; i++) {
         nodesStream >> c >> id >> c >> x >> c >> y >> c;
-        graph.addVertex(id, x, y);
+        graph.addVertex(id, x, y); //NAO ESQUECER INVERTER O GRAFO (CIDADE DO PORTO ESTTA AO CNTRARIO)
         x > maxX ? maxX = x : maxX;
         y > maxY ? maxY = y : maxY;
         x < minX ? minX = x : minX;
         y < minY ? minY = y : minY;
     }
 
-    graph.setWidth(maxX - minX + 0.2*(maxX - minX));
-    graph.setHeight(maxY - minY + 0.2*(maxY - minY));
-    graph.setOffsetX(minX - 0.2*minX);
-    graph.setOffsetY(minY - 0.2*minY);
+    graph.setWidth(maxX - minX);
+    graph.setHeight(maxY - minY);
+    graph.setOffsetX(1.01*minX);
+    cout << minY << endl;
+    graph.setOffsetY(1.0005*minY);
 
     edgesStream >> numEdges;
     for (int i = 1; i <= numEdges; i++) {
