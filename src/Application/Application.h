@@ -34,6 +34,9 @@ class Application {
 
             Reader graphReader = Reader(this->graphPath);
             graph = graphReader.read();
+
+            viewer = new GraphVisualizer(600, 600);
+            viewer->draw(graph);
         }
 
         static void usage();
@@ -154,7 +157,7 @@ void Application::run() {
             Vertex *origin = graph->findVertex(operands.at(0));
             origin != nullptr ? graph->removeUnvisited(origin) : throw AppException("vertex does not exist");
 
-            viewer = new GraphVisualizer(600, 600);
+            viewer = new GraphVisualizer(graph->getWidth(), graph->getHeight());
             viewer->draw(graph);
             break;
         }

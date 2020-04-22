@@ -19,7 +19,7 @@ class Reader {
 };
 
 Graph* Reader::read() const {
-    ifstream nodesStream(path + "/nodes_x_y.txt");
+    ifstream nodesStream(path + "/nodes.txt");
     ifstream edgesStream(path + "/edges.txt");
 
     if(!nodesStream.is_open() || !edgesStream.is_open())
@@ -32,11 +32,22 @@ Graph* Reader::read() const {
     double x, y;
     char c;
 
+    int minX = numeric_limits<int>::max(), minY = numeric_limits<int>::max(), maxX = 0, maxY = 0;
+
     nodesStream >> numNodes;
     for (int i = 1; i <= numNodes; i++) {
         nodesStream >> c >> id >> c >> x >> c >> y >> c;
         graph.addVertex(id, x, y);
+        x > maxX ? maxX = x : maxX;
+        y > maxY ? maxY = y : maxY;
+        x < minX ? minX = x : minX;
+        y < minY ? minY = y : minY;
     }
+
+    graph.setWidth(minX - maxX);
+    graph.setHeight(minY - maxY);
+    graph.setOffsetX(maxX);
+    graph.setOffsetY(maxY);
 
     edgesStream >> numEdges;
     for (int i = 1; i <= numEdges; i++) {

@@ -15,6 +15,11 @@ using namespace std;
 
 class Graph {
     private:
+        int width;      // for Graph Viewer
+        int height;     // for Graph Viewer
+        int offsetX;    // for Graph Viewer
+        int offsetY;    // for Graph Viewer
+
         vector<Vertex*> vertexSet;   
         unordered_map<int, Vertex*> vertexIndexes; //search for id and return vertex (much faster)
 
@@ -30,6 +35,15 @@ class Graph {
         Vertex* findVertex(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
         bool addEdge(const int &id, const int &origin, const int &dest);
+
+        void setWidth(int width);
+        void setHeight(int height);
+        void setOffsetX(int x);
+        void setOffsetY(int y);
+        int getWidth();
+        int getHeight();
+        int getOffsetX();
+        int getOffsetY();
         
         int getNumVertex() const;
         vector<Vertex*> getVertexSet() const;
@@ -105,6 +119,40 @@ bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
     v1->addEdge(id, v2, v1->pos.euclideanDistance(v2->pos));
 	return true;
 }
+
+void Graph::setWidth(int width) {
+    this->width = width;
+}
+
+void Graph::setHeight(int height) {
+    this->height = height;
+}
+
+void Graph::setOffsetX(int x) {
+    this->offsetX = x;
+}
+
+void Graph::setOffsetY(int y) {
+    this->offsetY = y;
+}
+
+int Graph::getWidth() {
+    return width;
+}
+
+int Graph::getHeight() {
+    return height;
+}
+
+int Graph::getOffsetX() {
+    return offsetX;
+}
+
+int Graph::getOffsetY() {
+    return offsetY;
+}
+
+
 
 int Graph::getNumVertex() const {
 	return vertexSet.size();

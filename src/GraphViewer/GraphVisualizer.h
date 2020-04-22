@@ -37,7 +37,7 @@ void GraphVisualizer::draw(Graph *graph) {
     //gv->setEdgeCurved(false);
 
     for(Vertex *origin : graph->getVertexSet()) {
-        gv->addNode(origin->getId(), origin->getPosition().getX(), origin->getPosition().getY());
+        gv->addNode(origin->getId(), origin->getPosition().getX() - graph->getOffsetX(), origin->getPosition().getY() - graph->getOffsetY());
 
         if(origin->getTag() == Vertex::Tag::CENTRAL) {
             gv->setVertexColor(origin->getId(), "red");
