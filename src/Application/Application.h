@@ -35,7 +35,7 @@ class Application {
             Reader graphReader = Reader(this->graphPath);
             graph = graphReader.read();
 
-            viewer = new GraphVisualizer(600, 600);
+            viewer = new GraphVisualizer(graph->getWidth(), graph->getHeight());
             viewer->draw(graph);
         }
 
