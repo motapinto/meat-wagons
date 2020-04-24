@@ -14,7 +14,7 @@ class GraphVisualizer {
         GraphVisualizer(const int width, const int height) {
             this->width = width;
             this->height = height;
-            this->gv = new GraphViewer(width, height, false);
+            this->gv = new GraphViewer(1, 1, false);
         }
 
         ~GraphVisualizer() {
@@ -28,17 +28,19 @@ class GraphVisualizer {
 // no final tentar fazer animacao como na tp com sleeps
 void GraphVisualizer::draw(Graph *graph) {
     gv->createWindow(width, height);
-
     //vertexes settings
     gv->defineVertexColor("black");
     gv->defineVertexSize(1);
     //edges settings
     gv->defineEdgeColor("black");
-    //gv->setEdgeCurved(false);
+    gv->defineEdgeCurved(false);
 
-    for(Vertex *origin : graph->getVertexSet()) {
-        gv->addNode(origin->getId(), origin->getPosition().getX(), origin->getPosition().getY());
+    vector<Vertex*> vertexSet = graph->getVertexSet();
 
+    for(Vertex *origin : vertexSet)
+        gv->addNode(origin->getId(), origin->getPosition().getX() - graph->getOffsetX(), origin->getPosition().getY() - graph->getOffsetY());
+
+    for(Vertex *origin : vertexSet) {
         if(origin->getTag() == Vertex::Tag::CENTRAL) {
             gv->setVertexColor(origin->getId(), "red");
             gv->setVertexLabel(origin->getId(), "Meat Wagons Central");
@@ -49,9 +51,11 @@ void GraphVisualizer::draw(Graph *graph) {
             gv->setVertexLabel(origin->getId(), "Point of interest");
         }
 
-        for(Edge e : origin->getAdj())
-            gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::DIRECTED);
+        for(Edge e : origin->getAdj()) {
+            gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::UNDIRECTED);
+        }
     }
+    gv->rearrange();
 }
 
 void GraphVisualizer::setPath(vector<int> vert, vector<int> edges) {
