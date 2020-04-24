@@ -196,7 +196,9 @@ void Application::run() {
             }
 
             vector<int> vert, edges;
+
             graph->getPathTo(operands.at(1), vert, edges); //isto esta mal.... fazer get path to no caso de receber so 1 operando
+
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);
@@ -219,7 +221,9 @@ void Application::run() {
                 throw AppException("One of the Vertexes was not found");
 
             vector<int> vert, edges;
+
             graph->getPathTo(operands.at(1), vert, edges);
+
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);
@@ -241,7 +245,9 @@ void Application::run() {
                 throw AppException("One of the Vertexes was not found");
 
             vector<int> vert, edges;
+
             graph->getPathTo(operands.at(1), vert, edges);
+
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);
@@ -263,7 +269,9 @@ void Application::run() {
                 throw AppException("One of the Vertexes was not found");
 
             vector<int> vert, edges;
+
             graph->getPathTo(operands.at(1), vert, edges);
+
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);
