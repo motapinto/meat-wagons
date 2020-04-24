@@ -37,8 +37,8 @@ class Application {
             Reader graphReader = Reader(this->graphPath);
             graph = graphReader.read();
 
-            viewer = new GraphVisualizer(graph->getWidth(), graph->getHeight());
-            viewer->draw(graph);
+            //viewer = new GraphVisualizer(graph->getWidth(), graph->getHeight());
+           //viewer->draw(graph);
         }
 
         static void usage();
@@ -200,6 +200,7 @@ void Application::run() {
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);
+            cout << vert.size() << " " << edges.size() << " " << endl;
             viewer->draw(graph);
 
             break;

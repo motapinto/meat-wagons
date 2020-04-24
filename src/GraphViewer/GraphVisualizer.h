@@ -62,6 +62,7 @@ void GraphVisualizer::setPath(vector<int> vert, vector<int> edges) {
     for(int id : vert) {
         this->gv->setVertexColor(id, "green");
         this->gv->setVertexSize(id, 2);
+        this->gv->setVertexSize(id, 10);
     }
 
     for(int id : edges) {
