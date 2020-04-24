@@ -18,7 +18,7 @@ class Vertex {
         vector<Edge> adj;		        // outgoing edges
         Tag tag = DEFAULT;                        // vertex Tag
         
-        double dist = 0;
+        double dist = infinite;
         Vertex *path = nullptr;
         Vertex *invPath = nullptr;
         Edge edgePath;
@@ -31,6 +31,7 @@ class Vertex {
         bool processing = false;	    // auxiliary field
 
         void addEdge(const int &id, Vertex *dest, const double &weight);
+        const static int infinite = 99999999;
 
     public:
         /*Vertex(const int &x, const int &y) {
@@ -60,6 +61,7 @@ class Vertex {
         vector<Edge> getAdj() const;
         double getDist() const;
         Vertex *getPath() const;
+        Edge getEdgePath() const;
         bool getVisited() const;
         Tag getTag() const;
 
@@ -100,6 +102,10 @@ double Vertex::getDist() const {
 
 Vertex* Vertex::getPath() const {
 	return this->path;
+}
+
+Edge Vertex::getEdgePath() const {
+    return this->edgePath;
 }
 
 bool Vertex::getVisited() const {

@@ -49,13 +49,13 @@ class Graph {
         vector<Vertex*> getVertexSet() const;
 
         // pre processing
-        void removeUnvisited(Vertex *origin);
+        bool preProcess(int origin);
 
         // dijkstra
         Vertex* dijkstraInit(const int origin);
         bool dijkstraSingleSource(const int origin);
-        bool dijkstraSingleSource(const int origin, const int dest);
-        bool getPathTo(const int origin, const int dest, vector<int> &vert, vector<int> &edges) const;
+        bool dijkstra(const int origin, const int dest);
+        bool getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const;
 
         // dijkstra related
         void reverseGraph();
@@ -79,19 +79,23 @@ void Graph::dfsVisit(Vertex *origin) const {
 	}
 }
 
-void Graph::removeUnvisited(Vertex *origin) {
+bool Graph::preProcess(int origin) {
+    auto orig = findVertex(origin);
+    if (orig == nullptr) return false;
+
     for(auto vertex : vertexSet)
         vertex->visited = false;
     
-    dfsVisit(origin);
+    dfsVisit(orig);
 
     // Removes vertices and calls for each his Vertex deconstructor (erasing the edges also)
     for(auto it = vertexSet.begin(); it != vertexSet.end(); it++) {
-        if(!(*it)->visited) {
+        if(!(*it)->visited || (*it)->adj.size() == 0) {
             vertexIndexes.erase((*it)->getId());
             it = vertexSet.erase(it) - 1;
         }
     }
+    return true;
 }
 
 /**************** Usual operations ************/
@@ -117,6 +121,7 @@ bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
 		return false;
 	
     v1->addEdge(id, v2, v1->pos.euclideanDistance(v2->pos));
+    //v2->addEdge(id + 100000000, v1, v2->pos.euclideanDistance(v1->pos));// -> MAKE GRAPH BIDIRECTIONAL
 	return true;
 }
 
@@ -152,8 +157,6 @@ int Graph::getOffsetY() {
     return offsetY;
 }
 
-
-
 int Graph::getNumVertex() const {
 	return vertexSet.size();
 }
@@ -165,12 +168,13 @@ vector<Vertex*> Graph::getVertexSet() const {
 /**************** Dijkstra ************/
 Vertex* Graph::dijkstraInit(const int origin) {
      for(auto vertex : vertexSet) {
-        vertex->visited = false;
-        vertex->invertedVisited = false;
-	    vertex->dist = infinite;
-	    vertex->path = NULL;
-        vertex->edgePath = Edge();
-        vertex->heuristicValue = 0;
+         if(vertex->dist == 0) continue;
+         vertex->visited = false;
+         vertex->invertedVisited = false;
+         vertex->dist = infinite;
+         vertex->path = NULL;
+         vertex->edgePath = Edge();
+         vertex->heuristicValue = 0;
 	}
 
 	auto start = findVertex(origin);
@@ -213,7 +217,7 @@ bool Graph::dijkstraSingleSource(const int origin)  {
     return true;
 }
 
-bool Graph::dijkstraSingleSource(const int origin, const int dest)  {
+bool Graph::dijkstra(const int origin, const int dest)  {
     auto start = dijkstraInit(origin);
     auto final =  findVertex(dest);
 
@@ -235,6 +239,7 @@ bool Graph::dijkstraSingleSource(const int origin, const int dest)  {
             if(elem->dist > min->dist + edge.weight) {
                 elem->dist = min->dist + edge.weight;
                 elem->path = min;
+                elem->edgePath = edge;
 
                 // if elem is not in queue (old dist(w) was infinite)
                 if(elem->queueIndex == 0) {
@@ -250,13 +255,11 @@ bool Graph::dijkstraSingleSource(const int origin, const int dest)  {
     return true;
 }
 
-bool Graph::getPathTo(const int origin, const int dest, vector<int> &vert, vector<int> &edges) const {
-    Vertex *start = findVertex(origin);
+bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
     Vertex *final = findVertex(dest);
 
-    if(start == nullptr || final == nullptr || start->dist == infinite)
+    if(final == nullptr || final->dist == infinite || final->path == nullptr)
         return false;
-
 
     vert.push_back(final->getId());
     edges.push_back(final->path->getId());
@@ -264,7 +267,8 @@ bool Graph::getPathTo(const int origin, const int dest, vector<int> &vert, vecto
     while(final->path != nullptr) {
         final = final->path;
         vert.push_back(final->getId());
-        edges.push_back(final->path->getId());
+        if(final->path != nullptr)
+            edges.push_back(final->path->getEdgePath().getId());
 	}
 
     reverse(vert.begin(), vert.end());
@@ -333,7 +337,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
 
 // Upgrades the optimization using a* with bidirectional search
 bool Graph::dijkstraBidirectional(const int origin, const int dest) {
-    reverseGraph();
+    //reverseGraph();
 
     auto start = dijkstraInit(origin);
     auto final = dijkstraInit(dest);
