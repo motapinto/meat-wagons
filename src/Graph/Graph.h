@@ -255,7 +255,7 @@ bool Graph::dijkstra(const int origin, const int dest)  {
         }
     }
     return true;
-}
+    }
 
 bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
     Vertex *final = findVertex(dest);
@@ -264,13 +264,13 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
         return false;
 
     vert.push_back(final->getId());
-    edges.push_back(final->path->getId());
+    edges.push_back(final->getEdgePath().getId());
 
     while(final->path != nullptr) {
         final = final->path;
         vert.push_back(final->getId());
         if(final->path != nullptr)
-            edges.push_back(final->path->getEdgePath().getId());
+            edges.push_back(final->getEdgePath().getId());
 	}
 
     reverse(vert.begin(), vert.end());
