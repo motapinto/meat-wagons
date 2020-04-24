@@ -18,7 +18,7 @@ class Vertex {
         vector<Edge> adj;		        // outgoing edges
         Tag tag;                        // vertex Tag
         
-        double dist = 0;
+        double dist = infinite;
         Vertex *path = nullptr;
         Vertex *invPath = nullptr;
         Edge edgePath;
@@ -29,6 +29,7 @@ class Vertex {
         bool visited = false;		    // auxiliary field
         bool invertedVisited = false;   // auxiliary field
         bool processing = false;	    // auxiliary field
+        const static int infinite = 99999999;
 
         void addEdge(const int &id, Vertex *dest, const double &weight);
 

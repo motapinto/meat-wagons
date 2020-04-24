@@ -177,7 +177,7 @@ void Application::run() {
             }
 
             vector<int> vert, edges;
-            graph->getPathTo(operands.at(1), operands.at(2), vert, edges); //isto esta mal.... fazer get path to no caso de receber so 1 operando
+            graph->getPathTo(operands.at(0), operands.at(1), vert, edges); //isto esta mal.... fazer get path to no caso de receber so 1 operando
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);
@@ -195,11 +195,11 @@ void Application::run() {
             cout << "Proceed(Y/N)?: ";
             if((cin>>proceed) && proceed != 'Y') break;
 
-            if (!graph->dijkstraOrientedSearch(operands.at(1), operands.at(2)))
+            if (!graph->dijkstraOrientedSearch(operands.at(0), operands.at(1)))
                 throw AppException("One of the Vertexes was not found");
 
             vector<int> vert, edges;
-            graph->getPathTo(operands.at(1), operands.at(2), vert, edges);
+            graph->getPathTo(operands.at(0), operands.at(1), vert, edges);
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);
@@ -217,11 +217,11 @@ void Application::run() {
             cout << "Proceed(Y/N)?: ";
             if((cin>>proceed) && proceed != 'Y') break;
 
-            if (!graph->dijkstraBidirectional(operands.at(1), operands.at(2))) //make dijkstraBidirectional withouth a*
+            if (!graph->dijkstraBidirectional(operands.at(0), operands.at(1))) //make dijkstraBidirectional withouth a*
                 throw AppException("One of the Vertexes was not found");
 
             vector<int> vert, edges;
-            graph->getPathTo(operands.at(1), operands.at(2), vert, edges);
+            graph->getPathTo(operands.at(0), operands.at(1), vert, edges);
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);
@@ -239,11 +239,11 @@ void Application::run() {
             cout << "Proceed(Y/N)?: ";
             if((cin>>proceed) && proceed != 'Y') break;
 
-            if (!graph->dijkstraBidirectional(operands.at(1), operands.at(2)))
+            if (!graph->dijkstraBidirectional(operands.at(0), operands.at(1)))
                 throw AppException("One of the Vertexes was not found");
 
             vector<int> vert, edges;
-            graph->getPathTo(operands.at(1), operands.at(2), vert, edges);
+            graph->getPathTo(operands.at(0), operands.at(1), vert, edges);
 
             viewer = new GraphVisualizer(600, 600);
             viewer->setPath(vert, edges);

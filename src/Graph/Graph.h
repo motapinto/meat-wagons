@@ -117,12 +117,13 @@ vector<Vertex*> Graph::getVertexSet() const {
 /**************** Dijkstra ************/
 Vertex* Graph::dijkstraInit(const int origin) {
      for(auto vertex : vertexSet) {
-        vertex->visited = false;
-        vertex->invertedVisited = false;
-	    vertex->dist = infinite;
-	    vertex->path = NULL;
-        vertex->edgePath = Edge();
-        vertex->heuristicValue = 0;
+         if(vertex->dist == 0){ continue; }
+         vertex->visited = false;
+         vertex->invertedVisited = false;
+	     vertex->dist = infinite;
+	     vertex->path = NULL;
+         vertex->edgePath = Edge();
+         vertex->heuristicValue = infinite;
 	}
 
 	auto start = findVertex(origin);
@@ -227,9 +228,11 @@ bool Graph::getPathTo(const int origin, const int dest, vector<int> &vert, vecto
 
 /**************** Optimizing Dijkstra ************/
 void Graph::reverseGraph() {
-    for(auto vert : vertexSet)
-        for(auto edge : vert->adj)
+    for(Vertex * vert : vertexSet) {
+
+        for (Edge edge : vert->adj)
             addEdge(edge.id, vert->getId(), edge.dest->getId());
+    }
 }
 
 double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
@@ -285,7 +288,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
 
 // Upgrades the optimization using a* with bidirectional search
 bool Graph::dijkstraBidirectional(const int origin, const int dest) {
-    reverseGraph();
+    //reverseGraph();
 
     auto start = dijkstraInit(origin);
     auto final = dijkstraInit(dest);
@@ -320,7 +323,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             if(forwardMin->dist + weight + heuristicDistance(elem, forwardMin) < elem->heuristicValue) {
                 
                 elem->heuristicValue =  forwardMin->heuristicValue + weight + heuristicDistance(elem, forwardMin);
-                elem->dist = forwardMin->heuristicValue + weight; 
+                    elem->dist = forwardMin->heuristicValue + weight;
                 elem->path = forwardMin;
                 elem->edgePath = edge;
                 
@@ -344,7 +347,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             break;
         processed.push_back(backwardMin->id);
 
-        if(backwardMin == final) return true;
+        if(backwardMin == start) return true;
 
         for(auto edge : backwardMin->adj) {
             auto elem = edge.dest;

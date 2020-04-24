@@ -19,7 +19,7 @@ class Reader {
 };
 
 Graph* Reader::read() const {
-    ifstream nodesStream(path + "/nodes_x_y.txt");
+    ifstream nodesStream(path + "/nodes.txt");
     ifstream edgesStream(path + "/edges.txt");
 
     if(!nodesStream.is_open() || !edgesStream.is_open())
