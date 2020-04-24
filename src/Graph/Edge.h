@@ -24,24 +24,24 @@ class Edge {
         }
 
         /* get methods */
-        int getId() const;
-        Vertex* getDest() const;
-        double getWeight() const;
+        const int getId() const;
+        const Vertex* getDest() const;
+        const double getWeight() const;
 
         friend class Graph;
         friend class Vertex;
 
 };
 
-int Edge::getId() const {
+const int Edge::getId() const {
 	return this->id;
 }
 
-Vertex* Edge::getDest() const {
+const Vertex* Edge::getDest() const {
 	return this->dest;
 }
 
-double Edge::getWeight() const {
+const double Edge::getWeight() const {
 	return this->weight;
 }
 
