@@ -231,7 +231,6 @@ bool Graph::dijkstra(const int origin, const int dest)  {
 
     while(!minQueue.empty()) {
         auto min = minQueue.extractMin();
-        min->visited = true;
 
         if(min == final) return true;
 
@@ -244,13 +243,8 @@ bool Graph::dijkstra(const int origin, const int dest)  {
                 elem->edgePath = edge;
 
                 // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) {
-                    minQueue.insert(elem);
-                }
-
-                else {
-                    minQueue.decreaseKey(elem);
-                }
+                if(elem->queueIndex == 0) minQueue.insert(elem);
+                else minQueue.decreaseKey(elem);
             }
         }
     }
