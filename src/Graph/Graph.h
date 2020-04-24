@@ -206,13 +206,8 @@ bool Graph::dijkstraSingleSource(const int origin)  {
                 elem->edgePath = edge;
 
                 // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) {
-                    minQueue.insert(elem);
-                }
-
-                else {
-                    minQueue.decreaseKey(elem);
-                }
+                if(elem->queueIndex == 0) minQueue.insert(elem);
+                else minQueue.decreaseKey(elem);
             }
         }
     }
@@ -249,7 +244,7 @@ bool Graph::dijkstra(const int origin, const int dest)  {
         }
     }
     return true;
-    }
+}
 
 bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
     Vertex *final = findVertex(dest);
