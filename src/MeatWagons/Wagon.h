@@ -11,7 +11,7 @@ class Wagon {
         vector<Delivery> deliveries;
 
     public:
-        Wagon(int id, int capacity) : id(id), capacity(capacity) {}
+        Wagon(const int id, const int capacity) : id(id), capacity(capacity) {}
 
         int getId() const;
         void setId(const int id);
@@ -26,7 +26,7 @@ class Wagon {
 };
 
 int Wagon::getId() const {
-    return id;
+    return this->id;
 }
 
 void Wagon::setId(const int id) {
@@ -34,7 +34,7 @@ void Wagon::setId(const int id) {
 }
 
 int  Wagon::getCapacity() const {
-    return capacity;
+    return this->capacity;
 }
 
 void Wagon::setCapacity(const int capacity) {

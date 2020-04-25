@@ -8,7 +8,7 @@ class Time {
 
     public:
         Time() {}
-        Time(int hour, int minute, int second) : hour(hour), minute(minute), second(second) {}
+        Time(const int hour, const int minute, const int second) : hour(hour), minute(minute), second(second) {}
 
         int getHour() const;
         void setHour(const int hour);
@@ -23,31 +23,31 @@ class Time {
 };
 
 int Time::getHour() const {
-    return hour;
+    return this->hour;
 }
 
 void Time::setHour(const int hour) {
-    Time::hour = hour;
+    this->hour = hour;
 }
 
 int Time::getMinute() const {
-    return minute;
+    return this->minute;
 }
 
 void Time::setMinute(const int minute) {
-    Time::minute = minute;
+    this->minute = minute;
 }
 
 int Time::getSecond() const {
-    return second;
+    return this->second;
 }
 
 void Time::setSecond(const int second) {
-    Time::second = second;
+    this->second = second;
 }
 
 int Time::toSeconds() const {
-    return second + minute*60 + hour*3600;
+    return this->second + this->minute*60 + this->hour*3600;
 }
 
 #endif //MEAT_WAGONS_TIME_H

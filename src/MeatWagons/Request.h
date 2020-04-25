@@ -9,50 +9,45 @@ class Request {
         string prisoner;
         int dest, priority;
         Time arrival, deliver;
-        bool assigned;
+        bool assigned = false;
 
     public:
-        Request(string prisoner, int dest, int priority, Time arrival) {
-            this->prisoner = prisoner;
-            this->dest = dest;
-            this->priority = priority;
-            this->arrival = arrival;
-            this->assigned = false;
-        }
+        Request(const string &prisoner, const int dest, const int priority, const Time &arrival) :
+            prisoner(prisoner), dest(dest), priority(priority), arrival(arrival) {}
 
-        const string getPrisoner() const;
-        const int getDest() const;
-        const int getPriority() const;
-        const Time getArrival() const;
-        const Time getDelivery() const;
-        const bool getAssigned() const;
-        const void setAssigned(bool assigned);
+        string getPrisoner() const;
+        int getDest() const;
+        int getPriority() const;
+        Time getArrival() const;
+        Time getDelivery() const;
+        bool getAssigned() const;
+        void setAssigned(const bool assigned);
 };
 
-const string Request::getPrisoner() const {
+string Request::getPrisoner() const {
     return this->prisoner;
 }
 
-const int Request::getDest() const {
+int Request::getDest() const {
     return this->dest;
 }
 
-const int Request::getPriority() const {
+int Request::getPriority() const {
     return this->priority;
 }
 
-const Time Request::getArrival() const {
+Time Request::getArrival() const {
     return this->arrival;
 }
-const Time Request::getDelivery() const {
+Time Request::getDelivery() const {
     return this->deliver;
 }
 
-const bool Request::getAssigned() const {
+bool Request::getAssigned() const {
     return this->assigned;
 }
 
-const void Request::setAssigned(bool assigned) {
+void Request::setAssigned(const bool assigned) {
     this->assigned = assigned;
 }
 

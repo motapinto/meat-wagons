@@ -3,8 +3,9 @@
 #define MEAT_WAGONS_MEATWAGONS_H
 
 #include <set>
-#include "Wagon.h"
+#include "../Graph/Reader.h"
 #include "../GraphViewer/GraphVisualizer.h"
+#include "Wagon.h"
 
 class MeatWagonsException : public std::exception {
 public:
@@ -23,34 +24,35 @@ class MeatWagons {
         unordered_map<int, Vertex*> pointsOfInterest;
 
         set<Wagon*> wagons;
-        set<Request> requests;
+        vector<Request> requests;
         int zoneMaxDist;
 
     public:
-        MeatWagons(Graph *graph, int wagons, int maxDist) {
-            this->graph = graph;
-            for(int i = 0; i < wagons; i++) this->wagons.insert(new Wagon(i, 10));
+        MeatWagons(const int wagons, const int maxDist) {
+            for(int i = 0; i < wagons; i++) this->wagons.insert(new Wagon(i, 1));
             this->zoneMaxDist = maxDist;
         }
 
-        const int getCentral() const;
-        const void setCentral(const int &id);
+        int getCentral() const;
+        void setCentral(const int &id);
 
         Graph *const getGraph() const;
-        const void setGraph(Graph *graph);
-        const void setGraph(string path);
-        const void showGraph() const;
+        void setGraph(Graph *graph);
+        void setGraph(const string path);
+        void showGraph() const;
 
-        const void preProcess(int node) const;
+        void preProcess(int node) const;
 
         void shortestPath(int option, int origin, int dest);
+
+        void readRequests() const;
 };
 
-const int MeatWagons::getCentral() const {
+int MeatWagons::getCentral() const {
     return this->central;
 }
 
-const void MeatWagons::setCentral(const int &id) {
+void MeatWagons::setCentral(const int &id) {
     this->central = id;
 }
 
@@ -58,44 +60,48 @@ Graph *const MeatWagons::getGraph() const {
     return this->graph;
 }
 
-const void MeatWagons::setGraph(Graph *graph) {
+void MeatWagons::setGraph(Graph *graph) {
     if(graph == nullptr) throw MeatWagonsException("Graph is null");
     this->graph = graph;
 }
 
-const void MeatWagons::setGraph(string graphPath) {
-    Reader graphReader = Reader(graphPath, central, pointsOfInterest);
-    Graph* graphRead = graphReader.read();
+void MeatWagons::setGraph(const string graphPath) {
+    Reader graphReader = Reader(graphPath);
+    Graph* graphRead = new Graph();
+    graphReader.readGraph(graphRead, central, pointsOfInterest);
 
-    if(graphRead == nullptr)throw MeatWagonsException("Graph is null");
+    if(graphRead == nullptr) throw MeatWagonsException("Graph is null");
 
     this->graph = graphRead;
-    this->central = graphReader.getCentral();
 }
 
-const void MeatWagons::showGraph() const{
-    viewer->draw(graph);
+void MeatWagons::showGraph() const{
+    this->viewer->draw(graph);
 }
 
-const void MeatWagons::preProcess(int node) const {
-    if(graph == nullptr) throw MeatWagonsException("Graph is null");
-    if(!graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
+void MeatWagons::preProcess(int node) const {
+    if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
+    if(!this->graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
     showGraph();
 }
 
 void MeatWagons::shortestPath(int option, int origin, int dest) {
-    if(graph == nullptr) throw MeatWagonsException("Graph is null");
+    if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
 
     switch (option) {
-        case 1: if (!graph->dijkstra(origin, dest)) throw MeatWagonsException("Vertex not found"); break;
-        case 2: if (!graph->dijkstraOrientedSearch(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
-        case 3: if (!graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+        case 1: if (!this->graph->dijkstra(origin, dest)) throw MeatWagonsException("Vertex not found"); break;
+        case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+        case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
     }
 
     vector<int> vert, edges;
-    graph->getPathTo(dest, vert, edges);
+    this->graph->getPathTo(dest, vert, edges);
     viewer->setPath(vert, edges);
     showGraph();
+}
+
+void MeatWagons::readRequests() const {
+
 }
 
 #endif //MEAT_WAGONS_MEATWAGONS_H

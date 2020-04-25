@@ -4,36 +4,28 @@
 
 #include <fstream>
 #include "Graph.h"
+#include "../MeatWagons/Request.h"
 
 using namespace std;
 
 class Reader {
     private:
         string path;
-        int central;
-        unordered_map<int, Vertex*> pointsOfInterest;
 
     public:
-        explicit Reader(string &path, int &central, unordered_map<int, Vertex*> &pointsOfInterest) {
-            this->path = path;
-            this->central = central;
-            this->pointsOfInterest = pointsOfInterest;
-        }
+        Reader(const string &path) : path(path) {}
 
-        [[nodiscard]] Graph * read();
-        bool setTags(Graph &graph);
-        const int getCentral() const;
-        bool setCentral(Graph &graph);
+        bool readGraph(Graph *graph, int &central, unordered_map<int, Vertex*> &pointsOfInterest);
+        bool readRequests(vector<Request> &requestVector);
+        bool setTags(Graph *graph, unordered_map<int, Vertex*> &pointsOfInterest);
+        bool setCentral(Graph *graph, int &central);
 };
 
-Graph * Reader::read() {
+bool Reader::readGraph(Graph *graph, int &central, unordered_map<int, Vertex*> &pointsOfInterest) {
     ifstream nodesStream(path + "/nodes.txt");
     ifstream edgesStream(path + "/edges.txt");
 
-    if(!nodesStream.is_open() || !edgesStream.is_open())
-        return nullptr;
-
-    static Graph graph = Graph();
+    if(!nodesStream.is_open() || !edgesStream.is_open()) return false;
 
     int id, origin, dest;
     int numNodes, numEdges;
@@ -45,34 +37,50 @@ Graph * Reader::read() {
     nodesStream >> numNodes;
     for (int i = 1; i <= numNodes; i++) {
         nodesStream >> c >> id >> c >> x >> c >> y >> c;
-        graph.addVertex(id, x, y);
+        graph->addVertex(id, x, y);
         x > maxX ? maxX = x : maxX;
         y > maxY ? maxY = y : maxY;
         x < minX ? minX = x : minX;
         y < minY ? minY = y : minY;
     }
 
-    graph.setWidth(maxX - minX);
-    graph.setHeight(maxY - minY);
-    graph.setOffsetX(1.01*minX);
-    graph.setOffsetY(1.0005*minY);
+    graph->setOffsetX(1.01*minX);
+    graph->setOffsetY(1.0005*minY);
 
     edgesStream >> numEdges;
     for (int i = 1; i <= numEdges; i++) {
         edgesStream >> c >> origin >> c >> dest >> c;
-        graph.addEdge(i, origin, dest);
+        graph->addEdge(i, origin, dest);
     }
 
     nodesStream.close();
     edgesStream.close();
 
-    setTags(graph);
-    setCentral(graph);
+    setTags(graph, pointsOfInterest);
+    setCentral(graph, central);
 
-    return &graph;
+    return true;
 }
 
-bool Reader::setTags(Graph &graph) {
+bool Reader::readRequests(vector<Request> &requestVector) {
+    ifstream requests(path + "/requests.txt");
+
+    if(!requests.is_open()) return false;
+
+    string name;
+    int dest, priority;
+    int hour, min, sec;
+
+    while(requests >> name) {
+        requests >> dest >> priority >> hour >> min >> sec;
+        Time arrival(hour, min, sec);
+        Request request = Request(name, dest, priority, arrival);
+        requestVector.push_back(request);
+    }
+    return true;
+}
+
+bool Reader::setTags(Graph *graph, unordered_map<int, Vertex*> &pointsOfInterest) {
     ifstream tagsStream(path + "/tags.txt");
 
     if(!tagsStream.is_open()) return false;
@@ -84,7 +92,7 @@ bool Reader::setTags(Graph &graph) {
     tagsStream >> tagName >> numTags;
     for(int j = 0; j < numTags; j++) {
         tagsStream >> id;
-        Vertex *vertex = graph.findVertex(id);
+        Vertex *vertex = graph->findVertex(id);
         if(vertex == nullptr) return false;
         vertex->setTag(Vertex::INTEREST_POINT);
         pointsOfInterest.insert(pair<int, Vertex*>(vertex->getId(), vertex));
@@ -92,17 +100,13 @@ bool Reader::setTags(Graph &graph) {
     return true;
 }
 
-const int Reader::getCentral() const {
-    return this->central;
-}
-
-bool Reader::setCentral(Graph &graph) {
+bool Reader::setCentral(Graph *graph, int &central) {
     int pos = path.find_last_of('/');
     string city = path.substr(pos + 1);
 
     if(city == "Porto") {
-        graph.findVertex(90379359)->setTag(Vertex::CENTRAL);
-        this->central = 90379359;
+        graph->findVertex(90379359)->setTag(Vertex::CENTRAL);
+        central = 90379359;
     }
     return true;
 }

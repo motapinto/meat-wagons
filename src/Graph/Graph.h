@@ -15,8 +15,6 @@ using namespace std;
 
 class Graph {
     private:
-        int width;      // for Graph Viewer
-        int height;     // for Graph Viewer
         int offsetX;    // for Graph Viewer
         int offsetY;    // for Graph Viewer
 
@@ -35,12 +33,8 @@ class Graph {
         void addPointOfInterest(Vertex* vertex);
         bool addEdge(const int &id, const int &origin, const int &dest);
 
-        void setWidth(int width);
-        void setHeight(int height);
         void setOffsetX(int x);
         void setOffsetY(int y);
-        int getWidth();
-        int getHeight();
         int getOffsetX();
         int getOffsetY();
         
@@ -124,28 +118,12 @@ bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
 	return true;
 }
 
-void Graph::setWidth(int width) {
-    this->width = width;
-}
-
-void Graph::setHeight(int height) {
-    this->height = height;
-}
-
 void Graph::setOffsetX(int x) {
     this->offsetX = x;
 }
 
 void Graph::setOffsetY(int y) {
     this->offsetY = y;
-}
-
-int Graph::getWidth() {
-    return width;
-}
-
-int Graph::getHeight() {
-    return height;
 }
 
 int Graph::getOffsetX() {

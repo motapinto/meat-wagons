@@ -3,7 +3,6 @@
 #define MEAT_WAGONS_APPLICATION_H
 
 #include <fstream>
-#include "../Graph/Reader.h"
 #include "../MeatWagons/MeatWagons.h"
 
 class AppException : public std::exception {
@@ -18,7 +17,7 @@ class AppException : public std::exception {
 class Application {
     private:
         GraphVisualizer *viewer = nullptr;
-        MeatWagons *controller = new MeatWagons();
+        MeatWagons *controller = new MeatWagons(10, 100);
 
     public:
         static void usage();
