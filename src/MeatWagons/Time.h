@@ -2,54 +2,48 @@
 #ifndef MEAT_WAGONS_TIME_H
 #define MEAT_WAGONS_TIME_H
 
-
 class Time {
     private:
         int hour, minute, second;
 
     public:
-        Time() { }
-        Time(int hour, int minute, int second) {
-            this->hour = hour;
-            this->minute = minute;
-            this->second = second;
-        }
+        Time() {}
+        Time(int hour, int minute, int second) : hour(hour), minute(minute), second(second) {}
 
-    const int getHour() const;
-    const void setHour(int hour);
-    const int getMinute() const;
-    const void setMinute(int minute);
-    const int getSecond() const;
-    const void setSecond(int second);
-    const int toSeconds();
-
+        int getHour() const;
+        void setHour(const int hour);
+        int getMinute() const;
+        void setMinute(const int minute);
+        int getSecond() const;
+        void setSecond(const int second);
+        int toSeconds() const;
 };
 
-const int Time::getHour() const {
+int Time::getHour() const {
     return hour;
 }
 
-const void Time::setHour(int hour) {
+void Time::setHour(const int hour) {
     Time::hour = hour;
 }
 
-const int Time::getMinute() const {
+int Time::getMinute() const {
     return minute;
 }
 
-const void Time::setMinute(int minute) {
+void Time::setMinute(const int minute) {
     Time::minute = minute;
 }
 
-const int Time::getSecond() const {
+int Time::getSecond() const {
     return second;
 }
 
-const void Time::setSecond(int second) {
+void Time::setSecond(const int second) {
     Time::second = second;
 }
 
-const int Time::toSeconds() {
+int Time::toSeconds() const {
     return second + minute*60 + hour*3600;
 }
 

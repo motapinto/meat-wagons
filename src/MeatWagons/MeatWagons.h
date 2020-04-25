@@ -2,6 +2,7 @@
 #ifndef MEAT_WAGONS_MEATWAGONS_H
 #define MEAT_WAGONS_MEATWAGONS_H
 
+#include <set>
 #include "Wagon.h"
 #include "../GraphViewer/GraphVisualizer.h"
 
@@ -21,7 +22,17 @@ class MeatWagons {
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
         unordered_map<int, Vertex*> pointsOfInterest;
 
+        set<Wagon*> wagons;
+        set<Request> requests;
+        int zoneMaxDist;
+
     public:
+        MeatWagons(Graph *graph, int wagons, int maxDist) {
+            this->graph = graph;
+            for(int i = 0; i < wagons; i++) this->wagons.insert(new Wagon(i, 10));
+            this->zoneMaxDist = maxDist;
+        }
+
         const int getCentral() const;
         const void setCentral(const int &id);
 
