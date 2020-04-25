@@ -349,8 +349,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
         forwardMin->visited = true;
 
         // check if there is an intersection
-        if(find(processed.begin(), processed.end(), forwardMin->id) != processed.end()) 
-            break;
+        if(find(processed.begin(), processed.end(), forwardMin->id) != processed.end()) break;
         processed.push_back(forwardMin->id);
 
         if(forwardMin == final) return true;

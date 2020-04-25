@@ -15,7 +15,7 @@ class Vertex {
         int id;                         // identifier of the vertex
         Position pos;			        // content of the vertex
         vector<Edge> adj;		        // outgoing edges
-        Tag tag = DEFAULT;                        // vertex Tag
+        Tag tag = DEFAULT;              // vertex Tag
         
         double dist = infinite;
         Vertex *path = nullptr;
