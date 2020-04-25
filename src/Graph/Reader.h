@@ -13,8 +13,9 @@ class Reader {
         int central;
 
     public:
-        explicit Reader(string &path) {
+        explicit Reader(string &path, int &central) {
             this->path = path;
+            this->central = central;
         }
 
         [[nodiscard]] Graph * read();
@@ -91,12 +92,12 @@ const int Reader::getCentral() const {
 }
 
 bool Reader::setCentral(Graph &graph) {
-    int pos = path.find_last_of('\\');
+    int pos = path.find_last_of('/');
     string city = path.substr(pos + 1);
 
     if(city == "Porto") {
         graph.findVertex(90379359)->setTag(Vertex::CENTRAL);
-        graph.setCentral(90379359);
+        this->central = 90379359;
     }
     return true;
 }

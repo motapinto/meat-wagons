@@ -52,7 +52,7 @@ const void MeatWagons::setGraph(Graph *graph) {
 }
 
 const void MeatWagons::setGraph(string graphPath) {
-    Reader graphReader = Reader(graphPath);
+    Reader graphReader = Reader(graphPath, central);
     Graph* graphRead = graphReader.read();
 
     if(graphRead == nullptr)throw MeatWagonsException("Graph is null");

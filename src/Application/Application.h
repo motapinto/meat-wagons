@@ -55,8 +55,7 @@ bool Application::run() {
     else if (operation == "readGraph") {
         string fileName;
         if (!(line >> fileName)) controller->setGraph("maps/PortugalMaps/Porto");
-
-        controller->setGraph(fileName);
+        else controller->setGraph(fileName);
         controller->showGraph();
     }
 
