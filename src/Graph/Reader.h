@@ -10,15 +10,20 @@ using namespace std;
 class Reader {
     private:
         string path;
+        int central;
+
     public:
         explicit Reader(string &path) {
             this->path = path;
         }
 
-        [[nodiscard]] Graph* read() const;
+        [[nodiscard]] Graph * read();
+        bool setTags(Graph &graph) const;
+        const int getCentral() const;
+        bool setCentral(Graph &graph);
 };
 
-Graph* Reader::read() const {
+Graph * Reader::read() {
     ifstream nodesStream(path + "/nodes.txt");
     ifstream edgesStream(path + "/edges.txt");
 
@@ -37,7 +42,7 @@ Graph* Reader::read() const {
     nodesStream >> numNodes;
     for (int i = 1; i <= numNodes; i++) {
         nodesStream >> c >> id >> c >> x >> c >> y >> c;
-        graph.addVertex(id, x, y); //NAO ESQUECER INVERTER O GRAFO (CIDADE DO PORTO ESTTA AO CNTRARIO)
+        graph.addVertex(id, x, y);
         x > maxX ? maxX = x : maxX;
         y > maxY ? maxY = y : maxY;
         x < minX ? minX = x : minX;
@@ -58,7 +63,42 @@ Graph* Reader::read() const {
     nodesStream.close();
     edgesStream.close();
 
+    setTags(graph);
+    setCentral(graph);
+
     return &graph;
+}
+
+bool Reader::setTags(Graph &graph) const {
+    ifstream tagsStream(path + "/tags.txt");
+
+    if(!tagsStream.is_open()) return false;
+
+    int id, trash, numTags;
+    string tagName;
+
+    tagsStream >> trash;
+    tagsStream >> tagName >> numTags;
+    for(int j = 0; j < numTags; j++) {
+        tagsStream >> id;
+        graph.findVertex(id)->setTag(Vertex::INTEREST_POINT);
+    }
+    return true;
+}
+
+const int Reader::getCentral() const {
+    return this->central;
+}
+
+bool Reader::setCentral(Graph &graph) {
+    int pos = path.find_last_of('\\');
+    string city = path.substr(pos + 1);
+
+    if(city == "Porto") {
+        graph.findVertex(90379359)->setTag(Vertex::CENTRAL);
+        graph.setCentral(90379359);
+    }
+    return true;
 }
 
 #endif //MEAT_WAGONS_READER_H

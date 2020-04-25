@@ -19,6 +19,7 @@ class Graph {
         int height;     // for Graph Viewer
         int offsetX;    // for Graph Viewer
         int offsetY;    // for Graph Viewer
+        int central;
 
         vector<Vertex*> vertexSet;   
         unordered_map<int, Vertex*> vertexIndexes; //search for id and return vertex (much faster)
@@ -31,6 +32,9 @@ class Graph {
 
     public:
         Graph() {}
+
+        void setCentral(const int &id) { this->central = id; }
+        int getCentral() { return this->central; }
 
         Vertex* findVertex(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);

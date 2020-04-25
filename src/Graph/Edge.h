@@ -30,7 +30,6 @@ class Edge {
 
         friend class Graph;
         friend class Vertex;
-
 };
 
 const int Edge::getId() const {

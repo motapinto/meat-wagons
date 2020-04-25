@@ -12,7 +12,6 @@ class Vertex {
         enum Tag {CENTRAL, INTEREST_POINT, DEFAULT};
 
     private:
-        //static int serial;             // number of Vertex objects shared with all vertices
         int id;                         // identifier of the vertex
         Position pos;			        // content of the vertex
         vector<Edge> adj;		        // outgoing edges
@@ -34,18 +33,10 @@ class Vertex {
         const static int infinite = 99999999;
 
     public:
-        /*Vertex(const int &x, const int &y) {
-            this->id = serial;
-            this->pos = Position(x, y);
-
-            this->serial += 1;
-        }*/
 
         Vertex(const int &id, const int &x, const int &y) {
             this->id = id;
             this->pos = Position(x, y);
-
-            //this->serial += 1;
         }
 
         /*~Vertex() {
@@ -64,6 +55,7 @@ class Vertex {
         Edge getEdgePath() const;
         bool getVisited() const;
         Tag getTag() const;
+        void setTag(Vertex::Tag tag);
 
         bool operator<(Vertex &vertex) const; //required by MutablePriorityQueue
         friend class Graph;
@@ -114,6 +106,10 @@ bool Vertex::getVisited() const {
 
 Vertex::Tag Vertex::getTag() const {
     return this->tag;
+}
+
+void Vertex::setTag(Vertex::Tag tag) {
+    this->tag = tag;
 }
 
 #endif
