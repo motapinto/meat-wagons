@@ -19,6 +19,7 @@ class MeatWagons {
         int central;
         Graph *graph;
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
+        unordered_map<int, Vertex*> pointsOfInterest;
 
     public:
         const int getCentral() const;
@@ -52,7 +53,7 @@ const void MeatWagons::setGraph(Graph *graph) {
 }
 
 const void MeatWagons::setGraph(string graphPath) {
-    Reader graphReader = Reader(graphPath, central);
+    Reader graphReader = Reader(graphPath, central, pointsOfInterest);
     Graph* graphRead = graphReader.read();
 
     if(graphRead == nullptr)throw MeatWagonsException("Graph is null");

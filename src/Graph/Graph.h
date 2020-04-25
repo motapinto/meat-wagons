@@ -21,7 +21,7 @@ class Graph {
         int offsetY;    // for Graph Viewer
 
         vector<Vertex*> vertexSet;   
-        unordered_map<int, Vertex*> vertexIndexes; //search for id and return vertex (much faster)
+        unordered_map<int, Vertex*> vertexIndexes;    //search for id and return vertex (much faster)
 
         vector<vector<double>> minDistance;       // used for floyd Warshall algorithm
         vector<vector<Vertex*>> next;             // used for floyd Warshall algorithm
@@ -32,6 +32,7 @@ class Graph {
     public:
         Vertex* findVertex(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
+        void addPointOfInterest(Vertex* vertex);
         bool addEdge(const int &id, const int &origin, const int &dest);
 
         void setWidth(int width);

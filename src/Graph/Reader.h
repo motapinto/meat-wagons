@@ -11,15 +11,17 @@ class Reader {
     private:
         string path;
         int central;
+        unordered_map<int, Vertex*> pointsOfInterest;
 
     public:
-        explicit Reader(string &path, int &central) {
+        explicit Reader(string &path, int &central, unordered_map<int, Vertex*> &pointsOfInterest) {
             this->path = path;
             this->central = central;
+            this->pointsOfInterest = pointsOfInterest;
         }
 
         [[nodiscard]] Graph * read();
-        bool setTags(Graph &graph) const;
+        bool setTags(Graph &graph);
         const int getCentral() const;
         bool setCentral(Graph &graph);
 };
@@ -70,7 +72,7 @@ Graph * Reader::read() {
     return &graph;
 }
 
-bool Reader::setTags(Graph &graph) const {
+bool Reader::setTags(Graph &graph) {
     ifstream tagsStream(path + "/tags.txt");
 
     if(!tagsStream.is_open()) return false;
@@ -82,7 +84,10 @@ bool Reader::setTags(Graph &graph) const {
     tagsStream >> tagName >> numTags;
     for(int j = 0; j < numTags; j++) {
         tagsStream >> id;
-        graph.findVertex(id)->setTag(Vertex::INTEREST_POINT);
+        Vertex *vertex = graph.findVertex(id);
+        if(vertex == nullptr) return false;
+        vertex->setTag(Vertex::INTEREST_POINT);
+        pointsOfInterest.insert(pair<int, Vertex*>(vertex->getId(), vertex));
     }
     return true;
 }
