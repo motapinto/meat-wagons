@@ -8,7 +8,7 @@ class Wagon {
     private:
         int id, capacity;
         Time nextAvailableTime;
-        vector<Delivery*> deliveries;
+        vector<Delivery> deliveries;
 
     public:
         Wagon(int id, int capacity) : id(id), capacity(capacity) {}
@@ -20,11 +20,9 @@ class Wagon {
         void setCapacity(const int capacity);
 
         Time getNextAvailableTime() const;
-        void setNextAvailableTime(const Time &time) const;
+        void setNextAvailableTime(const Time &time);
 
-        void addDelivery(Delivery *delivery);
-
-    void setNextAvailableTime(const Time &nextAvailableTime);
+        void addDelivery(const Delivery &delivery);
 };
 
 int Wagon::getId() const {
@@ -51,7 +49,7 @@ void Wagon::setNextAvailableTime(const Time &nextAvailableTime) {
     this->nextAvailableTime = nextAvailableTime;
 }
 
-void Wagon::addDelivery(Delivery *delivery) {
+void Wagon::addDelivery(const Delivery &delivery) {
     this->deliveries.push_back(delivery);
 }
 

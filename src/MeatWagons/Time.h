@@ -12,10 +12,13 @@ class Time {
 
         int getHour() const;
         void setHour(const int hour);
+
         int getMinute() const;
         void setMinute(const int minute);
+
         int getSecond() const;
         void setSecond(const int second);
+
         int toSeconds() const;
 };
 
