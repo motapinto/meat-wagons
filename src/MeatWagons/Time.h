@@ -7,7 +7,7 @@ class Time {
         int hour, minute, second;
 
     public:
-        Time() {}
+        Time() : hour(0), minute(0), second(0) {}
         Time(const int hour, const int minute, const int second) : hour(hour), minute(minute), second(second) {}
 
         int getHour() const;
@@ -20,6 +20,7 @@ class Time {
         void setSecond(const int second);
 
         int toSeconds() const;
+        bool operator<(const Time &time);
 };
 
 int Time::getHour() const {
@@ -48,6 +49,15 @@ void Time::setSecond(const int second) {
 
 int Time::toSeconds() const {
     return this->second + this->minute*60 + this->hour*3600;
+}
+
+bool Time::operator<(const Time &time) {
+    if(this->hour == time.hour)
+        if(this->minute == time.minute)
+            if(this->second == time.second) return false;
+            else return this->second < time.second;
+        else return this->minute < time.minute;
+    else return this->hour < time.hour;
 }
 
 #endif //MEAT_WAGONS_TIME_H

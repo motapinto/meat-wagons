@@ -4,6 +4,8 @@
 
 #include "Time.h"
 
+using namespace std;
+
 class Request {
     private:
         string prisoner;
@@ -22,6 +24,8 @@ class Request {
         Time getDelivery() const;
         bool getAssigned() const;
         void setAssigned(const bool assigned);
+
+        bool operator<(const Request &request);
 };
 
 string Request::getPrisoner() const {
@@ -49,6 +53,10 @@ bool Request::getAssigned() const {
 
 void Request::setAssigned(const bool assigned) {
     this->assigned = assigned;
+}
+
+bool Request::operator<(const Request &request) {
+    return this->arrival < request.arrival;
 }
 
 #endif //MEAT_WAGONS_REQUEST_H

@@ -5,11 +5,11 @@
 class Delivery {
     private:
         Time start, end;
-        vector<Request> requests;
+        vector<Request*> requests;
         vector<Vertex*> path;
 
     public:
-        Delivery(const vector<Request> &requests, const vector<Vertex*> path) : requests(requests), path(path) {}
+        Delivery(const vector<Request*> &requests, const vector<Vertex*> path) : requests(requests), path(path) {}
 
         Time getStart() const;
         void setStart(const Time &start);
@@ -17,9 +17,9 @@ class Delivery {
         Time getEnd() const;
         void setEnd(const Time &anEnd);
 
-        vector<Request> getRequests() const;
-        void setRequests(const vector<Request> &requests);
-        void addRequest(const Request &request);
+        vector<Request*> getRequests() const;
+        void setRequests(const vector<Request*> &requests);
+        void addRequest(Request *request);
 
         vector<Vertex *> getPath() const;
         void setPath(const vector<Vertex*> &path);
@@ -41,15 +41,15 @@ void Delivery::setEnd(const Time &anEnd) {
     this->end = anEnd;
 }
 
-vector<Request> Delivery::getRequests() const {
+vector<Request*> Delivery::getRequests() const {
     return this->requests;
 }
 
-void Delivery::setRequests(const vector<Request> &requests) {
+void Delivery::setRequests(const vector<Request*> &requests) {
     this->requests = requests;
 }
 
-void Delivery::addRequest(const Request &request) {
+void Delivery::addRequest(Request *request) {
     this->requests.push_back(request);
 }
 

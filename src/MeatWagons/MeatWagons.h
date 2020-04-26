@@ -3,15 +3,16 @@
 #define MEAT_WAGONS_MEATWAGONS_H
 
 #include <set>
+#include "Request.h"
 #include "../Graph/Reader.h"
 #include "../GraphViewer/GraphVisualizer.h"
 #include "Wagon.h"
 
 class MeatWagonsException : public std::exception {
 public:
-    explicit MeatWagonsException(string  msg) : msg_(std::move(msg)) {}
+    MeatWagonsException(string  msg) : msg_(std::move(msg)) {}
 
-    [[nodiscard]] string getMessage() const {return(msg_);}
+    string getMessage() const {return(msg_);}
 private:
     string msg_;
 };
@@ -23,13 +24,13 @@ class MeatWagons {
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
         unordered_map<int, Vertex*> pointsOfInterest;
 
-        set<Wagon*> wagons;
-        vector<Request> requests;
+        //set<Wagon> wagons;
+        //multiset<Request> requests;
         int zoneMaxDist;
 
     public:
         MeatWagons(const int wagons, const int maxDist) {
-            for(int i = 0; i < wagons; i++) this->wagons.insert(new Wagon(i, 1));
+            //for(int i = 0; i < wagons; i++) this->wagons.insert(Wagon(i, 1));
             this->zoneMaxDist = maxDist;
         }
 
@@ -37,15 +38,14 @@ class MeatWagons {
         void setCentral(const int &id);
 
         Graph *const getGraph() const;
-        void setGraph(Graph *graph);
         void setGraph(const string path);
         void showGraph() const;
 
-        void preProcess(int node) const;
+        void preProcess(int node);
 
         void shortestPath(int option, int origin, int dest);
 
-        void readRequests() const;
+        void readRequests(string requestsPath);
 };
 
 int MeatWagons::getCentral() const {
@@ -60,28 +60,29 @@ Graph *const MeatWagons::getGraph() const {
     return this->graph;
 }
 
-void MeatWagons::setGraph(Graph *graph) {
-    if(graph == nullptr) throw MeatWagonsException("Graph is null");
-    this->graph = graph;
-}
-
 void MeatWagons::setGraph(const string graphPath) {
     Reader graphReader = Reader(graphPath);
     Graph* graphRead = new Graph();
-    graphReader.readGraph(graphRead, central, pointsOfInterest);
 
-    if(graphRead == nullptr) throw MeatWagonsException("Graph is null");
+    if(!graphReader.readGraph(graphRead, central, pointsOfInterest)) throw MeatWagonsException("Graph is null");
+    //readRequests(graphPath);
 
     this->graph = graphRead;
 }
 
-void MeatWagons::showGraph() const{
+void MeatWagons::showGraph() const {
     this->viewer->draw(graph);
 }
 
-void MeatWagons::preProcess(int node) const {
+void MeatWagons::preProcess(int node) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
     if(!this->graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
+
+    /*for(auto it = this->requests.begin(); it != this->requests.end(); it++) {
+        if(this->graph->findVertex((*it).getDest()) == nullptr)
+            this->requests.erase(*it);
+    }*/
+
     showGraph();
 }
 
@@ -99,9 +100,11 @@ void MeatWagons::shortestPath(int option, int origin, int dest) {
     viewer->setPath(vert, edges);
     showGraph();
 }
+/*
+void MeatWagons::readRequests(string requestsPath) {
+    Reader graphReader = Reader(requestsPath);
 
-void MeatWagons::readRequests() const {
-
-}
+    if(!graphReader.readRequests(requests)) throw MeatWagonsException("Graph is null");
+}*/
 
 #endif //MEAT_WAGONS_MEATWAGONS_H

@@ -6,12 +6,12 @@
 #include "../MeatWagons/MeatWagons.h"
 
 class AppException : public std::exception {
-    public:
-        explicit AppException(string  msg) : msg_(std::move(msg)) {}
+public:
+    explicit AppException(string  msg) : msg_(std::move(msg)) {}
 
-        [[nodiscard]] string getMessage() const {return(msg_);}
-    private:
-        string msg_;
+    [[nodiscard]] string getMessage() const {return(msg_);}
+private:
+    string msg_;
 };
 
 class Application {
