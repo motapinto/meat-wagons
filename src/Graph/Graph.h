@@ -33,6 +33,7 @@ class Graph {
         Graph() {}
 
         Vertex* findVertex(const int &id) const;
+        Edge findEdge(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
         bool addEdge(const int &id, const int &origin, const int &dest);
 
@@ -58,7 +59,7 @@ class Graph {
         bool getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const;
 
         // dijkstra related
-        void reverseGraph();
+        Graph reverseGraph();
         double heuristicDistance(Vertex *origin, Vertex *dest);
         bool dijkstraOrientedSearch(const int origin, const int dest) ;
         bool dijkstraBidirectional(const int origin, const int dest);
@@ -102,6 +103,16 @@ bool Graph::preProcess(int origin) {
 Vertex* Graph::findVertex(const int &id) const {
     auto it = vertexIndexes.find(id);
 	return it == vertexIndexes.end() ? nullptr : it->second;
+}
+
+Edge Graph::findEdge(const int &id) const {
+    for(auto v : vertexSet){
+        for(auto e : v->adj){
+            if(e.getId() == id){
+                return e;
+            }
+        }
+    }
 }
 
 bool Graph::addVertex(const int &id, const int &x, const int &y) {
@@ -175,7 +186,7 @@ Vertex* Graph::dijkstraInit(const int origin) {
          vertex->dist = infinite;
          vertex->path = NULL;
          vertex->edgePath = Edge();
-         vertex->heuristicValue = 0;
+         vertex->heuristicValue = infinite;
 
 	}
 
@@ -254,17 +265,37 @@ bool Graph::dijkstra(const int origin, const int dest)  {
 bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
     Vertex *final = findVertex(dest);
 
-    if(final == nullptr || final->dist == infinite || final->path == nullptr)
+    if(final == nullptr || (final->path == nullptr && final->invPath == nullptr))
         return false;
 
-    vert.push_back(final->getId());
-    edges.push_back(final->getEdgePath().getId());
 
-    while(final->path != nullptr) {
-        final = final->path;
+    vert.push_back(final->getId());
+
+    if(final->invPath == nullptr){
+        edges.push_back(final->getEdgePath().getId());
+    }
+    else {
+        edges.push_back(final->invEdgePath.getId());
+    }
+
+
+    while(final->path != nullptr || final->invPath != nullptr) {
+        if(final->path != nullptr){
+            final = final->path;
+        }
+        else if(final->invPath != nullptr){
+            final = final->invPath;
+        }
+
         vert.push_back(final->getId());
-        if(final->path != nullptr)
+
+        if(final->path != nullptr){
             edges.push_back(final->getEdgePath().getId());
+        }
+        else if(final->invPath != nullptr){
+            edges.push_back(final->invEdgePath.getId());
+
+        }
 	}
 
     reverse(vert.begin(), vert.end());
@@ -274,12 +305,33 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
 }
 
 /**************** Optimizing Dijkstra ************/
-void Graph::reverseGraph() {
-    for(Vertex * vert : vertexSet) {
+Graph Graph::reverseGraph() {
+    Graph invGraph;
 
-        for (Edge edge : vert->adj)
-            addEdge(edge.id, vert->getId(), edge.dest->getId());
+    for(Vertex * vert : vertexSet) {
+        auto vertex = invGraph.findVertex(vert->getId());
+
+        if(vertex == nullptr){
+            vertex = new Vertex(vert->getId(), vert->getPosition().getX(), vert->getPosition().getY());
+            invGraph.vertexIndexes.insert(pair<int, Vertex*>(vertex->getId(), vertex));
+            invGraph.vertexSet.push_back(vertex);
+        }
+
+        for (Edge edge : vert->adj) {
+            auto adjacent_vert = invGraph.findVertex(edge.dest->getId());
+
+
+            if (adjacent_vert == nullptr){
+                adjacent_vert = new Vertex(edge.dest->getId(), edge.dest->getPosition().getX(), edge.dest->getPosition().getY());
+                invGraph.vertexIndexes.insert(pair<int, Vertex*>(adjacent_vert->getId(), adjacent_vert));
+                invGraph.vertexSet.push_back(adjacent_vert);
+            }
+
+                adjacent_vert->adj.push_back(Edge(edge.id, vertex, edge.getWeight()));
+        }
     }
+
+    return invGraph;
 }
 
 double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
@@ -335,10 +387,10 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
 
 // Upgrades the optimization using a* with bidirectional search
 bool Graph::dijkstraBidirectional(const int origin, const int dest) {
-    //reverseGraph();
+    Graph inv_graph = reverseGraph();
 
     auto start = dijkstraInit(origin);
-    auto final = dijkstraInit(dest);
+    auto final = inv_graph.dijkstraInit(dest);
 
     if(start == nullptr || final == nullptr) return false;
 
@@ -359,7 +411,6 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             break;
         processed.push_back(forwardMin->id);
 
-        if(forwardMin == final) return true;
 
         for(auto edge : forwardMin->adj) {
             auto elem = edge.dest;
@@ -370,7 +421,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             if(forwardMin->dist + weight + heuristicDistance(elem, forwardMin) < elem->heuristicValue) {
                 
                 elem->heuristicValue =  forwardMin->heuristicValue + weight + heuristicDistance(elem, forwardMin);
-                    elem->dist = forwardMin->heuristicValue + weight;
+                elem->dist = forwardMin->heuristicValue + weight;
                 elem->path = forwardMin;
                 elem->edgePath = edge;
                 
@@ -394,7 +445,10 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             break;
         processed.push_back(backwardMin->id);
 
-        if(backwardMin == start) return true;
+        if(backwardMin->getId() == forwardMin->getId()){
+
+            return true;
+        }
 
         for(auto edge : backwardMin->adj) {
             auto elem = edge.dest;
@@ -405,9 +459,11 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             if(backwardMin->dist + weight + heuristicDistance(elem, backwardMin) < elem->heuristicValue) {
                 
                 elem->heuristicValue =  backwardMin->heuristicValue + weight + heuristicDistance(elem, backwardMin);
-                elem->dist = backwardMin->heuristicValue + weight; 
-                elem->invPath = backwardMin;
-                elem->invEdgePath = edge;
+                elem->dist = backwardMin->heuristicValue + weight;
+                findVertex(backwardMin->getId())->invPath = findVertex(elem->getId());
+                findVertex(backwardMin->getId())->invEdgePath = edge;
+                elem->path = backwardMin;
+                elem->edgePath = edge;
                 
                 // if elem is not in queue
                 if(elem->queueIndex == 0) { //old dist(w) was infinite
