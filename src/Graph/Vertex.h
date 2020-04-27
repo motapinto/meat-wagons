@@ -19,6 +19,7 @@ class Vertex {
         Tag tag = DEFAULT;                        // vertex Tag
         
         double dist = infinite;
+        double invDist = infinite;
         Vertex *path = nullptr;
         Vertex *invPath = nullptr;
         Edge edgePath;

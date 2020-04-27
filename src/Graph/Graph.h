@@ -54,6 +54,7 @@ class Graph {
 
         // dijkstra
         Vertex* dijkstraInit(const int origin);
+        Vertex* dijkstraBackwardsInit(const int dest);
         bool dijkstraSingleSource(const int origin);
         bool dijkstra(const int origin, const int dest);
         bool getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const;
@@ -192,6 +193,26 @@ Vertex* Graph::dijkstraInit(const int origin) {
 
 	auto start = findVertex(origin);
 	start->dist = 0;
+    start->heuristicValue = 0;
+
+    return start;
+}
+
+Vertex* Graph::dijkstraBackwardsInit(const int dest){
+    for(auto vertex : vertexSet) {
+
+        if(vertex->dist == 0) continue;
+        vertex->visited = false;
+        vertex->invertedVisited = false;
+        vertex->invDist = infinite;
+        vertex->invPath = NULL;
+        vertex->invEdgePath = Edge();
+        vertex->heuristicValue = infinite;
+
+    }
+
+    auto start = findVertex(dest);
+    start->invDist = 0;
     start->heuristicValue = 0;
 
     return start;
