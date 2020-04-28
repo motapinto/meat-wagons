@@ -44,6 +44,8 @@ bool Application::run() {
 
     usage();
 
+    cin.clear();
+
     getline(cin, l);
     stringstream line(l);
 
