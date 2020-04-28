@@ -33,7 +33,6 @@ class Graph {
         Graph() {}
 
         Vertex* findVertex(const int &id) const;
-        Edge findEdge(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
         bool addEdge(const int &id, const int &origin, const int &dest);
 
@@ -60,7 +59,6 @@ class Graph {
         bool getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const;
 
         // dijkstra related
-        Graph reverseGraph();
         double heuristicDistance(Vertex *origin, Vertex *dest);
         bool dijkstraOrientedSearch(const int origin, const int dest) ;
         bool dijkstraBidirectional(const int origin, const int dest);
@@ -104,16 +102,6 @@ bool Graph::preProcess(int origin) {
 Vertex* Graph::findVertex(const int &id) const {
     auto it = vertexIndexes.find(id);
 	return it == vertexIndexes.end() ? nullptr : it->second;
-}
-
-Edge Graph::findEdge(const int &id) const {
-    for(auto v : vertexSet){
-        for(auto e : v->adj){
-            if(e.getId() == id){
-                return e;
-            }
-        }
-    }
 }
 
 bool Graph::addVertex(const int &id, const int &x, const int &y) {
@@ -322,36 +310,7 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
 }
 
 /**************** Optimizing Dijkstra ************/
-/*
-Graph Graph::reverseGraph() {
-    Graph invGraph;
 
-    for(Vertex * vert : vertexSet) {
-        auto vertex = invGraph.findVertex(vert->getId());
-
-        if(vertex == nullptr){
-            vertex = new Vertex(vert->getId(), vert->getPosition().getX(), vert->getPosition().getY());
-            invGraph.vertexIndexes.insert(pair<int, Vertex*>(vertex->getId(), vertex));
-            invGraph.vertexSet.push_back(vertex);
-        }
-
-        for (Edge edge : vert->adj) {
-            auto adjacent_vert = invGraph.findVertex(edge.dest->getId());
-
-
-            if (adjacent_vert == nullptr){
-                adjacent_vert = new Vertex(edge.dest->getId(), edge.dest->getPosition().getX(), edge.dest->getPosition().getY());
-                invGraph.vertexIndexes.insert(pair<int, Vertex*>(adjacent_vert->getId(), adjacent_vert));
-                invGraph.vertexSet.push_back(adjacent_vert);
-            }
-
-                adjacent_vert->adj.push_back(Edge(edge.id, vertex, edge.getWeight()));
-        }
-    }
-
-    return invGraph;
-}
-*/
 double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
     return origin->getPosition().euclideanDistance(dest->getPosition());
 }
