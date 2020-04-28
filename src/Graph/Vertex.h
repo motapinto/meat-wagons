@@ -17,7 +17,8 @@ class Vertex {
         Position pos;			        // content of the vertex
         vector<Edge> adj;		        // outgoing edges
         Tag tag = DEFAULT;                        // vertex Tag
-        
+
+        vector<Edge> invAdj;            // ingoing edges
         double dist = infinite;
         double invDist = infinite;
         Vertex *path = nullptr;
@@ -26,6 +27,8 @@ class Vertex {
         Edge invEdgePath;
         int queueIndex = 0; 		    // required by MutablePriorityQueue
         double heuristicValue = 0;      // oriented search optimization (a*)
+        double invHeuristicValue = 0;
+        int invQueueIndex = 0;
 
         bool visited = false;		    // auxiliary field
         bool invertedVisited = false;   // auxiliary field
@@ -78,7 +81,9 @@ class Vertex {
  * with a given destination vertex (dest) and edge weight (weight).
  */
 void Vertex::addEdge(const int &id, Vertex *dest, const double &weight) {
-	adj.push_back(Edge(id, dest, weight));
+    Edge edge = Edge(id, dest, this, weight);
+	adj.push_back(edge);
+	dest->invAdj.push_back(edge);
 }
 
 bool Vertex::operator<(Vertex &vertex) const {
