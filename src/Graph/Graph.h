@@ -15,13 +15,11 @@ using namespace std;
 
 class Graph {
     private:
-        int width;      // for Graph Viewer
-        int height;     // for Graph Viewer
         int offsetX;    // for Graph Viewer
         int offsetY;    // for Graph Viewer
 
         vector<Vertex*> vertexSet;   
-        unordered_map<int, Vertex*> vertexIndexes; //search for id and return vertex (much faster)
+        unordered_map<int, Vertex*> vertexIndexes;    //search for id and return vertex (much faster)
 
         vector<vector<double>> minDistance;       // used for floyd Warshall algorithm
         vector<vector<Vertex*>> next;             // used for floyd Warshall algorithm
@@ -30,18 +28,13 @@ class Graph {
         const static int infinite = 99999999;
 
     public:
-        Graph() {}
-
         Vertex* findVertex(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
+        void addPointOfInterest(Vertex* vertex);
         bool addEdge(const int &id, const int &origin, const int &dest);
 
-        void setWidth(int width);
-        void setHeight(int height);
         void setOffsetX(int x);
         void setOffsetY(int y);
-        int getWidth();
-        int getHeight();
         int getOffsetX();
         int getOffsetY();
         
@@ -125,28 +118,12 @@ bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
 	return true;
 }
 
-void Graph::setWidth(int width) {
-    this->width = width;
-}
-
-void Graph::setHeight(int height) {
-    this->height = height;
-}
-
 void Graph::setOffsetX(int x) {
     this->offsetX = x;
 }
 
 void Graph::setOffsetY(int y) {
     this->offsetY = y;
-}
-
-int Graph::getWidth() {
-    return width;
-}
-
-int Graph::getHeight() {
-    return height;
 }
 
 int Graph::getOffsetX() {
@@ -219,13 +196,8 @@ bool Graph::dijkstraSingleSource(const int origin)  {
                 elem->edgePath = edge;
 
                 // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) {
-                    minQueue.insert(elem);
-                }
-
-                else {
-                    minQueue.decreaseKey(elem);
-                }
+                if(elem->queueIndex == 0) minQueue.insert(elem);
+                else minQueue.decreaseKey(elem);
             }
         }
     }
@@ -262,7 +234,7 @@ bool Graph::dijkstra(const int origin, const int dest)  {
         }
     }
     return true;
-    }
+}
 
 bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
     Vertex *final = findVertex(dest);
@@ -280,11 +252,12 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
 
         edges.push_back(final->getEdgePath().getId());
 
-	}
+	  }
 
     reverse(vert.begin(), vert.end());
     reverse(edges.begin(), edges.end());
-	return true;
+  
+	  return true;
 }
 
 /**************** Optimizing Dijkstra ************/
@@ -365,8 +338,10 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
         forwardMin = forwardMinQueue.extractMin();
         forwardMin->visited = true;
 
-        processed.push_back(forwardMin->id);
+        // check if there is an intersection
+        if(find(processed.begin(), processed.end(), forwardMin->id) != processed.end()) break;
 
+        processed.push_back(forwardMin->id);
 
         for(auto edge : forwardMin->adj) {
             auto elem = edge.dest;
@@ -381,22 +356,18 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
                 elem->path = forwardMin;
                 elem->edgePath = edge;
                 
-                // if elem is not in queue
-                if(elem->queueIndex == 0) { //old dist(w) was infinite
-                    forwardMinQueue.insert(elem);
-                }
-
-                else {
-                    forwardMinQueue.decreaseKey(elem);
-                }
+                // if elem is not in queue  [old dist(w) was infinite]
+                if(elem->queueIndex == 0) 
+                  forwardMinQueue.insert(elem);
+                else 
+                  forwardMinQueue.decreaseKey(elem);
             }
         }
 
-        if(find(backward_processed.begin(), backward_processed.end(), forwardMin->id) != backward_processed.end()){
+        if(find(backward_processed.begin(), backward_processed.end(), forwardMin->id) != backward_processed.end()) {
             middle_vertex = forwardMin;
             break;
         }
-
 
         //backward search
         backwardMin = backwardMinQueue.extractMin();
@@ -440,16 +411,16 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
 
     int min_dist = middle_vertex->getDist() + middle_vertex->invDist;
 
-    while(!forwardMinQueue.empty()){
+    while(!forwardMinQueue.empty()) {
         forwardMin = forwardMinQueue.extractMin();
 
-        if(forwardMin->getDist() + forwardMin->invDist < min_dist){
+        if(forwardMin->getDist() + forwardMin->invDist < min_dist) {
             min_dist = forwardMin->getDist() + forwardMin->invDist < min_dist;
             middle_vertex = forwardMin;
         }
     }
 
-    while(!backwardMinQueue.empty()){
+    while(!backwardMinQueue.empty()) {
         backwardMin = backwardMinQueue.extractMin();
 
         if(backwardMin->getDist() + backwardMin->invDist < min_dist){
@@ -458,12 +429,11 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
         }
     }
 
-    while(middle_vertex->invPath != nullptr){
+    while(middle_vertex->invPath != nullptr) {
         middle_vertex->invPath->path = middle_vertex;
         middle_vertex->invPath->edgePath = middle_vertex->invEdgePath;
         middle_vertex = middle_vertex->invPath;
     }
-
 
     return true;
 }
