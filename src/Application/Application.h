@@ -67,6 +67,8 @@ bool Application::start() {
 
     usage();
 
+    cin.clear();
+
     getline(cin, l);
     stringstream line(l);
 

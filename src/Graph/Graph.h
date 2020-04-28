@@ -270,42 +270,20 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
     if(final == nullptr || (final->path == nullptr && final->invPath == nullptr))
         return false;
 
-
     vert.push_back(final->getId());
     edges.push_back(final->getEdgePath().getId());
 
-    if(final->invPath == nullptr){
-        edges.push_back(final->getEdgePath().getId());
-    }
-    else {
-        edges.push_back(final->invEdgePath.getId());
-    }
-
-
     while(final->path != nullptr || final->invPath != nullptr) {
-
-        if(final->path != nullptr){
-            final = final->path;
-        }
-        else if(final->invPath != nullptr){
-            final = final->invPath;
-        }
+        final = final->path;
 
         vert.push_back(final->getId());
 
+        edges.push_back(final->getEdgePath().getId());
 
-        if(final->path != nullptr){
-            edges.push_back(final->getEdgePath().getId());
-        }
-        else if(final->invPath != nullptr){
-            edges.push_back(final->invEdgePath.getId());
-
-        }
 	}
 
     reverse(vert.begin(), vert.end());
     reverse(edges.begin(), edges.end());
-
 	return true;
 }
 
@@ -379,6 +357,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
 
     Vertex * forwardMin = nullptr;
     Vertex * backwardMin = nullptr;
+    Vertex * middle_vertex = nullptr;
 
     // strict alternation between forward and backward search
     while(!forwardMinQueue.empty() && !backwardMinQueue.empty()) {
@@ -413,8 +392,10 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             }
         }
 
-        if(find(backward_processed.begin(), backward_processed.end(), forwardMin->id) != backward_processed.end())
+        if(find(backward_processed.begin(), backward_processed.end(), forwardMin->id) != backward_processed.end()){
+            middle_vertex = forwardMin;
             break;
+        }
 
 
         //backward search
@@ -433,8 +414,8 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
                 
                 elem->invHeuristicValue =  backwardMin->invHeuristicValue + weight + heuristicDistance(elem, backwardMin);
                 elem->invDist = backwardMin->invDist + weight;
-                backwardMin->invPath = elem;
-                backwardMin->invEdgePath = edge;
+                elem->invPath = backwardMin;
+                elem->invEdgePath = edge;
 
                 
                 // if elem is not in queue
@@ -450,11 +431,38 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             }
         }
 
-        if(find(processed.begin(), processed.end(), backwardMin->id) != processed.end())
+        if(find(processed.begin(), processed.end(), backwardMin->id) != processed.end()){
+            middle_vertex = backwardMin;
             break;
+        }
 
     }
 
+    int min_dist = middle_vertex->getDist() + middle_vertex->invDist;
+
+    while(!forwardMinQueue.empty()){
+        forwardMin = forwardMinQueue.extractMin();
+
+        if(forwardMin->getDist() + forwardMin->invDist < min_dist){
+            min_dist = forwardMin->getDist() + forwardMin->invDist < min_dist;
+            middle_vertex = forwardMin;
+        }
+    }
+
+    while(!backwardMinQueue.empty()){
+        backwardMin = backwardMinQueue.extractMin();
+
+        if(backwardMin->getDist() + backwardMin->invDist < min_dist){
+            min_dist = backwardMin->getDist() + backwardMin->invDist < min_dist;
+            middle_vertex = backwardMin;
+        }
+    }
+
+    while(middle_vertex->invPath != nullptr){
+        middle_vertex->invPath->path = middle_vertex;
+        middle_vertex->invPath->edgePath = middle_vertex->invEdgePath;
+        middle_vertex = middle_vertex->invPath;
+    }
 
 
     return true;
