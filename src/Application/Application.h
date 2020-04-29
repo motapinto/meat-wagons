@@ -77,12 +77,12 @@ bool Application::run() {
             }
             aux = *controller->getGraph();
         }
-        cout << endl << max << endl;
+
         cout << vertex << endl;*/
 
-        if(!controller->getGraph()->preProcess(controller->getCentral())) throw AppException("Vertex does not exist");
+        //if(!controller->getGraph()->preProcess(controller->getCentral())) throw AppException("Vertex does not exist");
 
-        controller->showGraph();
+       // controller->showGraph();
     }
 
     else if (operation == "shortestPath") {
