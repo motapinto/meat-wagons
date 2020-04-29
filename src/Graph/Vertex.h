@@ -42,13 +42,6 @@ class Vertex {
             this->id = id;
             this->pos = Position(x, y);
         }
-
-        /*~Vertex() {
-            this->path = nullptr;
-            this->invPath = nullptr;
-            for(auto it = adj.begin(); it != adj.end(); it++)
-                it = adj.erase(it) - 1;
-        } */
         
         /* get methods */
         int getId() const;

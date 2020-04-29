@@ -84,13 +84,12 @@ bool Graph::preProcess(int origin) {
     set<int> removed;
 
     // deletes nodes
-    for(auto it = vertexSet.begin(); it != vertexSet.end(); it++) {
+    for(auto it = vertexSet.begin(); it != vertexSet.end(); it++)
         if(!(*it)->visited || (*it)->adj.size() == 0) {
             vertexIndexes.erase((*it)->getId());
             removed.insert((*it)->getId());
             it = vertexSet.erase(it) - 1;
         }
-    }
 
     // deletes outgoing edges of the deleted nodes
     for(auto vertex : vertexSet)

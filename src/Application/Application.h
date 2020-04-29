@@ -58,8 +58,7 @@ bool Application::run() {
         if (!(line >> fileName)) controller->setGraph("maps/PortugalMaps/Porto");
         else controller->setGraph(fileName);
 
-        viewer = new GraphVisualizer(600, 600);
-        viewer->draw(controller->getGraph());
+        controller->showGraph();
     }
 
     else if (operation == "preProcess") {
@@ -81,26 +80,9 @@ bool Application::run() {
         cout << endl << max << endl;
         cout << vertex << endl;*/
 
-        int edges = 0;
-        for(int i=0; i < controller->getGraph()->getVertexSet().size(); i++) {
-            for(int j=0; j < controller->getGraph()->getVertexSet().at(i)->getAdj().size(); j++) {
-                edges ++;
-            }
-        }
-        cout << edges << endl;
-
         if(!controller->getGraph()->preProcess(controller->getCentral())) throw AppException("Vertex does not exist");
 
-        edges = 0;
-        for(int i=0; i < controller->getGraph()->getVertexSet().size(); i++) {
-            for(int j=0; j < controller->getGraph()->getVertexSet().at(i)->getAdj().size(); j++) {
-                edges ++;
-            }
-        }
-        cout << edges << endl;
-
-        viewer = new GraphVisualizer(600, 600);
-        viewer->draw(controller->getGraph());
+        controller->showGraph();
     }
 
     else if (operation == "shortestPath") {
