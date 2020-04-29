@@ -16,8 +16,8 @@ private:
 
 class Application {
     private:
-        GraphVisualizer *viewer = nullptr;
         MeatWagons *controller = new MeatWagons(10, 100);
+        GraphVisualizer *viewer = nullptr;
 
     public:
         static void usage();
@@ -57,15 +57,19 @@ bool Application::run() {
         string fileName;
         if (!(line >> fileName)) controller->setGraph("maps/PortugalMaps/Porto");
         else controller->setGraph(fileName);
-        controller->showGraph();
+
+        auto *viewer = new GraphVisualizer(600, 600);
+        viewer->draw(controller->getGraph());
     }
 
     else if (operation == "preProcess") {
-        int vertex;
-        if (!(line >> vertex)) controller->preProcess(controller->getCentral());
-        else controller->preProcess(vertex);
+        if(controller->getGraph() == nullptr)
+            throw AppException("You must read the graph firstly, before running this operation");
 
-        controller->showGraph();
+        if(!controller->getGraph()->preProcess(controller->getCentral())) throw AppException("Vertex does not exist");
+
+        viewer = new GraphVisualizer(600, 600);
+        viewer->draw(controller->getGraph());
     }
 
     else if (operation == "shortestPath") {
@@ -78,6 +82,8 @@ bool Application::run() {
         if (variant == "dijkstra") controller->shortestPath(1, origin, dest);
         else if (variant == "dijkstraOriented") controller->shortestPath(2, origin, dest);
         else if (variant == "dijkstraBidirectional") controller->shortestPath(3, origin, dest);
+
+        controller->showGraph();
     }
 
     else if(operation == "setCentral") {
@@ -105,6 +111,5 @@ bool Application::run() {
     cout << endl;
     return true;
 }
-
 
 #endif //MEAT_WAGONS_APPLICATION_H

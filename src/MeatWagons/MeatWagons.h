@@ -71,7 +71,7 @@ void MeatWagons::setGraph(const string graphPath) {
 }
 
 void MeatWagons::showGraph() const {
-    this->viewer->draw(graph);
+    this->viewer->draw(this->graph);
 }
 
 void MeatWagons::preProcess(int node) {
@@ -82,8 +82,6 @@ void MeatWagons::preProcess(int node) {
         if(this->graph->findVertex((*it).getDest()) == nullptr)
             this->requests.erase(*it);
     }*/
-
-    showGraph();
 }
 
 void MeatWagons::shortestPath(int option, int origin, int dest) {
@@ -98,7 +96,6 @@ void MeatWagons::shortestPath(int option, int origin, int dest) {
     vector<int> vert, edges;
     this->graph->getPathTo(dest, vert, edges);
     viewer->setPath(vert, edges);
-    showGraph();
 }
 /*
 void MeatWagons::readRequests(string requestsPath) {
