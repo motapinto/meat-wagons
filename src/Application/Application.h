@@ -58,7 +58,7 @@ bool Application::run() {
         if (!(line >> fileName)) controller->setGraph("maps/PortugalMaps/Porto");
         else controller->setGraph(fileName);
 
-        auto *viewer = new GraphVisualizer(600, 600);
+        viewer = new GraphVisualizer(600, 600);
         viewer->draw(controller->getGraph());
     }
 
@@ -66,7 +66,38 @@ bool Application::run() {
         if(controller->getGraph() == nullptr)
             throw AppException("You must read the graph firstly, before running this operation");
 
+        /*int max = 0, curr = 0;
+        int vertex = 0;
+        Graph aux = *controller->getGraph();
+        for(auto vert : controller->getGraph()->getVertexSet()) {
+            aux.preProcess(vert->getId());
+            curr = aux.getVertexSet().size();
+            if(curr > max) {
+                max = curr;
+                vertex = vert->getId();
+            }
+            aux = *controller->getGraph();
+        }
+        cout << endl << max << endl;
+        cout << vertex << endl;*/
+
+        int edges = 0;
+        for(int i=0; i < controller->getGraph()->getVertexSet().size(); i++) {
+            for(int j=0; j < controller->getGraph()->getVertexSet().at(i)->getAdj().size(); j++) {
+                edges ++;
+            }
+        }
+        cout << edges << endl;
+
         if(!controller->getGraph()->preProcess(controller->getCentral())) throw AppException("Vertex does not exist");
+
+        edges = 0;
+        for(int i=0; i < controller->getGraph()->getVertexSet().size(); i++) {
+            for(int j=0; j < controller->getGraph()->getVertexSet().at(i)->getAdj().size(); j++) {
+                edges ++;
+            }
+        }
+        cout << edges << endl;
 
         viewer = new GraphVisualizer(600, 600);
         viewer->draw(controller->getGraph());
@@ -83,7 +114,8 @@ bool Application::run() {
         else if (variant == "dijkstraOriented") controller->shortestPath(2, origin, dest);
         else if (variant == "dijkstraBidirectional") controller->shortestPath(3, origin, dest);
 
-        controller->showGraph();
+        viewer = new GraphVisualizer(600, 600);
+        viewer->draw(controller->getGraph());
     }
 
     else if(operation == "setCentral") {

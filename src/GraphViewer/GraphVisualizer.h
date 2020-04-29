@@ -49,10 +49,6 @@ void GraphVisualizer::draw(Graph *graph) {
             gv->setVertexSize(origin->getId(), 40);
         }
 
-        if(i == 1000) {
-            cout << "\n";
-        }
-
         else if(origin->getTag() == Vertex::Tag::INTEREST_POINT) {
             gv->setVertexColor(origin->getId(), "yellow");
             gv->setVertexLabel(origin->getId(), "Point of interest");
