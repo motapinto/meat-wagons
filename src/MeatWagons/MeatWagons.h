@@ -9,12 +9,12 @@
 #include "Wagon.h"
 
 class MeatWagonsException : public std::exception {
-public:
-    MeatWagonsException(string  msg) : msg_(std::move(msg)) {}
+    public:
+        MeatWagonsException(string  msg) : msg_(std::move(msg)) {}
+        string getMessage() const {return(msg_);}
 
-    string getMessage() const {return(msg_);}
-private:
-    string msg_;
+    private:
+        string msg_;
 };
 
 class MeatWagons {
@@ -39,7 +39,7 @@ class MeatWagons {
 
         Graph *const getGraph() const;
         void setGraph(const string path);
-        void showGraph() const;
+        void showGraph();
 
         void preProcess(int node);
 
@@ -68,11 +68,14 @@ void MeatWagons::setGraph(const string graphPath) {
     //readRequests(graphPath);
 
     this->graph = graphRead;
+    this->showGraph();
 }
 
-void MeatWagons::showGraph() const {
+void MeatWagons::showGraph() {
+    this->viewer = new GraphVisualizer(600, 600);
     this->viewer->draw(this->graph);
 }
+
 
 void MeatWagons::preProcess(int node) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
@@ -82,6 +85,8 @@ void MeatWagons::preProcess(int node) {
         if(this->graph->findVertex((*it).getDest()) == nullptr)
             this->requests.erase(*it);
     }*/
+
+    this->showGraph();
 }
 
 void MeatWagons::shortestPath(int option, int origin, int dest) {
@@ -93,9 +98,14 @@ void MeatWagons::shortestPath(int option, int origin, int dest) {
         case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
     }
 
+    // get path
     vector<int> vert, edges;
     this->graph->getPathTo(dest, vert, edges);
-    viewer->setPath(vert, edges);
+
+    // draw path
+    this->viewer = new GraphVisualizer(600, 600);
+    this->viewer->setPath(vert, edges);
+    this->viewer->draw(this->graph);
 }
 /*
 void MeatWagons::readRequests(string requestsPath) {

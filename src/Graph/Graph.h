@@ -82,24 +82,26 @@ bool Graph::preProcess(int origin) {
     dfsVisit(orig);
 
     set<int> removed;
-
     // deletes nodes
-    for(auto it = vertexSet.begin(); it != vertexSet.end(); it++)
-        if(!(*it)->visited || (*it)->adj.size() == 0) {
+    for(auto it = vertexSet.begin(); it != vertexSet.end(); it++) {
+        if(!(*it)->visited) {
             vertexIndexes.erase((*it)->getId());
             removed.insert((*it)->getId());
             it = vertexSet.erase(it) - 1;
         }
+    }
 
     // deletes outgoing edges of the deleted nodes
-    for(auto vertex : vertexSet)
-        for(auto it = vertex->adj.begin(); it != vertex->adj.end(); it++)
-            if(removed.find(it->getDest()->getId()) != removed.end())
+    for(auto vertex : vertexSet) {
+        for(auto it = vertex->adj.begin(); it != vertex->adj.end(); it++) {
+            if(removed.find(it->getDest()->getId()) != removed.end()) {
                 it = vertex->adj.erase(it) - 1;
+            }
+        }
+    }
 
     return true;
 }
-
 
 /**************** Usual operations ************/
 Vertex* Graph::findVertex(const int &id) const {
@@ -124,6 +126,8 @@ bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
 		return false;
 	
     v1->addEdge(id, v2, v1->pos.euclideanDistance(v2->pos));
+    v2->addEdge(id + 100000, v1, v2->pos.euclideanDistance(v1->pos));
+
 	return true;
 }
 
