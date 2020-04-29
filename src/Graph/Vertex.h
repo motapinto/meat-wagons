@@ -13,46 +13,36 @@ class Vertex
         enum Tag {CENTRAL, INTEREST_POINT, DEFAULT};
 
     private:
-        //static int serial;             // number of Vertex objects shared with all vertices
         int id;                         // identifier of the vertex
-        Position pos;			        // content of the vertex
-        vector<Edge> adj;		        // outgoing edges
+        Position pos;			              // content of the vertex
+        vector<Edge> adj;		            // outgoing edges
+        vector<Edge> invAdj;            // ingoing edges
         Tag tag = DEFAULT;              // vertex Tag
-        
+
         double dist = infinite;
+        double invDist = infinite;
         Vertex *path = nullptr;
         Vertex *invPath = nullptr;
         Edge edgePath;
         Edge invEdgePath;
-        int queueIndex = 0; 		    // required by MutablePriorityQueue
+        
+        int queueIndex = 0; 		        // required by MutablePriorityQueue
         double heuristicValue = 0;      // oriented search optimization (a*)
+        double invHeuristicValue = 0;
+        int invQueueIndex = 0;
 
-        bool visited = false;		    // auxiliary field
+        bool visited = false;		        // auxiliary field
         bool invertedVisited = false;   // auxiliary field
-        bool processing = false;	    // auxiliary field
+        bool processing = false;	      // auxiliary field
 
         void addEdge(const int &id, Vertex *dest, const double &weight);
         const static size_t infinite = UINT_MAX;
 
     public:
-        /*Vertex(const int &x, const int &y) {
-            this->id = serial;
-            this->pos = Position(x, y);
-            this->serial += 1;
-        }*/
-
         Vertex(const int &id, const int &x, const int &y) {
             this->id = id;
             this->pos = Position(x, y);
-            //this->serial += 1;
         }
-
-        /*~Vertex() {
-            this->path = nullptr;
-            this->invPath = nullptr;
-            for(auto it = adj.begin(); it != adj.end(); it++)
-                it = adj.erase(it) - 1;
-        } */
         
         /* get methods */
         int getId() const;
@@ -63,6 +53,7 @@ class Vertex
         Edge getEdgePath() const;
         bool getVisited() const;
         Tag getTag() const;
+        void setTag(Vertex::Tag tag);
 
         bool operator<(Vertex &vertex) const; //required by MutablePriorityQueue
         friend ostream& operator<<(ostream &out, const Vertex &vertex);
@@ -75,7 +66,9 @@ class Vertex
  * with a given destination vertex (dest) and edge weight (weight).
  */
 void Vertex::addEdge(const int &id, Vertex *dest, const double &weight) {
-	adj.push_back(Edge(id, dest, weight));
+    Edge edge = Edge(id, dest, this, weight);
+	adj.push_back(edge);
+	dest->invAdj.push_back(edge);
 }
 
 bool Vertex::operator<(Vertex &vertex) const {
@@ -125,6 +118,10 @@ bool Vertex::getVisited() const {
 
 Vertex::Tag Vertex::getTag() const {
     return this->tag;
+}
+
+void Vertex::setTag(Vertex::Tag tag) {
+    this->tag = tag;
 }
 
 #endif
