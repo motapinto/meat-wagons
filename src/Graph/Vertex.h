@@ -4,10 +4,11 @@
 
 #include "../Position/Position.h"
 #include "Edge.h"
-
+#include <limits>
 using namespace std;
 
-class Vertex {
+class Vertex 
+{
     public:
         enum Tag {CENTRAL, INTEREST_POINT, DEFAULT};
 
@@ -16,7 +17,7 @@ class Vertex {
         int id;                         // identifier of the vertex
         Position pos;			        // content of the vertex
         vector<Edge> adj;		        // outgoing edges
-        Tag tag = DEFAULT;                        // vertex Tag
+        Tag tag = DEFAULT;              // vertex Tag
         
         double dist = infinite;
         Vertex *path = nullptr;
@@ -31,20 +32,18 @@ class Vertex {
         bool processing = false;	    // auxiliary field
 
         void addEdge(const int &id, Vertex *dest, const double &weight);
-        const static int infinite = 99999999;
+        const static size_t infinite = UINT_MAX;
 
     public:
         /*Vertex(const int &x, const int &y) {
             this->id = serial;
             this->pos = Position(x, y);
-
             this->serial += 1;
         }*/
 
         Vertex(const int &id, const int &x, const int &y) {
             this->id = id;
             this->pos = Position(x, y);
-
             //this->serial += 1;
         }
 
@@ -66,10 +65,9 @@ class Vertex {
         Tag getTag() const;
 
         bool operator<(Vertex &vertex) const; //required by MutablePriorityQueue
+        friend ostream& operator<<(ostream &out, const Vertex &vertex);
         friend class Graph;
         friend class MutablePriorityQueue<Vertex>;
-
-        friend class Graph;
 };
 
 /**
@@ -82,6 +80,19 @@ void Vertex::addEdge(const int &id, Vertex *dest, const double &weight) {
 
 bool Vertex::operator<(Vertex &vertex) const {
 	return this->dist < vertex.dist;
+}
+ostream& operator<<(ostream &out, const Vertex &vertex) {
+    // shortestPath dijkstra 1 34
+    out << "ID: " << vertex.id << " | Pos: ("
+        << vertex.getPosition().getX() << ", "
+        << vertex.getPosition().getY() << ") | Edges: ";
+
+    for(size_t i=0; i<vertex.adj.size(); ++i) {
+        out << vertex.adj.at(i).getId() << " ";
+    }
+
+    out << endl;
+    return out;
 }
 
 int Vertex::getId() const {

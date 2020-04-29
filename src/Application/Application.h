@@ -47,7 +47,7 @@ class Application {
 };
 
 void Application::usage() {
-    cout << "\tMenu Options:" << endl;
+    cout << "Menu Options:" << endl;
     cout << "\treadGraph <graph folder path>" << endl;
     cout << "\tpreProcess {<node id>}" << endl;
     cout << "\tshortestPath dijkstra <origin node>" << endl;
@@ -148,7 +148,7 @@ bool Application::start() {
 }
 
 void Application::run() {
-    start();
+    if(!start()) exit(0);
 
     switch (this->operation) {
         case READ_GRAPH: {

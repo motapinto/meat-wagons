@@ -13,7 +13,8 @@
 
 using namespace std;
 
-class Graph {
+class Graph 
+{
     private:
         int width;      // for Graph Viewer
         int height;     // for Graph Viewer
@@ -165,6 +166,7 @@ vector<Vertex*> Graph::getVertexSet() const {
 	return vertexSet;
 }
 
+
 /**************** Dijkstra ************/
 Vertex* Graph::dijkstraInit(const int origin) {
      for(auto vertex : vertexSet) {
@@ -186,7 +188,8 @@ Vertex* Graph::dijkstraInit(const int origin) {
     return start;
 }
 
-bool Graph::dijkstraSingleSource(const int origin)  {
+bool Graph::dijkstraSingleSource(const int origin) 
+{
     auto start = dijkstraInit(origin);
     if(start == nullptr) return false;
 
@@ -214,17 +217,20 @@ bool Graph::dijkstraSingleSource(const int origin)  {
     return true;
 }
 
-bool Graph::dijkstra(const int origin, const int dest)  {
+bool Graph::dijkstra(const int origin, const int dest)
+{
     auto start = dijkstraInit(origin);
-    auto final =  findVertex(dest);
+    auto final = findVertex(dest);
+    // cout << "Start -> " << (*start) << "Final -> " << (*final) << endl;
 
     if(start == nullptr || final == nullptr)
         return false;
 
-	MutablePriorityQueue<Vertex> minQueue;
+    MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
 
-    while(!minQueue.empty()) {
+    while(!minQueue.empty()) 
+    {
         auto min = minQueue.extractMin();
 
         if(min == final) return true;
@@ -282,46 +288,39 @@ double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
 }
 
 // Uses a heuristic to optimize dijkstra(A*)
-bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
-   auto start = dijkstraInit(origin);
-   auto final = findVertex(dest);
+bool Graph::dijkstraOrientedSearch(const int origin, const int dest) 
+{
+    //shortestPath dijkstraOriented 3 24
+    auto start = dijkstraInit(origin);
+    auto final = findVertex(dest);
+    if(start == nullptr || final == nullptr) return false;
 
-    if(start == nullptr || final == nullptr)
-        return false;
+    start->dist = start->getPosition().euclideanDistance(final->getPosition());
 
-   start->dist = start->getPosition().euclideanDistance(final->getPosition());
-
-	MutablePriorityQueue<Vertex> minQueue;
+    MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
 
-    while(!minQueue.empty()) {
-        auto min = minQueue.extractMin();
-        min->visited = true;
+    while(!minQueue.empty()) 
+    {
+        auto current = minQueue.extractMin();
+        if(current == final) return false;
+        current->visited = true;
 
-        if(min == final) return false;
-
-        for(auto edge : min->adj) {
+        for(auto edge : current->adj) 
+        {
             auto elem = edge.dest;
-            auto weight = edge.weight;
 
             if(elem->visited) continue;
 
-
-            if(min->dist + weight + heuristicDistance(elem, min) < elem->heuristicValue) {
-                
-                elem->heuristicValue =  min->heuristicValue + weight + heuristicDistance(elem, min);
-                elem->dist = min->heuristicValue + weight; 
-                elem->path = min;
+            double value = current->heuristicValue;    // + heuristicDistance(elem, current);
+            if(elem->dist == infinite) minQueue.insert(elem);   // if elem is not in queue
+            else if(value < elem->heuristicValue) 
+            {
+                elem->path = current;
                 elem->edgePath = edge;
-                
-                // if elem is not in queue
-                if(elem->queueIndex == 0) { //old dist(w) was infinite
-                    minQueue.insert(elem);
-                }
-
-                else {
-                    minQueue.decreaseKey(elem);
-                }
+                elem->heuristicValue = value;
+                elem->dist = elem->heuristicValue + heuristicDistance(elem, final);
+                minQueue.decreaseKey(elem);
             }
         }
     }
