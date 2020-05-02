@@ -31,7 +31,6 @@ class Vertex {
         int invQueueIndex = 0;
 
         bool visited = false;		        // auxiliary field
-        bool invertedVisited = false;   // auxiliary field
         bool processing = false;	      // auxiliary field
 
         void addEdge(const int &id, Vertex *dest, const double &weight);

@@ -25,7 +25,7 @@ class Request {
         bool getAssigned() const;
         void setAssigned(const bool assigned);
 
-        bool operator<(const Request &request);
+        bool operator<(const Request &request) const;
 };
 
 string Request::getPrisoner() const {
@@ -55,7 +55,7 @@ void Request::setAssigned(const bool assigned) {
     this->assigned = assigned;
 }
 
-bool Request::operator<(const Request &request) {
+bool Request::operator<(const Request &request) const {
     return this->arrival < request.arrival;
 }
 

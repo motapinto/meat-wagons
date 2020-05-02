@@ -20,7 +20,7 @@ class MeatWagonsException : public std::exception {
 class MeatWagons {
     private:
         int central;
-        Graph *graph;
+        Graph *graph = nullptr;
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
         unordered_map<int, Vertex*> pointsOfInterest;
 
@@ -37,7 +37,7 @@ class MeatWagons {
         int getCentral() const;
         void setCentral(const int &id);
 
-        Graph *const getGraph() const;
+        Graph* getGraph() const;
         void setGraph(const string path);
         void showGraph();
 
@@ -56,7 +56,7 @@ void MeatWagons::setCentral(const int &id) {
     this->central = id;
 }
 
-Graph *const MeatWagons::getGraph() const {
+Graph* MeatWagons::getGraph() const {
     return this->graph;
 }
 
@@ -75,7 +75,6 @@ void MeatWagons::showGraph() {
     this->viewer = new GraphVisualizer(600, 600);
     this->viewer->draw(this->graph);
 }
-
 
 void MeatWagons::preProcess(int node) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");

@@ -26,9 +26,9 @@ class Edge {
             this->weight = weight;
         }
 
-
         /* get methods */
         const int getId() const;
+        const Vertex* getOrigin() const;
         const Vertex* getDest() const;
         const double getWeight() const;
 
@@ -38,6 +38,10 @@ class Edge {
 
 const int Edge::getId() const {
 	return this->id;
+}
+
+const Vertex* Edge::getOrigin() const {
+    return this->origin;
 }
 
 const Vertex* Edge::getDest() const {

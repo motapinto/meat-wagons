@@ -20,7 +20,7 @@ class Time {
         void setSecond(const int second);
 
         int toSeconds() const;
-        bool operator<(const Time &time);
+        bool operator<(const Time &time) const;
 };
 
 int Time::getHour() const {
@@ -51,7 +51,7 @@ int Time::toSeconds() const {
     return this->second + this->minute*60 + this->hour*3600;
 }
 
-bool Time::operator<(const Time &time) {
+bool Time::operator<(const Time &time) const {
     if(this->hour == time.hour)
         if(this->minute == time.minute)
             if(this->second == time.second) return false;
