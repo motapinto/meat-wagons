@@ -7,8 +7,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     try {
-        if(argc != 2) throw AppException("Wrong number of arguments");
-        Application application = Application(argv[1]);
+        Application application = Application();
         while(true) application.run();
     } catch (AppException &e) {
         cout << "Exception: " + e.getMessage() << endl;

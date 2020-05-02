@@ -23,6 +23,7 @@ class GraphVisualizer {
 
         void draw(Graph *graph);
         void setPath(vector<int> vert, vector<int> edges);
+        void reset();
 };
 
 // no final tentar fazer animacao como na tp com sleeps
@@ -30,7 +31,6 @@ void GraphVisualizer::draw(Graph *graph) {
     gv->createWindow(width, height);
     //vertexes settings
     gv->defineVertexColor("black");
-    gv->defineVertexSize(1);
     //edges settings
     gv->defineEdgeColor("black");
     gv->defineEdgeCurved(false);
@@ -40,15 +40,23 @@ void GraphVisualizer::draw(Graph *graph) {
     for(Vertex *origin : vertexSet)
         gv->addNode(origin->getId(), origin->getPosition().getX() - graph->getOffsetX(), origin->getPosition().getY() - graph->getOffsetY());
 
+    int i = 0;
     for(Vertex *origin : vertexSet) {
+        i++;
         if(origin->getTag() == Vertex::Tag::CENTRAL) {
             gv->setVertexColor(origin->getId(), "red");
             gv->setVertexLabel(origin->getId(), "Meat Wagons Central");
+            gv->setVertexSize(origin->getId(), 40);
         }
 
         else if(origin->getTag() == Vertex::Tag::INTEREST_POINT) {
             gv->setVertexColor(origin->getId(), "yellow");
             gv->setVertexLabel(origin->getId(), "Point of interest");
+            gv->setVertexSize(origin->getId(), 20);
+        }
+
+        else {
+            gv->setVertexSize(origin->getId(), 5);
         }
 
         for(Edge e : origin->getAdj()) {
