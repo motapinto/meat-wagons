@@ -16,12 +16,12 @@ class MutablePriorityQueue {
 	vector<T *> H;
 	void heapifyUp(unsigned i);
 	void heapifyDown(unsigned i);
-	inline void set(unsigned i, T *x);
+	inline void set(unsigned i, T * x);
 public:
 	MutablePriorityQueue();
-	void insert(T *x);
-	T *extractMin();
-	void decreaseKey(T *x);
+	void insert(T * x);
+	T * extractMin();
+	void decreaseKey(T * x);
 	bool empty();
 };
 

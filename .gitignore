@@ -32,7 +32,6 @@
 *.app
 
 # Other
-LICENSE
 build/
 .vscode/
 .project
@@ -40,4 +39,3 @@ build/
 /bin/
 .settings/*
 cmake-build-debug
-cmake-build-default
