@@ -72,6 +72,17 @@ void Graph::dfsVisit(Vertex *origin) const {
 	    }
 	}
 }
+// void Graph::dfsVisit(Vertex *origin) const {
+//     origin->visited = true;
+
+//     for(auto edge : origin->adj)
+//         if(!edge.dest->visited)
+//             dfsVisit(edge.dest);
+
+//     for(auto edge : origin->invAdj)
+//         if(!edge.dest->visited)
+//             dfsVisit(edge.dest);
+// }
 
 bool Graph::preProcess(int origin) {
     auto orig = findVertex(origin);
@@ -302,10 +313,9 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest)
         for(auto edge : current->adj) 
         {
             auto elem = edge.dest;
+            double value = current->heuristicValue;    // + heuristicDistance(elem, current);
 
             if(elem->visited) continue;
-
-            double value = current->heuristicValue;    // + heuristicDistance(elem, current);
             if(elem->dist == infinite) minQueue.insert(elem);   // if elem is not in queue
             else if(value < elem->heuristicValue) 
             {
