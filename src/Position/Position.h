@@ -6,37 +6,38 @@
 
 class Position {
     private:
-        double x = 0, y = 0;
+        double x, y;
 
     public:
-        Position() {}
-        Position(double x, double y) : x(x), y(y) {}
+        Position() {
+            this->x = 0;
+            this->y = 0;
+        }
 
-        double getX() const;
-        void setX(double x);
-        double getY() const;
-        void setY(double y);
-        double euclideanDistance(const Position &pos2) const;
+        Position(const double &x, const double &y) {
+            this->x = x;
+            this->y = y;
+        }
+
+        [[nodiscard]] double getX() const {
+            return this->x;
+        }
+
+         void setX(double x) {
+            this->x = x;
+        }
+
+         [[nodiscard]] double getY() const {
+            return this->y;
+        }
+
+         void setY(double y) {
+            this->y = y;
+        }
+
+        [[nodiscard]] double euclideanDistance(const Position &pos2) const {
+            return sqrt(pow(pos2.x - x, 2) + pow(pos2.y - y, 2));
+        }
 };
-
-double Position::getX() const {
-    return this->x;
-}
-
-void Position::setX(double x) {
-    this->x = x;
-}
-
-double Position::getY() const {
-    return this->y;
-}
-
-void Position::setY(double y) {
-    this->y = y;
-}
-
-double Position::euclideanDistance(const Position &pos2) const {
-    return sqrt(pow(pos2.x - x, 2) + pow(pos2.y - y, 2));
-}
 
 #endif

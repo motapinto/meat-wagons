@@ -16,11 +16,13 @@ using namespace std;
 class Graph 
 {
     private:
+        int width;      // for Graph Viewer
+        int height;     // for Graph Viewer
         int offsetX;    // for Graph Viewer
         int offsetY;    // for Graph Viewer
 
         vector<Vertex*> vertexSet;   
-        unordered_map<int, Vertex*> vertexIndexes;    //search for id and return vertex (much faster)
+        unordered_map<int, Vertex*> vertexIndexes; //search for id and return vertex (much faster)
 
         vector<vector<double>> minDistance;       // used for floyd Warshall algorithm
         vector<vector<Vertex*>> next;             // used for floyd Warshall algorithm
@@ -29,13 +31,18 @@ class Graph
         const static int infinite = 99999999;
 
     public:
+        Graph() {}
+
         Vertex* findVertex(const int &id) const;
         bool addVertex(const int &id, const int &x, const int &y);
-        void addPointOfInterest(Vertex* vertex);
         bool addEdge(const int &id, const int &origin, const int &dest);
 
+        void setWidth(int width);
+        void setHeight(int height);
         void setOffsetX(int x);
         void setOffsetY(int y);
+        int getWidth();
+        int getHeight();
         int getOffsetX();
         int getOffsetY();
         
@@ -47,12 +54,12 @@ class Graph
 
         // dijkstra
         Vertex* dijkstraInit(const int origin);
-        Vertex* dijkstraBackwardsInit(const int dest);
         bool dijkstraSingleSource(const int origin);
         bool dijkstra(const int origin, const int dest);
         bool getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const;
 
         // dijkstra related
+        void reverseGraph();
         double heuristicDistance(Vertex *origin, Vertex *dest);
         bool dijkstraOrientedSearch(const int origin, const int dest) ;
         bool dijkstraBidirectional(const int origin, const int dest);
@@ -82,25 +89,15 @@ bool Graph::preProcess(int origin) {
     
     dfsVisit(orig);
 
-    set<int> removed;
-
-    // deletes nodes
-    for(auto it = vertexSet.begin(); it != vertexSet.end(); it++)
+    // Removes vertices and calls for each his Vertex deconstructor (erasing the edges also)
+    for(auto it = vertexSet.begin(); it != vertexSet.end(); it++) {
         if(!(*it)->visited || (*it)->adj.size() == 0) {
             vertexIndexes.erase((*it)->getId());
-            removed.insert((*it)->getId());
             it = vertexSet.erase(it) - 1;
         }
-
-    // deletes outgoing edges of the deleted nodes
-    for(auto vertex : vertexSet)
-        for(auto it = vertex->adj.begin(); it != vertex->adj.end(); it++)
-            if(removed.find(it->getDest()->getId()) != removed.end())
-                it = vertex->adj.erase(it) - 1;
-
+    }
     return true;
 }
-
 
 /**************** Usual operations ************/
 Vertex* Graph::findVertex(const int &id) const {
@@ -125,7 +122,16 @@ bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
 		return false;
 	
     v1->addEdge(id, v2, v1->pos.euclideanDistance(v2->pos));
+    //v2->addEdge(id + 100000000, v1, v2->pos.euclideanDistance(v1->pos));// -> MAKE GRAPH BIDIRECTIONAL
 	return true;
+}
+
+void Graph::setWidth(int width) {
+    this->width = width;
+}
+
+void Graph::setHeight(int height) {
+    this->height = height;
 }
 
 void Graph::setOffsetX(int x) {
@@ -134,6 +140,14 @@ void Graph::setOffsetX(int x) {
 
 void Graph::setOffsetY(int y) {
     this->offsetY = y;
+}
+
+int Graph::getWidth() {
+    return width;
+}
+
+int Graph::getHeight() {
+    return height;
 }
 
 int Graph::getOffsetX() {
@@ -163,11 +177,7 @@ Vertex* Graph::dijkstraInit(const int origin) {
          vertex->dist = infinite;
          vertex->path = NULL;
          vertex->edgePath = Edge();
-         vertex->invDist = infinite;
-         vertex->invPath = NULL;
-         vertex->invEdgePath = Edge();
-         vertex->heuristicValue = infinite;
-         vertex->invHeuristicValue = infinite;
+         vertex->heuristicValue = 0;
 
 	}
 
@@ -178,16 +188,8 @@ Vertex* Graph::dijkstraInit(const int origin) {
     return start;
 }
 
-Vertex* Graph::dijkstraBackwardsInit(const int dest){
-
-    auto start = findVertex(dest);
-    start->invDist = 0;
-    start->invHeuristicValue = 0;
-
-    return start;
-}
-
-bool Graph::dijkstraSingleSource(const int origin)  {
+bool Graph::dijkstraSingleSource(const int origin) 
+{
     auto start = dijkstraInit(origin);
     if(start == nullptr) return false;
 
@@ -253,28 +255,33 @@ bool Graph::dijkstra(const int origin, const int dest)
 bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
     Vertex *final = findVertex(dest);
 
-    if(final == nullptr || (final->path == nullptr && final->invPath == nullptr))
+    if(final == nullptr || final->dist == infinite || final->path == nullptr)
         return false;
 
     vert.push_back(final->getId());
     edges.push_back(final->getEdgePath().getId());
 
-    while(final->path != nullptr || final->invPath != nullptr) {
+    while(final->path != nullptr) {
         final = final->path;
-
         vert.push_back(final->getId());
-
-        edges.push_back(final->getEdgePath().getId());
-
-	  }
+        if(final->path != nullptr)
+            edges.push_back(final->getEdgePath().getId());
+	}
 
     reverse(vert.begin(), vert.end());
     reverse(edges.begin(), edges.end());
-  
-	  return true;
+
+	return true;
 }
 
 /**************** Optimizing Dijkstra ************/
+void Graph::reverseGraph() {
+    for(Vertex * vert : vertexSet) {
+
+        for (Edge edge : vert->adj)
+            addEdge(edge.id, vert->getId(), edge.dest->getId());
+    }
+}
 
 double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
     return origin->getPosition().euclideanDistance(dest->getPosition());
@@ -322,9 +329,10 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest)
 
 // Upgrades the optimization using a* with bidirectional search
 bool Graph::dijkstraBidirectional(const int origin, const int dest) {
+    //reverseGraph();
 
     auto start = dijkstraInit(origin);
-    auto final = dijkstraBackwardsInit(dest);
+    auto final = dijkstraInit(dest);
 
     if(start == nullptr || final == nullptr) return false;
 
@@ -333,22 +341,19 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
     MutablePriorityQueue<Vertex> backwardMinQueue;
     backwardMinQueue.insert(final);
     vector<int> processed;
-    vector<int> backward_processed;
-
-    Vertex * forwardMin = nullptr;
-    Vertex * backwardMin = nullptr;
-    Vertex * middle_vertex = nullptr;
 
     // strict alternation between forward and backward search
     while(!forwardMinQueue.empty() && !backwardMinQueue.empty()) {
         //forward search
-        forwardMin = forwardMinQueue.extractMin();
+        auto forwardMin = forwardMinQueue.extractMin();
         forwardMin->visited = true;
 
         // check if there is an intersection
-        if(find(processed.begin(), processed.end(), forwardMin->id) != processed.end()) break;
-
+        if(find(processed.begin(), processed.end(), forwardMin->id) != processed.end()) 
+            break;
         processed.push_back(forwardMin->id);
+
+        if(forwardMin == final) return true;
 
         for(auto edge : forwardMin->adj) {
             auto elem = edge.dest;
@@ -356,92 +361,59 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
 
             if(elem->visited) continue;
 
-            if(forwardMin->dist + weight  < elem->dist) {
+            if(forwardMin->dist + weight + heuristicDistance(elem, forwardMin) < elem->heuristicValue) {
                 
                 elem->heuristicValue =  forwardMin->heuristicValue + weight + heuristicDistance(elem, forwardMin);
-                elem->dist = forwardMin->dist + weight;
+                    elem->dist = forwardMin->heuristicValue + weight;
                 elem->path = forwardMin;
                 elem->edgePath = edge;
                 
-                // if elem is not in queue  [old dist(w) was infinite]
-                if(elem->queueIndex == 0) 
-                  forwardMinQueue.insert(elem);
-                else 
-                  forwardMinQueue.decreaseKey(elem);
+                // if elem is not in queue
+                if(elem->queueIndex == 0) { //old dist(w) was infinite
+                    forwardMinQueue.insert(elem);
+                }
+
+                else {
+                    forwardMinQueue.decreaseKey(elem);
+                }
             }
         }
 
-        if(find(backward_processed.begin(), backward_processed.end(), forwardMin->id) != backward_processed.end()) {
-            middle_vertex = forwardMin;
-            break;
-        }
-
         //backward search
-        backwardMin = backwardMinQueue.extractMin();
+        auto backwardMin = backwardMinQueue.extractMin();
         backwardMin->visited = true;
 
-        backward_processed.push_back(backwardMin->id);
+        // check if there is an intersection
+        if(find(processed.begin(), processed.end(), backwardMin->id) != processed.end()) 
+            break;
+        processed.push_back(backwardMin->id);
 
-        for(auto edge : backwardMin->invAdj) {
-            auto elem = edge.origin;
+        if(backwardMin == start) return true;
+
+        for(auto edge : backwardMin->adj) {
+            auto elem = edge.dest;
             auto weight = edge.weight;
 
             if(elem->visited) continue;
 
-            if(backwardMin->invDist + weight < elem->invDist) {
+            if(backwardMin->dist + weight + heuristicDistance(elem, backwardMin) < elem->heuristicValue) {
                 
-                elem->invHeuristicValue =  backwardMin->invHeuristicValue + weight + heuristicDistance(elem, backwardMin);
-                elem->invDist = backwardMin->invDist + weight;
+                elem->heuristicValue =  backwardMin->heuristicValue + weight + heuristicDistance(elem, backwardMin);
+                elem->dist = backwardMin->heuristicValue + weight; 
                 elem->invPath = backwardMin;
                 elem->invEdgePath = edge;
-
                 
                 // if elem is not in queue
-                if(elem->invQueueIndex == 0) { //old dist(w) was infinite
+                if(elem->queueIndex == 0) { //old dist(w) was infinite
                     backwardMinQueue.insert(elem);
-                    elem->invQueueIndex = elem->queueIndex;
                 }
 
                 else {
                     backwardMinQueue.decreaseKey(elem);
-                    elem->invQueueIndex = elem->queueIndex;
                 }
             }
         }
-
-        if(find(processed.begin(), processed.end(), backwardMin->id) != processed.end()){
-            middle_vertex = backwardMin;
-            break;
-        }
-
     }
-
-    int min_dist = middle_vertex->getDist() + middle_vertex->invDist;
-
-    while(!forwardMinQueue.empty()) {
-        forwardMin = forwardMinQueue.extractMin();
-
-        if(forwardMin->getDist() + forwardMin->invDist < min_dist) {
-            min_dist = forwardMin->getDist() + forwardMin->invDist < min_dist;
-            middle_vertex = forwardMin;
-        }
-    }
-
-    while(!backwardMinQueue.empty()) {
-        backwardMin = backwardMinQueue.extractMin();
-
-        if(backwardMin->getDist() + backwardMin->invDist < min_dist){
-            min_dist = backwardMin->getDist() + backwardMin->invDist < min_dist;
-            middle_vertex = backwardMin;
-        }
-    }
-
-    while(middle_vertex->invPath != nullptr) {
-        middle_vertex->invPath->path = middle_vertex;
-        middle_vertex->invPath->edgePath = middle_vertex->invEdgePath;
-        middle_vertex = middle_vertex->invPath;
-    }
-
     return true;
 }
 

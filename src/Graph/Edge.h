@@ -7,25 +7,21 @@ class Vertex;
 class Edge {
     private:
         int id;
-        Vertex *origin;           // origin vertex
-        Vertex *dest;             // destination vertex
+        Vertex *dest;             // origin and destination vertex
         double weight;            // edge weight
     
     public:
         Edge() {
             this->id = -1;
-            this->origin = nullptr;
             this->dest = nullptr;
             this->weight = 0;
         }
 
-        Edge(const int &id, Vertex *dest, Vertex *origin, const double &weight) {
+        Edge(const int &id, Vertex *dest, const double &weight) {
             this->id = id;
             this->dest = dest;
-            this->origin = origin;
             this->weight = weight;
         }
-
 
         /* get methods */
         const int getId() const;
@@ -34,6 +30,7 @@ class Edge {
 
         friend class Graph;
         friend class Vertex;
+
 };
 
 const int Edge::getId() const {

@@ -2,61 +2,45 @@
 #ifndef MEAT_WAGONS_REQUEST_H
 #define MEAT_WAGONS_REQUEST_H
 
-#include "Time.h"
-
-using namespace std;
-
 class Request {
     private:
-        string prisoner;
+        string prisioner;
         int dest, priority;
-        Time arrival, deliver;
-        bool assigned = false;
+        bool assigned;
 
     public:
-        Request(const string &prisoner, const int dest, const int priority, const Time &arrival) :
-            prisoner(prisoner), dest(dest), priority(priority), arrival(arrival) {}
+        Request(string prisioner, int dest, int priority) {
+            this->prisioner = prisioner;
+            this->dest = dest;
+            this->prisioner = priority;
+            this->assigned = false;
+        }
 
-        string getPrisoner() const;
-        int getDest() const;
-        int getPriority() const;
-        Time getArrival() const;
-        Time getDelivery() const;
-        bool getAssigned() const;
-        void setAssigned(const bool assigned);
-
-        bool operator<(const Request &request);
+        const string getPrisioner() const;
+        const int getDest() const;
+        const int getPriority() const;
+        const bool getAssigned() const;
+        void setAssigned(bool assigned);
 };
 
-string Request::getPrisoner() const {
-    return this->prisoner;
+const string Request::getPrisioner() const {
+    return this->prisioner;
 }
 
-int Request::getDest() const {
+const int Request::getDest() const {
     return this->dest;
 }
 
-int Request::getPriority() const {
+const int Request::getPriority() const {
     return this->priority;
 }
 
-Time Request::getArrival() const {
-    return this->arrival;
-}
-Time Request::getDelivery() const {
-    return this->deliver;
-}
-
-bool Request::getAssigned() const {
+const bool Request::getAssigned() const {
     return this->assigned;
 }
 
-void Request::setAssigned(const bool assigned) {
+void Request::setAssigned(bool assigned) {
     this->assigned = assigned;
-}
-
-bool Request::operator<(const Request &request) {
-    return this->arrival < request.arrival;
 }
 
 #endif //MEAT_WAGONS_REQUEST_H

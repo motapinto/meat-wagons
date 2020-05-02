@@ -1,18 +1,17 @@
-        /*int max = 0, curr = 0;
-        int vertex = 0;
-        Graph aux = *controller->getGraph();
-        for(auto vert : controller->getGraph()->getVertexSet()) {
-            cout << vert->getId() << endl;
-            aux.preProcess(vert->getId());
-            curr = aux.getVertexSet().size();
-            if(curr > max) {
-                max = curr;
-                vertex = vert->getId();
+int max = 0, curr = 0;
+            int vertex = 0;
+            Graph aux = *graph;
+            for(auto vert : graph->getVertexSet()) {
+                aux.preProcess(vert);
+                curr = aux.getVertexSet().size();
+                if(curr > max) {
+                    max = curr;
+                    vertex = vert->getId();
+                }
+                aux = *graph;
             }
-            aux = *controller->getGraph();
-        }
-        cout << endl << max << endl;
-        cout << vertex << endl;*/
+            cout << endl << max << endl;
+            cout << vertex << endl;
 
 this calculates the vertex that leads to most edges in the connectivity
 the vertex sould be the central

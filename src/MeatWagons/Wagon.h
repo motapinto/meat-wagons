@@ -7,50 +7,12 @@
 class Wagon {
     private:
         int id, capacity;
-        Time nextAvailableTime;
-        vector<Delivery> deliveries;
+        Delivery delivery;
+
+
 
     public:
-        Wagon(const int id, const int capacity) : id(id), capacity(capacity) {}
-
-        int getId() const;
-        void setId(const int id);
-
-        int  getCapacity() const;
-        void setCapacity(const int capacity);
-
-        Time getNextAvailableTime() const;
-        void setNextAvailableTime(const Time &time);
-
-        void addDelivery(const Delivery &delivery);
 };
 
-int Wagon::getId() const {
-    return this->id;
-}
-
-void Wagon::setId(const int id) {
-    this->id = id;
-}
-
-int  Wagon::getCapacity() const {
-    return this->capacity;
-}
-
-void Wagon::setCapacity(const int capacity) {
-    this->capacity = capacity;
-}
-
-Time Wagon::getNextAvailableTime() const {
-    return this->nextAvailableTime;
-}
-
-void Wagon::setNextAvailableTime(const Time &nextAvailableTime) {
-    this->nextAvailableTime = nextAvailableTime;
-}
-
-void Wagon::addDelivery(const Delivery &delivery) {
-    this->deliveries.push_back(delivery);
-}
 
 #endif
