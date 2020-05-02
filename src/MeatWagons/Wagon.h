@@ -23,8 +23,12 @@ class Wagon {
         void setNextAvailableTime(const Time &time);
 
         void addDelivery(const Delivery &delivery);
-        bool operator<(const Wagon &wagon) const;
+        bool operator<(Wagon &Wagon) const;
 };
+
+bool Wagon::operator<(Wagon &wagon) const {
+    return this->capacity  < wagon.capacity;
+}
 
 int Wagon::getId() const {
     return this->id;
@@ -52,10 +56,6 @@ void Wagon::setNextAvailableTime(const Time &nextAvailableTime) {
 
 void Wagon::addDelivery(const Delivery &delivery) {
     this->deliveries.push_back(delivery);
-}
-
-bool Wagon::operator<(const Wagon &wagon) const {
-    return this->capacity < wagon.capacity;
 }
 
 #endif

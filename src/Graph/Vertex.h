@@ -54,7 +54,7 @@ class Vertex
         Tag getTag() const;
         void setTag(Vertex::Tag tag);
 
-        bool operator<(const Vertex &vertex) const; //required by MutablePriorityQueue
+        bool operator<(Vertex &vertex) const; //required by MutablePriorityQueue
         friend ostream& operator<<(ostream &out, const Vertex &vertex);
         friend class Graph;
         friend class MutablePriorityQueue<Vertex>;
@@ -70,7 +70,7 @@ void Vertex::addEdge(const int &id, Vertex *dest, const double &weight) {
 	dest->invAdj.push_back(edge);
 }
 
-bool Vertex::operator<(const Vertex &vertex) const {
+bool Vertex::operator<(Vertex &vertex) const {
 	return this->dist < vertex.dist;
 }
 ostream& operator<<(ostream &out, const Vertex &vertex) {
