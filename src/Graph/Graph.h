@@ -210,7 +210,7 @@ bool Graph::dijkstraSingleSource(const int origin)  {
         }
 
         for(auto edge : min->invAdj) {
-            auto elem = edge.dest;
+            auto elem = edge.origin;
 
             if(elem->dist > min->dist + edge.weight) {
                 elem->dist = min->dist + edge.weight;
@@ -289,14 +289,14 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
     edges.push_back(final->getEdgePath().getId());
 
     int dist = 0;
+    cout << "distance: " << final->dist << endl;
+
     while(final->path != nullptr) {
         final = final->path;
-        dist += final->dist;
+        dist = final->dist;
         vert.push_back(final->getId());
         edges.push_back(final->getEdgePath().getId());
     }
-
-    cout << "distance: " << dist << endl;
 
     reverse(vert.begin(), vert.end());
     reverse(edges.begin(), edges.end());
@@ -352,7 +352,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest) {
         }
 
         for(auto edge : min->invAdj) {
-            auto elem = edge.dest;
+            auto elem = edge.origin;
             int weight = edge.weight;
 
             if(elem->visited) continue;
@@ -421,6 +421,23 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
             }
         }
 
+        for(auto edge : forwardMin->invAdj) {
+            auto elem = edge.origin;
+            auto weight = edge.weight;
+
+            if(elem->visited) continue;
+
+            if(elem->dist > forwardMin->dist + weight) {
+                elem->dist = forwardMin->dist + weight;
+                elem->path = forwardMin;
+                elem->edgePath = edge;
+
+                // if elem is not in queue  [old dist(w) was infinite]
+                if(elem->queueIndex == 0) forwardMinQueue.insert(elem);
+                else forwardMinQueue.decreaseKey(elem);
+            }
+        }
+
         if(find(backward_processed.begin(), backward_processed.end(), forwardMin->id) != backward_processed.end()) {
             middle_vertex = forwardMin;
             break;
@@ -446,6 +463,33 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest) {
                 elem->invEdgePath = edge;
 
                 
+                // if elem is not in queue
+                if(elem->invQueueIndex == 0) { //old dist(w) was infinite
+                    backwardMinQueue.insert(elem);
+                    elem->invQueueIndex = elem->queueIndex;
+                }
+
+                else {
+                    backwardMinQueue.decreaseKey(elem);
+                    elem->invQueueIndex = elem->queueIndex;
+                }
+            }
+        }
+
+        for(auto edge : backwardMin->adj) {
+            auto elem = edge.dest;
+            auto weight = edge.weight;
+
+            if(elem->visited) continue;
+
+            if(backwardMin->invDist + weight < elem->invDist) {
+                i++;
+                elem->invHeuristicValue =  backwardMin->invHeuristicValue + weight + heuristicDistance(elem, backwardMin);
+                elem->invDist = backwardMin->invDist + weight;
+                elem->invPath = backwardMin;
+                elem->invEdgePath = edge;
+
+
                 // if elem is not in queue
                 if(elem->invQueueIndex == 0) { //old dist(w) was infinite
                     backwardMinQueue.insert(elem);

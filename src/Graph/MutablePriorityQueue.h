@@ -4,7 +4,6 @@
 
 #include <vector>
 
-
 using namespace std;
 
 /**
@@ -13,16 +12,18 @@ using namespace std;
 
 template <class T>
 class MutablePriorityQueue {
-	vector<T *> H;
-	void heapifyUp(unsigned i);
-	void heapifyDown(unsigned i);
-	inline void set(unsigned i, T * x);
-public:
-	MutablePriorityQueue();
-	void insert(T * x);
-	T * extractMin();
-	void decreaseKey(T * x);
-	bool empty();
+    private:
+        vector<T *> H;
+        void heapifyUp(unsigned i);
+        void heapifyDown(unsigned i);
+        inline void set(unsigned i, T * x);
+
+    public:
+        MutablePriorityQueue();
+        void insert(T * x);
+        T * extractMin();
+        void decreaseKey(T * x);
+        bool empty();
 };
 
 // Index calculations

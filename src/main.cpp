@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
     try {
         Application application = Application();
         while(true) application.run();
-    } catch (AppException &e) {
+    } catch (MeatWagonsException &e) {
         cout << "Exception: " + e.getMessage() << endl;
         cout << "Usage: ./meat-wagons <graph file path>" << endl << endl;
     }

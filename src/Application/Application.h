@@ -5,15 +5,6 @@
 #include <fstream>
 #include "../MeatWagons/MeatWagons.h"
 
-class AppException : public std::exception {
-public:
-    explicit AppException(string  msg) : msg_(std::move(msg)) {}
-
-    [[nodiscard]] string getMessage() const {return(msg_);}
-private:
-    string msg_;
-};
-
 class Application {
     private:
         MeatWagons *controller = new MeatWagons(10, 100);
@@ -25,12 +16,12 @@ class Application {
 };
 
 void Application::usage() {
-    cout << "\tMenu Options:" << endl;
+    cout << "Menu Options:" << endl;
     cout << "\treadGraph <graph folder path>" << endl;
     cout << "\tpreProcess {<node id>}" << endl;
     cout << "\tshortestPath {dijkstra, dijkstraOriented, dijkstraBidirectional} <origin node> <destination node>" << endl;
+    cout << "\tdeliver <iteration{1,2,3}>"<< endl;
     cout << "\tsetCentral <node id>"<< endl;
-    cout << "\tdeliver <requests folder path>"<< endl;
     cout << "\taddRequest <requests folder path>"<< endl;
     cout << "\tremoveRequest <requests folder path>"<< endl;
     cout << "\tlistRequests <requests folder path>"<< endl;
@@ -71,22 +62,24 @@ bool Application::run() {
         string variant;
         int origin, dest;
 
-        if (!(line >> variant) || !(line >> origin) || !(line >> dest)) throw AppException("Incorrect number of parameters");
+        if (line >> variant && line >> origin && line >> dest) {
+            if (variant == "dijkstra") controller->shortestPath(1, origin, dest);
+            else if (variant == "dijkstraOriented") controller->shortestPath(2, origin, dest);
+            else if (variant == "dijkstraBidirectional") controller->shortestPath(3, origin, dest);
+        }
+    }
 
-        if (variant == "dijkstra") controller->shortestPath(1, origin, dest);
-        else if (variant == "dijkstraOriented") controller->shortestPath(2, origin, dest);
-        else if (variant == "dijkstraBidirectional") controller->shortestPath(3, origin, dest);
+    else if(operation == "deliver") {
+        int iteration;
+        if(line >> iteration) controller->deliver(iteration);
     }
 
     else if(operation == "setCentral") {
         int centralId;
-
         if (line >> centralId) controller->setCentral(centralId);
     }
 
-    else if(operation == "deliver") {
-
-    } else if(operation == "addRequest") {
+    else if(operation == "addRequest") {
 
     } else if(operation == "removeRequest") {
 

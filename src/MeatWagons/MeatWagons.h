@@ -46,6 +46,12 @@ class MeatWagons {
         void shortestPath(int option, int origin, int dest);
 
         void readRequests(string requestsPath);
+
+        void deliver(int iteration);
+        int chooseDropOf(vector<int> const pickupNodes);
+        void firstIteration();
+        void secondIteration();
+        void thirdIteration();
 };
 
 int MeatWagons::getCentral() const {
@@ -69,6 +75,11 @@ void MeatWagons::setGraph(const string graphPath) {
 
     this->graph = graphRead;
     this->showGraph();
+}
+
+void MeatWagons::readRequests(string requestsPath) {
+    Reader graphReader = Reader(requestsPath);
+    if(!graphReader.readRequests(requests)) throw MeatWagonsException("Graph is null");
 }
 
 void MeatWagons::showGraph() {
@@ -107,10 +118,67 @@ void MeatWagons::shortestPath(int option, int origin, int dest) {
     this->viewer->draw(this->graph);
 }
 
-void MeatWagons::readRequests(string requestsPath) {
-    Reader graphReader = Reader(requestsPath);
+/*
+void MeatWagons::addRequest(Request request) {
 
-    if(!graphReader.readRequests(requests)) throw MeatWagonsException("Graph is null");
 }
+
+void MeatWagons::removeRequest(Request request) {
+
+}*/
+
+void MeatWagons::deliver(int iteration) {
+    if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
+    if(this->requests.size() == 0) throw MeatWagonsException("No requests to process");
+
+    switch (iteration) {
+        case 1: this->firstIteration();
+        //case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+        //case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+    }
+}
+
+int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
+    return 0;
+}
+
+
+// Iteration: Using a single van with capacity equal to 1
+// Receive prisioner
+// Deliver to a random point of interest(not the pickup)
+// Get back to central to process another request
+void MeatWagons::firstIteration() {
+    if(graph == nullptr) throw MeatWagonsException("Graph is null");
+    if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
+    if(wagons.begin()->getCapacity() != 1)  throw MeatWagonsException("Wrong iteration configuration");
+
+    for(auto it = requests.begin(); it!= requests.end(); it++) {
+        Request request = *it;
+        it = requests.erase(it);
+
+        // pickup prisioner
+        graph->dijkstra(central, request.getDest());
+        vector<int> nodesPickUp, edgesPickUp;
+        graph->getPathTo(request.getDest(), nodesPickUp, edgesPickUp);
+
+        // deliver prisioner
+        vector<int> pickupNodes;
+        pickupNodes.push_back(request.getDest());
+        graph->dijkstra(request.getDest(), chooseDropOf(pickupNodes));
+        vector<int> nodesDelivery, edgesDelivery;
+        graph->getPathTo(request.getDest(), nodesDelivery, edgesDelivery);
+
+        // return to central
+
+
+    }
+}
+
+void MeatWagons::secondIteration() {
+}
+
+void MeatWagons::thirdIteration() {
+}
+
 
 #endif //MEAT_WAGONS_MEATWAGONS_H
