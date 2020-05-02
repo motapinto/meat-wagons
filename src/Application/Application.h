@@ -22,9 +22,8 @@ void Application::usage() {
     cout << "\tshortestPath {dijkstra, dijkstraOriented, dijkstraBidirectional} <origin node> <destination node>" << endl;
     cout << "\tdeliver <iteration{1,2,3}>"<< endl;
     cout << "\tsetCentral <node id>"<< endl;
-    cout << "\taddRequest <requests folder path>"<< endl;
-    cout << "\tremoveRequest <requests folder path>"<< endl;
-    cout << "\tlistRequests <requests folder path>"<< endl;
+    cout << "\twagonOperation {list | add | remove}"<< endl;
+    cout << "\trequestsOperation {list | add | remove}"<< endl;
 
     cout << "\texit" << endl << endl;
     cout << "Input:  ";
@@ -71,7 +70,7 @@ bool Application::run() {
 
     else if(operation == "deliver") {
         int iteration;
-        if(line >> iteration) controller->deliver(iteration);
+        //if(line >> iteration) controller->deliver(iteration);
     }
 
     else if(operation == "setCentral") {
@@ -79,21 +78,40 @@ bool Application::run() {
         if (line >> centralId) controller->setCentral(centralId);
     }
 
-    else if(operation == "addRequest") {
+    else if(operation == "wagonOperation") {
+        string variant;
+        if(line >> variant) {
+            if(variant == "list") controller->listWagons();
 
-    } else if(operation == "removeRequest") {
+            else if(variant == "add") {
+                int capacity;
+                if (line >> capacity) controller->addWagon(capacity);
+            }
 
-    } else if(operation == "listRequests") {
-
-    } else if(operation == "addWagon") {
-
-    } else if(operation == "removeWagon") {
-
-    } else if(operation == "listWagons") {
-
+            else if(variant == "remove") {
+                int id, capacity;
+                if (line>> id && line >> capacity) controller->removeWagon(id, capacity);
+            }
+        }
     }
 
-    cout << endl;
+    else if(operation == "requestsOperation") {
+        string variant;
+        if(line >> variant) {
+            if(variant == "list") controller->listWagons();
+
+            else if(variant == "add") {
+                int capacity;
+                if (line >> capacity) controller->addWagon(capacity);
+            }
+
+            else if(variant == "remove") {
+                int id, capacity;
+                if (line>> id && line >> capacity) controller->removeWagon(id, capacity);
+            }
+        }
+    }
+
     return true;
 }
 

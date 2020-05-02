@@ -18,9 +18,13 @@ class Time {
 
         int getSecond() const;
         void setSecond(const int second);
-
         int toSeconds() const;
+
         bool operator<(const Time &time) const;
+        friend std::ostream &operator<<( std::ostream &output, const Time &time) {
+            output << time.getHour() << ":" << time.getMinute() << ":" << time.getSecond();
+            return output;
+        }
 };
 
 int Time::getHour() const {

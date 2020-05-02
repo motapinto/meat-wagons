@@ -39,13 +39,15 @@ class MeatWagons {
 
         Graph* getGraph() const;
         void setGraph(const string path);
+        void readRequests(string requestsPath);
         void showGraph();
 
         void preProcess(int node);
-
         void shortestPath(int option, int origin, int dest);
 
-        void readRequests(string requestsPath);
+        void listWagons();
+        void addWagon(const int &capacity);
+        void removeWagon(const int &id, const int &capacity);
 
         void deliver(int iteration);
         int chooseDropOf(vector<int> const pickupNodes);
@@ -118,6 +120,21 @@ void MeatWagons::shortestPath(int option, int origin, int dest) {
     this->viewer->draw(this->graph);
 }
 
+void MeatWagons::listWagons() {
+    for (auto it = wagons.begin(); it != wagons.end(); it++) {
+        cout << "Wagon " << (*it).getId() << ": Capacity " << (*it).getCapacity() << " Available at: "
+             << (*it).getNextAvailableTime() << endl << endl;
+    }
+}
+
+void MeatWagons::addWagon(const int &capacity) {
+    wagons.insert(Wagon(wagons.size(), capacity));
+}
+
+void MeatWagons::removeWagon(const int &id, const int &capacity) {
+    wagons.erase(Wagon(id, capacity));
+}
+
 /*
 void MeatWagons::addRequest(Request request) {
 
@@ -125,9 +142,14 @@ void MeatWagons::addRequest(Request request) {
 
 void MeatWagons::removeRequest(Request request) {
 
-}*/
+}
 
-void MeatWagons::deliver(int iteration) {
+void MeatWagons::listRequests(Request request) {
+
+}
+ */
+
+/*void MeatWagons::deliver(int iteration) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
     if(this->requests.size() == 0) throw MeatWagonsException("No requests to process");
 
@@ -178,7 +200,6 @@ void MeatWagons::secondIteration() {
 }
 
 void MeatWagons::thirdIteration() {
-}
-
+}*/
 
 #endif //MEAT_WAGONS_MEATWAGONS_H
