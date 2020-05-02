@@ -9,18 +9,18 @@
 #include "Wagon.h"
 
 class MeatWagonsException : public std::exception {
-public:
-    MeatWagonsException(string  msg) : msg_(std::move(msg)) {}
-    string getMessage() const {return(msg_);}
-    
-private:
-    string msg_;
+    public:
+        MeatWagonsException(string  msg) : msg_(std::move(msg)) {}
+        string getMessage() const {return(msg_);}
+
+    private:
+        string msg_;
 };
 
 class MeatWagons {
     private:
         int central;
-        Graph *graph;
+        Graph *graph = nullptr;
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
         unordered_map<int, Vertex*> pointsOfInterest;
         set<Wagon> wagons;
@@ -33,13 +33,12 @@ class MeatWagons {
             this->zoneMaxDist = maxDist;
         }
 
-        Graph *const getGraph() const;
+        Graph* getGraph() const;
         int getCentral() const;
-
-        void setGraph(const string path);
         void setCentral(const int &id);
+        void setGraph(const string path);
 
-        void showGraph() const;
+        void showGraph();
         void preProcess(int node);
         void shortestPath(int option, int origin, int dest);
         void readRequests(string requestsPath);
@@ -53,7 +52,7 @@ void MeatWagons::setCentral(const int &id) {
     this->central = id;
 }
 
-Graph *const MeatWagons::getGraph() const {
+Graph* MeatWagons::getGraph() const {
     return this->graph;
 }
 
@@ -66,9 +65,11 @@ void MeatWagons::setGraph(const string graphPath) {
     readRequests(graphPath);
 
     this->graph = graphRead;
+    this->showGraph();
 }
 
-void MeatWagons::showGraph() const {
+void MeatWagons::showGraph() {
+    this->viewer = new GraphVisualizer(600, 600);
     this->viewer->draw(this->graph);
 }
 
@@ -80,6 +81,8 @@ void MeatWagons::preProcess(int node) {
         if(this->graph->findVertex((*it).getDest()) == nullptr)
             this->requests.erase(*it);
     }
+
+    this->showGraph();
 }
 
 void MeatWagons::shortestPath(int option, int origin, int dest) {
@@ -91,9 +94,14 @@ void MeatWagons::shortestPath(int option, int origin, int dest) {
         case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
     }
 
+    // get path
     vector<int> vert, edges;
     this->graph->getPathTo(dest, vert, edges);
-    viewer->setPath(vert, edges);
+
+    // draw path
+    this->viewer = new GraphVisualizer(600, 600);
+    this->viewer->setPath(vert, edges);
+    this->viewer->draw(this->graph);
 }
 
 void MeatWagons::readRequests(string requestsPath) {

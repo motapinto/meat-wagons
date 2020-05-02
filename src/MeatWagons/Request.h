@@ -25,12 +25,8 @@ class Request {
         bool getAssigned() const;
         void setAssigned(const bool assigned);
 
-        bool operator<(Request &request) const;
+        bool operator<(const Request &request) const;
 };
-
-bool Request::operator<(Request &request) const {
-    return this->arrival < request.arrival;
-}
 
 string Request::getPrisoner() const {
     return this->prisoner;
@@ -57,6 +53,10 @@ bool Request::getAssigned() const {
 
 void Request::setAssigned(const bool assigned) {
     this->assigned = assigned;
+}
+
+bool Request::operator<(const Request &request) const {
+    return this->arrival < request.arrival;
 }
 
 #endif //MEAT_WAGONS_REQUEST_H
