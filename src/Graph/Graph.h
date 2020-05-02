@@ -264,7 +264,7 @@ bool Graph::dijkstra(const int origin, const int dest)
 
         for(auto edge : min->adj) {
             auto elem = edge.dest;
-            
+
             if(elem->dist > min->dist + edge.weight) {
                 elem->dist = min->dist + edge.weight;
                 elem->path = min;

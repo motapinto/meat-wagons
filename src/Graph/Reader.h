@@ -60,7 +60,6 @@ bool Reader::readGraph(Graph *graph, int &central, unordered_map<int, Vertex*> &
     return true;
 }
 
-
 bool Reader::readRequests(multiset<Request> &requestVector) {
     ifstream requests(path + "/requests.txt");
 
@@ -78,7 +77,6 @@ bool Reader::readRequests(multiset<Request> &requestVector) {
     }
     return true;
 }
-
 
 bool Reader::setTags(Graph *graph, unordered_map<int, Vertex*> &pointsOfInterest) {
     ifstream tagsStream(path + "/tags.txt");
