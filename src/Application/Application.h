@@ -52,30 +52,47 @@ bool Application::run()
     if (operation == "exit") return false;
     else if (operation == "readGraph") {
         string fileName;
-
         if (!(line >> fileName)) controller->setGraph("maps/PortugalMaps/Porto");
         else controller->setGraph(fileName);
+
+        controller->showGraph();
     }
     else if (operation == "preProcess") {
-        int node;
+        int max = 0, curr = 0, vertex = 0;
+        Graph aux = *controller->getGraph();
 
-        if (!(line >> node)) controller->preProcess(controller->getCentral());
-        else controller->preProcess(node);
+        for(auto vert : controller->getGraph()->getVertexSet()) 
+        {
+            cout << vert->getId() << endl;
+            aux.preProcess(vert->getId());
+            curr = aux.getVertexSet().size();
+            if(curr > max) {
+                max = curr;
+                vertex = vert->getId();
+            }
+            aux = *controller->getGraph();
+        }
+        cout << endl << max << endl;
+        cout << vertex << endl;
     }
     else if (operation == "shortestPath") {
         string variant;
         int origin, dest;
 
-        if (!(line >> variant) || !(line >> origin) || !(line >> dest)) throw AppException("Incorrect number of parameters");
+        if (!(line >> variant)) throw AppException("Incorrect number of parameters");
+        if (!(line >> origin) || !(line >> dest)) throw AppException("Incorrect number of parameters");
 
         if (variant == "dijkstra") controller->shortestPath(1, origin, dest);
         else if (variant == "dijkstraOriented") controller->shortestPath(2, origin, dest);
         else if (variant == "dijkstraBidirectional") controller->shortestPath(3, origin, dest);
+
+        viewer = new GraphVisualizer(600, 600);
+        viewer->draw(controller->getGraph());
     }
     else if (operation == "setCentral") {
         int centralId;
-
-        if (line >> centralId) controller->setCentral(centralId);
+        if (!(line >> centralId)) throw AppException("Incorrect number of parameters");
+        controller->setCentral(centralId);
     }
     else if (operation == "deliver") {
 
