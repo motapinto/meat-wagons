@@ -13,7 +13,7 @@ class Reader {
         Reader(const string &path) : path(path) {}
 
         bool readGraph(Graph *graph, int &central, unordered_map<int, Vertex*> &pointsOfInterest);
-        //bool readRequests(multiset<Request> &requestVector);
+        bool readRequests(multiset<Request> &requestVector);
         bool setTags(Graph *graph, unordered_map<int, Vertex*> &pointsOfInterest);
         bool setCentral(Graph *graph, int &central);
 };
@@ -59,7 +59,7 @@ bool Reader::readGraph(Graph *graph, int &central, unordered_map<int, Vertex*> &
     return true;
 }
 
-/*bool Reader::readRequests(multiset<Request> &requestVector) {
+bool Reader::readRequests(multiset<Request> &requestVector) {
     ifstream requests(path + "/requests.txt");
 
     if(!requests.is_open()) return false;
@@ -75,7 +75,7 @@ bool Reader::readGraph(Graph *graph, int &central, unordered_map<int, Vertex*> &
         requestVector.insert(request);
     }
     return true;
-}*/
+}
 
 bool Reader::setTags(Graph *graph, unordered_map<int, Vertex*> &pointsOfInterest) {
     ifstream tagsStream(path + "/tags.txt");
