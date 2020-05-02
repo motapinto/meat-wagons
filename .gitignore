@@ -41,4 +41,3 @@ build/
 .settings/*
 cmake-build-debug
 cmake-build-default
-CMakeLists.txt
