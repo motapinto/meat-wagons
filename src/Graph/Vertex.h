@@ -14,8 +14,8 @@ class Vertex
 
     private:
         int id;                         // identifier of the vertex
-        Position pos;			        // content of the vertex
-        vector<Edge> adj;		        // outgoing edges
+        Position pos;			              // content of the vertex
+        vector<Edge> adj;		            // outgoing edges
         vector<Edge> invAdj;            // ingoing edges
         Tag tag = DEFAULT;              // vertex Tag
 
@@ -27,13 +27,13 @@ class Vertex
         Edge invEdgePath;
         
         int queueIndex = 0; 		        // required by MutablePriorityQueue
-        double heuristicValue = 0;          // oriented search optimization (a*)
+        double heuristicValue = 0;      // oriented search optimization (a*)
         double invHeuristicValue = 0;
         int invQueueIndex = 0;
 
         bool visited = false;		        // auxiliary field
-        bool invertedVisited = false;       // auxiliary field
-        bool processing = false;	        // auxiliary field
+        bool invertedVisited = false;   // auxiliary field
+        bool processing = false;	      // auxiliary field
 
         void addEdge(const int &id, Vertex *dest, const double &weight);
         const static size_t infinite = UINT_MAX;
@@ -75,6 +75,7 @@ bool Vertex::operator<(Vertex &vertex) const {
 	return this->dist < vertex.dist;
 }
 ostream& operator<<(ostream &out, const Vertex &vertex) {
+    // shortestPath dijkstra 1 34
     out << "ID: " << vertex.id << " | Pos: ("
         << vertex.getPosition().getX() << ", "
         << vertex.getPosition().getY() << ") | Edges: ";

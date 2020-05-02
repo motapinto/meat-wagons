@@ -23,12 +23,7 @@ class Wagon {
         void setNextAvailableTime(const Time &time);
 
         void addDelivery(const Delivery &delivery);
-        bool operator<(Wagon &Wagon) const;
 };
-
-bool Wagon::operator<(Wagon &wagon) const {
-    return this->capacity  < wagon.capacity;
-}
 
 int Wagon::getId() const {
     return this->id;

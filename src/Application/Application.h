@@ -39,17 +39,20 @@ void Application::usage() {
     cout << "Input:  ";
 }
 
-bool Application::run()
-{
+bool Application::run() {
     string l, operation;
+
     usage();
+
     cin.clear();
+
     getline(cin, l);
     stringstream line(l);
 
     line >> operation;
 
     if (operation == "exit") return false;
+
     else if (operation == "readGraph") {
         string fileName;
         if (!(line >> fileName)) controller->setGraph("maps/PortugalMaps/Porto");
@@ -57,13 +60,15 @@ bool Application::run()
 
         controller->showGraph();
     }
-    else if (operation == "preProcess") {
-        int max = 0, curr = 0, vertex = 0;
-        Graph aux = *controller->getGraph();
 
-        for(auto vert : controller->getGraph()->getVertexSet()) 
-        {
-            cout << vert->getId() << endl;
+    else if (operation == "preProcess") {
+        if(controller->getGraph() == nullptr)
+            throw AppException("You must read the graph firstly, before running this operation");
+
+        /*int max = 0, curr = 0;
+        int vertex = 0;
+        Graph aux = *controller->getGraph();
+        for(auto vert : controller->getGraph()->getVertexSet()) {
             aux.preProcess(vert->getId());
             curr = aux.getVertexSet().size();
             if(curr > max) {
@@ -72,9 +77,14 @@ bool Application::run()
             }
             aux = *controller->getGraph();
         }
-        cout << endl << max << endl;
-        cout << vertex << endl;
+
+        cout << vertex << endl;*/
+
+        //if(!controller->getGraph()->preProcess(controller->getCentral())) throw AppException("Vertex does not exist");
+
+       // controller->showGraph();
     }
+
     else if (operation == "shortestPath") {
         string variant;
         int origin, dest;
@@ -89,30 +99,26 @@ bool Application::run()
         viewer = new GraphVisualizer(600, 600);
         viewer->draw(controller->getGraph());
     }
-    else if (operation == "setCentral") {
+
+    else if(operation == "setCentral") {
         int centralId;
         if (!(line >> centralId)) throw AppException("Incorrect number of parameters");
         controller->setCentral(centralId);
     }
-    else if (operation == "deliver") {
 
-    }    
-    else if (operation == "addRequest") {
+    else if(operation == "deliver") {
 
-    } 
-    else if (operation == "removeRequest") {
+    } else if(operation == "addRequest") {
 
-    } 
-    else if (operation == "listRequests") {
+    } else if(operation == "removeRequest") {
 
-    } 
-    else if (operation == "addWagon") {
+    } else if(operation == "listRequests") {
 
-    } 
-    else if (operation == "removeWagon") {
+    } else if(operation == "addWagon") {
 
-    } 
-    else if (operation == "listWagons") {
+    } else if(operation == "removeWagon") {
+
+    } else if(operation == "listWagons") {
 
     }
 

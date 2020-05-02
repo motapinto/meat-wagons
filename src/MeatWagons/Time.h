@@ -11,25 +11,17 @@ class Time {
         Time(const int hour, const int minute, const int second) : hour(hour), minute(minute), second(second) {}
 
         int getHour() const;
-        int getMinute() const;
-        int getSecond() const;
-        
         void setHour(const int hour);
+
+        int getMinute() const;
         void setMinute(const int minute);
+
+        int getSecond() const;
         void setSecond(const int second);
 
         int toSeconds() const;
-        bool operator<(Time &time) const;
+        bool operator<(const Time &time);
 };
-
-bool Time::operator<(Time &time) const {
-    if(this->hour == time.hour)
-        if(this->minute == time.minute)
-            if(this->second == time.second) return false;
-            else return this->second < time.second;
-        else return this->minute < time.minute;
-    else return this->hour < time.hour;
-}
 
 int Time::getHour() const {
     return this->hour;
@@ -59,5 +51,13 @@ int Time::toSeconds() const {
     return this->second + this->minute*60 + this->hour*3600;
 }
 
+bool Time::operator<(const Time &time) {
+    if(this->hour == time.hour)
+        if(this->minute == time.minute)
+            if(this->second == time.second) return false;
+            else return this->second < time.second;
+        else return this->minute < time.minute;
+    else return this->hour < time.hour;
+}
 
 #endif //MEAT_WAGONS_TIME_H
