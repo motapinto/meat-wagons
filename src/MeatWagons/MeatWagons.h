@@ -45,9 +45,13 @@ class MeatWagons {
         void preProcess(int node);
         void shortestPath(int option, int origin, int dest);
 
-        void listWagons();
+        void listWagons() const;
         void addWagon(const int &capacity);
         void removeWagon(const int &id, const int &capacity);
+
+        void listRequests() const;
+        void addRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival);
+        void removeRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival);
 
         void deliver(int iteration);
         int chooseDropOf(vector<int> const pickupNodes);
@@ -120,7 +124,7 @@ void MeatWagons::shortestPath(int option, int origin, int dest) {
     this->viewer->draw(this->graph);
 }
 
-void MeatWagons::listWagons() {
+void MeatWagons::listWagons() const {
     for (auto it = wagons.begin(); it != wagons.end(); it++) {
         cout << "Wagon " << (*it).getId() << ": Capacity " << (*it).getCapacity() << " Available at: "
              << (*it).getNextAvailableTime() << endl << endl;
@@ -135,19 +139,25 @@ void MeatWagons::removeWagon(const int &id, const int &capacity) {
     wagons.erase(Wagon(id, capacity));
 }
 
-/*
-void MeatWagons::addRequest(Request request) {
-
+void MeatWagons::listRequests() const {
+    for (auto it = requests.begin(); it != requests.end(); it++) {
+        cout << "Prisioner " << (*it).getPrisoner() << " to be received in node " << (*it).getDest() << " with priority "
+             << (*it).getPriority() << " at " << (*it).getArrival() << " and deliver at " << (*it).getDelivery() << endl << endl;
+    }
 }
 
-void MeatWagons::removeRequest(Request request) {
 
+void MeatWagons::addRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival) {
+    Request request = Request(prisioner, dest, priority, arrival);
+    requests.insert(request);
 }
 
-void MeatWagons::listRequests(Request request) {
 
+void MeatWagons::removeRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival) {
+    requests.erase(Request(prisioner, dest, priority, arrival));
 }
- */
+
+
 
 /*void MeatWagons::deliver(int iteration) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");

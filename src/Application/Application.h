@@ -17,13 +17,13 @@ class Application {
 
 void Application::usage() {
     cout << "Menu Options:" << endl;
-    cout << "\treadGraph <graph folder path>" << endl;
-    cout << "\tpreProcess {<node id>}" << endl;
+    cout << "\tread <graph & requests folder path>" << endl;
+    cout << "\tprocess {<node id>}" << endl;
     cout << "\tshortestPath {dijkstra, dijkstraOriented, dijkstraBidirectional} <origin node> <destination node>" << endl;
     cout << "\tdeliver <iteration{1,2,3}>"<< endl;
     cout << "\tsetCentral <node id>"<< endl;
-    cout << "\twagonOperation {list | add | remove}"<< endl;
-    cout << "\trequestsOperation {list | add | remove}"<< endl;
+    cout << "\twagonOperation {list | add | remove} {operands}"<< endl;
+    cout << "\trequestsOperation {list | add | remove} {operands}"<< endl;
 
     cout << "\texit" << endl << endl;
     cout << "Input:  ";
@@ -43,14 +43,14 @@ bool Application::run() {
 
     if (operation == "exit") return false;
 
-    else if (operation == "readGraph") {
+    else if (operation == "read") {
         string fileName;
 
         if (!(line >> fileName)) controller->setGraph("maps/PortugalMaps/Porto");
         else controller->setGraph(fileName);
     }
 
-    else if (operation == "preProcess") {
+    else if (operation == "process") {
         int node;
 
         if (!(line >> node)) controller->preProcess(controller->getCentral());
@@ -98,16 +98,20 @@ bool Application::run() {
     else if(operation == "requestsOperation") {
         string variant;
         if(line >> variant) {
-            if(variant == "list") controller->listWagons();
+            if(variant == "list") controller->listRequests();
 
             else if(variant == "add") {
-                int capacity;
-                if (line >> capacity) controller->addWagon(capacity);
+                string prisioner;
+                int dest, priority, hour, minute, second;
+                if (line >> prisioner >> dest >> priority >> hour >> minute >> second)
+                    controller->addRequest(prisioner, dest, priority, Time(hour, minute, second));
             }
 
             else if(variant == "remove") {
-                int id, capacity;
-                if (line>> id && line >> capacity) controller->removeWagon(id, capacity);
+                string prisioner;
+                int dest, priority, hour, minute, second;
+                if (line >> prisioner >> dest >> priority >> hour >> minute >> second)
+                    controller->removeRequest(prisioner, dest, priority, Time(hour, minute, second));
             }
         }
     }
