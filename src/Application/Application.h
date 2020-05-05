@@ -1,51 +1,27 @@
 #pragma once
 #ifndef MEAT_WAGONS_APPLICATION_H
 #define MEAT_WAGONS_APPLICATION_H
+#include <sstream>
 #include <fstream>
 #include "../MeatWagons/MeatWagons.h"
-#define divider "---------------------------------------------------"
-
-#ifdef _WIN32
-#define clearScreen() system("cls");
-#else
-#define clearScreen() system("cls");
-#endif
 
 void readline(string &str) {
+    str.clear();
     cin.clear();
     fflush(stdin);
     getline(cin, str);
-    while (str.size() == 0)
-    {
-        getline(cin, str);
-    }
+    while (str.empty()) getline(cin, str);
 }
-int stoint(const string &str, int &value)
-{
-    int base = 10;
-    size_t *pos = 0;
-    // wrapping stoi because it may throw an exception
-
-    try {
-        value = stoi(str, pos, base);
-        return 0;
-    }
-    catch (const invalid_argument &ia) {
-        //cerr << "Invalid argument: " << ia.what() << endl;
-        return -1;
-    }
-
-    catch (const out_of_range &oor) {
-        //cerr << "Out of Range error: " << oor.what() << endl;
-        return -2;
-    }
-
-    catch (const exception &e) {
-        //cerr << "Undefined error: " << e.what() << endl;
-        return -3;
-    }
+int stoint(const string &str, int &value) {
+  // wrapping stoi because it may throw an exception
+  try {
+    value = stoi(str, nullptr, 10);
+    return 0;
+  }
+  catch (const invalid_argument &ia) { return -1; }
+  catch (const out_of_range &oor) { return -2; }
+  catch (const exception &e) { return -3; }
 }
-// ===========================================================
 
 class Application {
     private:
@@ -60,7 +36,7 @@ class Application {
 
 void Application::displayMenu()
 {
-    cout << divider << endl;
+    cout << "\b---------------------------------------------------" << endl;
     cout << "Menu Options:" << endl;
     cout << "\t1 - Read Graph <graph & requests folder path>" << endl;
     cout << "\t2 - Process <node id>" << endl;
@@ -74,87 +50,137 @@ void Application::displayMenu()
     cout << "\b> ";
 }
 
+
 void Application::run() 
 {
     int option;
     string argument, input;
 
     displayMenu();
-    while(1) {
+    while(true) {
         readline(input);
-        int h = stoint(input, option);
-        if(h == 0) break;
-        else cout << "> ";
+        if(stoint(input, option) == 0 && option >= 0 && option <= 7) 
+            break;
+        else cout << "\b> ";
     }
 
     switch (option)
     {
         // curly brackets are needed to initialize new variables in case scopes
-        case 0: {
-            cout << endl << "Exiting";
-            exit(0);
-        }
+        case 0:
+          cout << endl << "Exiting";
+          exit(0);
+
         case 1: {
             cout << "\n--- Reading Graph ---";
-            cout << "\nProvide the <graph and requests folder path>";
-            cout << "\nOr type 0 to go back";
-            cout << "\n> ";
+            cout << "\nProvide a <graph & requests folder path> (type '0' or 'back' to go back)";
+            cout << "\nExample: 'maps/PortugalMaps/Porto'\n> ";
 
-            readline(input); if(input == "0") break;
+            bool back = false;
+            readline(input);
+
+            while(true) {
+                if(input == "0" || input == "back") {
+                    back = true;
+                    break;
+                }
+                else if(strstr(strdup(input.c_str()), "maps/") == nullptr) {
+                    cout << "\nTry again\n> ";
+                    readline(input);
+                }
+                else break;
+            }
+            if(back) break;
+            
             stringstream line(input);
+            cout << "|" << line.str() << "|\n";
             controller->setGraph(line.str());
 
             break;
         }
+
         case 2: {
             cout << "\n--- Processing node ---";
-            cout << "\nProvide the following <node id>";
-            cout << "\nOr type 0 to go back";
-            cout << "\n> ";
+            cout << "\nProvide <node id>\n(Type '0' or 'back' to go back)\n> ";
 
             int node;
-            readline(input); if(input == "0") break;
-            stringstream line(input);
+            bool back = false;
+            readline(input);
 
+            while(true) {
+                if(input == "0" || input == "back") {
+                    back = true;
+                    break;
+                }
+                else if(stoint(input, node) != 0 || node < 0) {
+                    cout << "\nTry again\n> ";
+                    readline(input);
+                }
+                else break;
+            }
+            if(back) break;
+
+            stringstream line(input);
             if (!(line >> node)) controller->preProcess(controller->getCentral());
             else controller->preProcess(node);
+
             break;
         }
+
         case 3: {
             cout << "\n--- Finding Shortest Path ---";
-            cout << "\nProvide the following <{dijkstra, dijkstraOriented, dijkstraBidirectional}> <origin node> <destination node>";
-            cout << "\nOr type 0 to go back";
-            cout << "\n> ";
+            cout << "\nProvide the following specs <{Normal, Oriented, Bidirectional}> <origin node> <destination node>";
+            cout << "\n(Type '0' or 'back' to go back)\n> ";
 
             string variant;
             int origin, dest;
-            readline(input); if(input == "0") break;
-            stringstream line(input);
+            bool back = false;
+            readline(input);
 
-            if (line >> variant && line >> origin && line >> dest) {
-                if (variant == "dijkstra") controller->shortestPath(1, origin, dest);
-                else if (variant == "dijkstraOriented") controller->shortestPath(2, origin, dest);
-                else if (variant == "dijkstraBidirectional") controller->shortestPath(3, origin, dest);
+            while(true) {
+                if(input == "0" || input == "back") {
+                    back = true;
+                    break;
+                }
+
+                stringstream line(input);
+                if (line >> variant && line >> origin && line >> dest) {
+                    if (variant == "Normal" || variant == "N") controller->shortestPath(1, origin, dest);
+                    else if (variant == "Oriented" || variant == "O") controller->shortestPath(2, origin, dest);
+                    else if (variant == "Bidirectional" || variant == "B") controller->shortestPath(3, origin, dest);
+                    else {
+                        cout << "\nTry again\n> ";
+                        readline(input);
+                    }                    
+                }
+                else {
+                    cout << "\nTry again\n> ";
+                    readline(input);
+                }
             }
+
             break;
         }
+
         case 4: {
             cout << "\n--- Delivering ---";
-            cout << "\nProvide the following <{1,2,3}>";
-            cout << "\nOr type 0 to go back";
-            cout << "\n> ";
+            cout << "\nProvide one of the following <{1,2,3}>";
+            cout << "\n(Type '0' or 'back' to go back)\n> ";
 
-            int iteration;
-            readline(input); if(input == "0") break;
+            // int iteration;
+            readline(input);
+            if(input == "0" || input == "back") break;
+
             stringstream line(input);
             // if(line >> iteration) controller->deliver(iteration);
 
             break;
         }
+
         case 5: {
             cout << "\n--- Setting Central Node ---";
             cout << "\nProvide the following <node id>";
-            cout << "\nOr type 0 to go back";
+            cout << "\nType '0' or 'back' to go back";
             cout << "\n> ";
 
             int centralId;
@@ -167,7 +193,7 @@ void Application::run()
         case 6: {
             cout << "\n--- Wagon Operation ---";
             cout << "\nProvide the following <{list | add | remove}> <operands>";
-            cout << "\nOr type 0 to go back";
+            cout << "\nType 0 to go back";
             cout << "\n> ";
 
             readline(input); if(input == "0") break;
@@ -191,7 +217,7 @@ void Application::run()
         case 7: {
             cout << "\n--- Requests ---";
             cout << "\nProvide the following <{1,2,3}>";
-            cout << "\nOr type 0 to go back";
+            cout << "\nType 0 to go back";
             cout << "\n> ";
 
             readline(input); if(input == "0") break;
@@ -201,22 +227,22 @@ void Application::run()
             if(line >> variant) {
                 if(variant == "list") controller->listRequests();
                 else if(variant == "add") {
-                    string prisioner;
+                    string prisoner;
                     int dest, priority, hour, minute, second;
-                    if (line >> prisioner >> dest >> priority >> hour >> minute >> second)
-                        controller->addRequest(prisioner, dest, priority, Time(hour, minute, second));
+                    if (line >> prisoner >> dest >> priority >> hour >> minute >> second)
+                        controller->addRequest(prisoner, dest, priority, Time(hour, minute, second));
                 }
                 else if(variant == "remove") {
-                    string prisioner;
+                    string prisoner;
                     int dest, priority, hour, minute, second;
-                    if (line >> prisioner >> dest >> priority >> hour >> minute >> second)
-                        controller->removeRequest(prisioner, dest, priority, Time(hour, minute, second));
+                    if (line >> prisoner >> dest >> priority >> hour >> minute >> second)
+                        controller->removeRequest(prisoner, dest, priority, Time(hour, minute, second));
                 }
             }
 
             break;
         }
-        default:
+        default: 
             break;
     }
 }

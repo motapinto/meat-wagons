@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 #include <string>
 #include "Application/Application.h"
 
@@ -11,7 +10,7 @@ int main(int argc, char* argv[]) {
         while(true) application.run();
     } 
     catch (MeatWagonsException &e) {
-        cout << "\nException: " + e.getMessage() << endl;
-        cout << "Usage: ./meat-wagons <graph file path>" << endl << endl;
+        cerr << "\nException: " + e.getMessage() << endl;
+        // cout << "Usage: ./meat-wagons <graph file path>" << endl << endl;
     }
 }
