@@ -41,9 +41,6 @@ bool Reader::readGraph(Graph *graph, int &central, unordered_map<int, Vertex*> &
         y < minY ? minY = y : minY;
     }
 
-    graph->setOffsetX(1.01*minX);
-    graph->setOffsetY(1.0005*minY);
-
     edgesStream >> numEdges;
     for (int i = 1; i <= numEdges; i++) {
         edgesStream >> c >> origin >> c >> dest >> c;
@@ -101,10 +98,16 @@ bool Reader::setCentral(Graph *graph, int &central) {
     int pos = path.find_last_of('/');
     string city = path.substr(pos + 1);
 
+    Vertex *centralVertex;
     if(city == "Porto") {
-        graph->findVertex(90379359)->setTag(Vertex::CENTRAL);
+        centralVertex = graph->findVertex(90379359);
+        centralVertex->setTag(Vertex::CENTRAL);
         central = 90379359;
     }
+
+    graph->setOffsetX(centralVertex->getPosition().getX() - 300);
+    graph->setOffsetY(centralVertex->getPosition().getY() - 250);
+
     return true;
 }
 

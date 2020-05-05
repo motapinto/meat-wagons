@@ -63,20 +63,20 @@ class MeatWagons {
         void thirdIteration();
 };
 
-string MeatWagons::getGraphName() const {
-    return this->graphName;
-}
-
-void MeatWagons::setGraphName(string name) {
-    this->graphName = name;
-}
-
 int MeatWagons::getCentral() const {
     return this->central;
 }
 
 void MeatWagons::setCentral(const int &id) {
     this->central = id;
+}
+
+string MeatWagons::getGraphName() const {
+    return this->graphName;
+}
+
+void MeatWagons::setGraphName(string name) {
+    this->graphName = name;
 }
 
 Graph* MeatWagons::getGraph() const {

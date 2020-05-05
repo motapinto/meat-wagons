@@ -38,8 +38,8 @@ void Application::displayMenu()
 {
     cout << "\b---------------------------------------------------" << endl;
     cout << "Menu Options: " << endl;
-    cout << "\t1 - Read Graph <graph & requests folder path>" << endl;
-    cout << "\t2 - Process <node id>" << endl;
+    cout << "\t1 - Read Graph" << endl;
+    cout << "\t2 - Pre Process" << endl;
     cout << "\t3 - Shortest Path (Dijkstra) <{Normal | Oriented | Bidirectional}> <origin node> <destination node>" << endl;
     cout << "\t4 - Deliver (Iteration: <{1 | 2 | 3}>)"<< endl;
     cout << "\t5 - Set Central <node id>"<< endl;
@@ -67,15 +67,15 @@ void Application::run()
         else cout << "\b> ";
     }
 
-    switch (option)
-    {
+    switch (option) {
         // curly brackets are needed to initialize new variables in case scopes
         case 0:
           cout << endl << "Exiting";
           exit(0);
+
         case 1: {
             cout << "\n--- Reading Graph ---";
-            cout << "\nProvide a <graph & requests folder path> (type '0' or 'back' to go back)";
+            cout << "\nProvide the following: <graph & requests folder path> (Type '0' or 'back' to go back)";
             cout << "\nExample: 'maps/PortugalMaps/Porto'\n> ";
 
             bool back = false;
@@ -100,14 +100,15 @@ void Application::run()
             stringstream name;
             for (size_t i = line.str().find_last_of('/') + 1; i < line.str().size(); ++i)
                 name << line.str().at(i);
-            
+
             controller->setGraphName(name.str());
 
             break;
         }
+
         case 2: {
             cout << "\n--- Processing node ---";
-            cout << "\nProvide <node id>\n(Type '0' or 'back' to go back)\n> ";
+            cout << "\nProvide the following: <node id>\n(Type '0' or 'back' to go back)\n> ";
 
             int node;
             bool back = false;
@@ -132,10 +133,11 @@ void Application::run()
 
             break;
         }
+
         case 3: {
             cout << "\n--- Finding Shortest Path ---";
-            cout << "\nProvide the following specs <{Normal, Oriented, Bidirectional}> <origin node> <destination node>";
-            cout << "\n(Type '0' or 'back' to go back)\n> ";
+            cout << "\nProvide the following: <Normal | Oriented |Bidirectional> <origin node> <destination node> (Type '0' or 'back' to go back)";
+            cout << "\nExample: 'Normal 90379359 411018963'\n> ";
 
             string variant;
             int origin, dest;
@@ -166,9 +168,10 @@ void Application::run()
 
             break;
         }
+
         case 4: {
             cout << "\n--- Delivering ---";
-            cout << "\nProvide one of the following <{1,2,3}>";
+            cout << "\nProvide the following: <delivery id>";
             cout << "\n(Type '0' or 'back' to go back)\n> ";
 
             int iteration;
@@ -195,13 +198,14 @@ void Application::run()
 
             break;
         }
+
         case 5: {
             if(controller->getGraph() == nullptr) {
                 cout << "No graph has been read yet!\n";
                 break;
             }
             cout << "\n--- Setting Central Node ---";
-            cout << "\nProvide the following <node id>";
+            cout << "\nProvide the following: <node id>";
             cout << "\n(Type '0' or 'back' to go back)\n> ";
 
             int centralID;
@@ -222,9 +226,10 @@ void Application::run()
 
             break;
         }
+
         case 6: {
             cout << "\n--- Wagon Operation ---";
-            cout << "\nProvide the following <{list | add | remove}> <operands>";
+            cout << "\nProvide the following: <list | add | remove> <operands>";
             cout << "\n(Type '0' or 'back' to go back)\n> ";
             cout << "\n> ";
 
@@ -243,10 +248,10 @@ void Application::run()
                     if (line>> id && line >> capacity) controller->removeWagon(id, capacity);
                 }
             }
-
             break;
         }
-        case 7: { 
+
+        case 7: {
             cout << "\n--- Requests ---";
             cout << "\nProvide the following <{1,2,3}>";
             cout << "\n(Type '0' or 'back' to go back)\n> ";
@@ -271,10 +276,10 @@ void Application::run()
                         controller->removeRequest(prisoner, dest, priority, Time(hour, minute, second));
                 }
             }
-
             break;
         }
-        default: 
+
+        default:
             break;
     }
 }
