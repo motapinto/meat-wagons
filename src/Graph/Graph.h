@@ -19,11 +19,11 @@ class Graph {
         int offsetY;    // for Graph Viewer
 
         vector<Vertex*> vertexSet;   
-        unordered_map<int, Vertex*> vertexIndexes;    //search for id and return vertex (much faster)
+        unordered_map<int, Vertex*> vertexIndexes;  //search for id and return vertex (much faster)
 
-        vector<vector<double>> minDistance;       // used for floyd Warshall algorithm
-        vector<vector<Vertex*>> next;             // used for floyd Warshall algorithm
-        void dfsVisit(Vertex *origin) const;      // pre processing
+        vector<vector<double>> minDistance;         // used for floyd Warshall
+        vector<vector<Vertex*>> next;               // used for floyd Warshall
+        void dfsVisit(Vertex *origin) const;        // pre processing
 
         const static int infinite = 99999999;
 
@@ -83,8 +83,8 @@ bool Graph::preProcess(int origin) {
     
     dfsVisit(orig);
 
-    set<int> removed;
     // deletes nodes
+    set<int> removed;
     for(auto it = vertexSet.begin(); it != vertexSet.end(); it++) {
         if(!(*it)->visited) {
             vertexIndexes.erase((*it)->getId());
@@ -228,7 +228,7 @@ bool Graph::dijkstraSingleSource(const int origin)  {
 
 bool Graph::dijkstra(const int origin, const int dest)  {
     auto start = dijkstraInit(origin);
-    auto final =  findVertex(dest);
+    auto final = findVertex(dest);
 
     if(start == nullptr || final == nullptr)
         return false;
@@ -628,4 +628,4 @@ vector<int> Graph::getfloydWarshallPath(const int orig, const int dest) const {
 	return res;
 }
 
-#endif 
+#endif
