@@ -23,7 +23,7 @@ class MeatWagons {
         Graph *graph = nullptr;
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
         unordered_map<int, Vertex*> pointsOfInterest;
-
+        string graphName;
         set<Wagon> wagons;
         multiset<Request> requests;
         int zoneMaxDist;
@@ -36,6 +36,9 @@ class MeatWagons {
 
         int getCentral() const;
         void setCentral(const int &id);
+
+        string getGraphName() const;
+        void setGraphName(string name);
 
         Graph* getGraph() const;
         void setGraph(const string path);
@@ -59,6 +62,14 @@ class MeatWagons {
         void secondIteration();
         void thirdIteration();
 };
+
+string MeatWagons::getGraphName() const {
+    return this->graphName;
+}
+
+void MeatWagons::setGraphName(string name) {
+    this->graphName = name;
+}
 
 int MeatWagons::getCentral() const {
     return this->central;

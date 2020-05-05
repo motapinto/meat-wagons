@@ -1,9 +1,27 @@
 #pragma once
 #ifndef MEAT_WAGONS_APPLICATION_H
 #define MEAT_WAGONS_APPLICATION_H
-
+#include <sstream>
 #include <fstream>
 #include "../MeatWagons/MeatWagons.h"
+
+void readline(string &str) {
+    str.clear();
+    cin.clear();
+    fflush(stdin);
+    getline(cin, str);
+    while (str.empty()) getline(cin, str);
+}
+int stoint(const string &str, int &value) {
+  // wrapping stoi because it may throw an exception
+  try {
+    value = stoi(str, nullptr, 10);
+    return 0;
+  }
+  catch (const invalid_argument &ia) { return -1; }
+  catch (const out_of_range &oor) { return -2; }
+  catch (const exception &e) { return -3; }
+}
 
 class Application {
     private:
@@ -11,112 +29,254 @@ class Application {
         GraphVisualizer *viewer = nullptr;
 
     public:
-        static void usage();
-        bool run();
+        void run();
+        void displayMenu();
 };
 
-void Application::usage() {
-    cout << "Menu Options:" << endl;
-    cout << "\tread <graph & requests folder path>" << endl;
-    cout << "\tprocess {<node id>}" << endl;
-    cout << "\tshortestPath {dijkstra, dijkstraOriented, dijkstraBidirectional} <origin node> <destination node>" << endl;
-    cout << "\tdeliver <iteration{1,2,3}>"<< endl;
-    cout << "\tsetCentral <node id>"<< endl;
-    cout << "\twagonOperation {list | add | remove} {operands}"<< endl;
-    cout << "\trequestsOperation {list | add | remove} {operands}"<< endl;
 
-    cout << "\texit" << endl << endl;
-    cout << "Input:  ";
+void Application::displayMenu()
+{
+    cout << "\b---------------------------------------------------" << endl;
+    cout << "Menu Options: " << endl;
+    cout << "\t1 - Read Graph <graph & requests folder path>" << endl;
+    cout << "\t2 - Process <node id>" << endl;
+    cout << "\t3 - Shortest Path (Dijkstra) <{Normal | Oriented | Bidirectional}> <origin node> <destination node>" << endl;
+    cout << "\t4 - Deliver (Iteration: <{1 | 2 | 3}>)"<< endl;
+    cout << "\t5 - Set Central <node id>"<< endl;
+    cout << "\t6 - Wagon Operation <{list | add | remove}> <operands>"<< endl;
+    cout << "\t7 - Requests Operation <{list | add | remove}> <operands>"<< endl;
+    cout << "\t0 - Exit" << endl << endl;
+        
+    if(controller->getGraph() == nullptr) cout << "Graph not read yet!" << endl;
+    else cout << "Graph read for: '" << controller->getGraphName() << "'" << endl;
+
+    cout << "\b> ";
 }
 
-bool Application::run() {
-    string l, operation;
 
-    usage();
+void Application::run() 
+{
+    int option;
+    string argument, input;
 
-    cin.clear();
-
-    getline(cin, l);
-    stringstream line(l);
-
-    line >> operation;
-
-    if (operation == "exit") return false;
-
-    else if (operation == "read") {
-        string fileName;
-
-        if (!(line >> fileName)) controller->setGraph("maps/PortugalMaps/Porto");
-        else controller->setGraph(fileName);
+    displayMenu();
+    while(true) {
+        readline(input);
+        if(stoint(input, option) == 0 && option >= 0 && option <= 7) 
+            break;
+        else cout << "\b> ";
     }
 
-    else if (operation == "process") {
-        int node;
+    switch (option)
+    {
+        // curly brackets are needed to initialize new variables in case scopes
+        case 0:
+          cout << endl << "Exiting";
+          exit(0);
+        case 1: {
+            cout << "\n--- Reading Graph ---";
+            cout << "\nProvide a <graph & requests folder path> (type '0' or 'back' to go back)";
+            cout << "\nExample: 'maps/PortugalMaps/Porto'\n> ";
 
-        if (!(line >> node)) controller->preProcess(controller->getCentral());
-        else controller->preProcess(node);
-    }
+            bool back = false;
+            readline(input);
 
-    else if (operation == "shortestPath") {
-        string variant;
-        int origin, dest;
+            while(true) {
+                if(input == "0" || input == "back") {
+                    back = true;
+                    break;
+                }
+                else if(strstr(strdup(input.c_str()), "maps/") == nullptr) {
+                    cout << "\nTry again\n> ";
+                    readline(input);
+                }
+                else break;
+            }
+            if(back) break;
 
-        if (line >> variant && line >> origin && line >> dest) {
-            if (variant == "dijkstra") controller->shortestPath(1, origin, dest);
-            else if (variant == "dijkstraOriented") controller->shortestPath(2, origin, dest);
-            else if (variant == "dijkstraBidirectional") controller->shortestPath(3, origin, dest);
+            stringstream line(input);
+            controller->setGraph(line.str());
+
+            stringstream name;
+            for (size_t i = line.str().find_last_of('/') + 1; i < line.str().size(); ++i)
+                name << line.str().at(i);
+            
+            controller->setGraphName(name.str());
+
+            break;
         }
-    }
+        case 2: {
+            cout << "\n--- Processing node ---";
+            cout << "\nProvide <node id>\n(Type '0' or 'back' to go back)\n> ";
 
-    else if(operation == "deliver") {
-        int iteration;
-        //if(line >> iteration) controller->deliver(iteration);
-    }
+            int node;
+            bool back = false;
+            readline(input);
 
-    else if(operation == "setCentral") {
-        int centralId;
-        if (line >> centralId) controller->setCentral(centralId);
-    }
-
-    else if(operation == "wagonOperation") {
-        string variant;
-        if(line >> variant) {
-            if(variant == "list") controller->listWagons();
-
-            else if(variant == "add") {
-                int capacity;
-                if (line >> capacity) controller->addWagon(capacity);
+            while(true) {
+                if(input == "0" || input == "back") {
+                    back = true;
+                    break;
+                }
+                else if(stoint(input, node) != 0 || node < 0) {
+                    cout << "\nTry again\n> ";
+                    readline(input);
+                }
+                else break;
             }
+            if(back) break;
 
-            else if(variant == "remove") {
-                int id, capacity;
-                if (line>> id && line >> capacity) controller->removeWagon(id, capacity);
-            }
+            stringstream line(input);
+            if (!(line >> node)) controller->preProcess(controller->getCentral());
+            else controller->preProcess(node);
+
+            break;
         }
-    }
+        case 3: {
+            cout << "\n--- Finding Shortest Path ---";
+            cout << "\nProvide the following specs <{Normal, Oriented, Bidirectional}> <origin node> <destination node>";
+            cout << "\n(Type '0' or 'back' to go back)\n> ";
 
-    else if(operation == "requestsOperation") {
-        string variant;
-        if(line >> variant) {
-            if(variant == "list") controller->listRequests();
+            string variant;
+            int origin, dest;
 
-            else if(variant == "add") {
-                string prisioner;
-                int dest, priority, hour, minute, second;
-                if (line >> prisioner >> dest >> priority >> hour >> minute >> second)
-                    controller->addRequest(prisioner, dest, priority, Time(hour, minute, second));
+            while(true) {
+                readline(input);
+                if(input == "0" || input == "back") break;
+
+                stringstream line(input);
+                if (line >> variant && line >> origin && line >> dest) 
+                {
+                    if (variant == "Normal" || variant == "N") {
+                        controller->shortestPath(1, origin, dest);
+                        break;
+                    }
+                    else if (variant == "Oriented" || variant == "O") {
+                        controller->shortestPath(2, origin, dest);
+                        break;
+                    }
+                    else if (variant == "Bidirectional" || variant == "B") {
+                        controller->shortestPath(3, origin, dest);
+                        break;
+                    }
+                    else cout << "\nTry again\n> ";                    
+                }
+                else cout << "\nTry again\n> ";
             }
 
-            else if(variant == "remove") {
-                string prisioner;
-                int dest, priority, hour, minute, second;
-                if (line >> prisioner >> dest >> priority >> hour >> minute >> second)
-                    controller->removeRequest(prisioner, dest, priority, Time(hour, minute, second));
-            }
+            break;
         }
-    }
+        case 4: {
+            cout << "\n--- Delivering ---";
+            cout << "\nProvide one of the following <{1,2,3}>";
+            cout << "\n(Type '0' or 'back' to go back)\n> ";
 
-    return true;
+            int iteration;
+            bool back = false;
+
+            while(true) {
+                readline(input);
+                if(input == "0" || input == "back") {
+                    back = true;
+                    break;
+                }
+                else if(input == "1" || input == "2" || input == "3")
+                    cout << "\nTry again\n> ";
+            }
+            if(back) break;
+            
+
+            stringstream line(input);
+            if(line >> iteration) {
+                cout << "This operation is not ready yet!\n";
+                exit(0);
+                // controller->deliver(iteration);
+            }
+
+            break;
+        }
+        case 5: {
+            if(controller->getGraph() == nullptr) {
+                cout << "No graph has been read yet!\n";
+                break;
+            }
+            cout << "\n--- Setting Central Node ---";
+            cout << "\nProvide the following <node id>";
+            cout << "\n(Type '0' or 'back' to go back)\n> ";
+
+            int centralID;
+            bool back = false;
+
+            while(true) {
+                readline(input);
+                if(input == "0" || input == "back") {
+                    back = true;
+                    break;
+                }
+                else if(stoint(input, centralID)) cout << "\nTry again\n> ";
+            }
+            if(back) break;
+
+            stringstream line(input);
+            if (line >> centralID) controller->setCentral(centralID);
+
+            break;
+        }
+        case 6: {
+            cout << "\n--- Wagon Operation ---";
+            cout << "\nProvide the following <{list | add | remove}> <operands>";
+            cout << "\n(Type '0' or 'back' to go back)\n> ";
+            cout << "\n> ";
+
+            readline(input); if(input == "0") break;
+            stringstream line(input);
+            string variant;
+
+            if(line >> variant) {
+                if(variant == "list") controller->listWagons();
+                else if(variant == "add") {
+                    int capacity;
+                    if (line >> capacity) controller->addWagon(capacity);
+                }
+                else if(variant == "remove") {
+                    int id, capacity;
+                    if (line>> id && line >> capacity) controller->removeWagon(id, capacity);
+                }
+            }
+
+            break;
+        }
+        case 7: { 
+            cout << "\n--- Requests ---";
+            cout << "\nProvide the following <{1,2,3}>";
+            cout << "\n(Type '0' or 'back' to go back)\n> ";
+            cout << "\n> ";
+
+            readline(input); if(input == "0") break;
+            stringstream line(input);
+            string variant;
+            
+            if(line >> variant) {
+                if(variant == "list") controller->listRequests();
+                else if(variant == "add") {
+                    string prisoner;
+                    int dest, priority, hour, minute, second;
+                    if (line >> prisoner >> dest >> priority >> hour >> minute >> second)
+                        controller->addRequest(prisoner, dest, priority, Time(hour, minute, second));
+                }
+                else if(variant == "remove") {
+                    string prisoner;
+                    int dest, priority, hour, minute, second;
+                    if (line >> prisoner >> dest >> priority >> hour >> minute >> second)
+                        controller->removeRequest(prisoner, dest, priority, Time(hour, minute, second));
+                }
+            }
+
+            break;
+        }
+        default: 
+            break;
+    }
 }
 
 #endif //MEAT_WAGONS_APPLICATION_H
