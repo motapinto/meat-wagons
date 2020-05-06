@@ -6,14 +6,13 @@ class Delivery {
     private:
         Time start, end;
         vector<Request*> requests;
-        vector<int> forwardPath, backwardPath;
+        vector<int> forwardPath;
 
     public:
-        Delivery(const Time &start, const vector<Request*> &requests, const vector<int> &forwardPath, const vector<int> &backwardPath, const int weight) {
+        Delivery(const Time &start, const vector<Request*> &requests, const vector<int> &forwardPath, const int weight) {
             this->start = start;
             this->requests = requests;
             this->forwardPath = forwardPath;
-            this->backwardPath = backwardPath;
             this->start.setSecond(this->start.getSecond() + weight);
         }
 
@@ -68,14 +67,6 @@ vector<int> Delivery::getForwardPath() const {
 
 void Delivery::setForwardPath(const vector<int> &path) {
     this->forwardPath = path;
-}
-
-vector<int> Delivery::getBackwardPath() const {
-    return this->backwardPath;
-}
-
-void Delivery::setBackwardPath(const vector<int> &path) {
-    this->backwardPath = path;
 }
 
 

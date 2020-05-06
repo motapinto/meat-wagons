@@ -2,6 +2,7 @@
 #ifndef MEAT_WAGONS_MEATWAGONS_H
 #define MEAT_WAGONS_MEATWAGONS_H
 
+#include <unordered_set>
 #include <set>
 #include <time.h>
 #include "Request.h"
@@ -62,6 +63,8 @@ class MeatWagons {
         void firstIteration();
         void secondIteration();
         void thirdIteration();
+
+        void drawDeliveries(Delivery delivery);
 };
 
 int MeatWagons::getCentral() const {
@@ -116,19 +119,31 @@ void MeatWagons::preProcess(int node) {
 void MeatWagons::shortestPath(int option, int origin, int dest) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
 
+    unordered_set<int> processedEdges, processedEdgesInv;
+
     switch (option) {
-        case 1: if (!this->graph->dijkstra(origin, dest)) throw MeatWagonsException("Vertex not found"); break;
-        case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
-        case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+        case 1: if (!this->graph->dijkstra(origin, dest, processedEdges)) throw MeatWagonsException("Vertex not found"); break;
+        case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest, processedEdges)) throw MeatWagonsException("Vertex was not found");break;
+        case 3: if (!this->graph->dijkstraBidirectional(origin, dest, processedEdges, processedEdgesInv)) throw MeatWagonsException("Vertex was not found");break;
     }
 
-    // get path
+    this->viewer = new GraphVisualizer(600, 600);
+
+    // get processed path
+    vector<int> edgesProcessed(processedEdges.begin(), processedEdges.end());
+    this->viewer->setPath(edgesProcessed, "orange", false);
+
+    if(processedEdgesInv.size() != 0) {
+        vector<int> edgesProcessedInv(processedEdgesInv.begin(), processedEdgesInv.end());
+        this->viewer->setPath(edgesProcessedInv, "magenta", false);
+    }
+
+    // get shortest path
     vector<int> vert, edges;
     this->graph->getPathTo(dest, vert, edges);
 
-    // draw path
-    this->viewer = new GraphVisualizer(600, 600);
-    this->viewer->setPath(vert, edges);
+    // draw shortest path
+    this->viewer->setPath(edges, "blue", true);
     this->viewer->draw(this->graph);
 }
 
@@ -177,29 +192,25 @@ void MeatWagons::deliver(int iteration) {
         //case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
     }
 }
-*/
+
 int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
     srand((unsigned) time(0));
     int random_vertex;
     int id;
+
     while(true){
         random_vertex = (rand() % graph->getNumVertex());
         id = graph->getVertexSet()[random_vertex]->getId();
 
-        if(find(pickupNodes.begin(), pickupNodes.end(), id) != pickupNodes.end()){
+        if(find(pickupNodes.begin(), pickupNodes.end(), id) != pickupNodes.end())
             continue;
-        }
 
         return id;
     }
-
 }
 
-/*
-// Iteration: Using a single van with capacity equal to 1
-// Receive prisioner
-// Deliver to a random point of interest(not the pickup)
-// Get back to central to process another request
+
+// Iteration: Using a single van with capacity equal to 1 (receive prisioner -> deliver to dropOff location -> return to central)
 void MeatWagons::firstIteration() {
     if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
     if(wagons.begin()->getCapacity() != 1)  throw MeatWagonsException("Wrong iteration configuration");
@@ -209,6 +220,7 @@ void MeatWagons::firstIteration() {
     auto wagon = *wagonIt;
     this->wagons.erase(wagonIt);
     wagon.init();
+    unordered_set<int> processedEdges;
 
     auto it = requests.begin();
     while(it!= requests.end()) {
@@ -224,22 +236,23 @@ void MeatWagons::firstIteration() {
         vector<int> pickupNodes;
 
         // pickup prisioner path
-        graph->dijkstra(this->central, request.getDest());
+        graph->dijkstra(this->central, request.getDest(), processedEdges);
         int weight = graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
         pickupNodes.push_back(request.getDest());
 
         // deliver prisioner path
         int dropOffNode = chooseDropOf(pickupNodes);
-        graph->dijkstra(request.getDest(), dropOffNode);
+        graph->dijkstra(request.getDest(), dropOffNode, processedEdges);
         weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
 
         // return to central path
         vector<int> nodesBackwardTrip, edgesBackwardTrip;
-        graph->dijkstra(dropOffNode, this->central);  // como e bidirectional sclr basta dar reverse
+        graph->dijkstra(dropOffNode, this->central, processedEdges);  // como e bidirectional sclr basta dar reverse
         weight += graph->getPathTo(request.getDest(), nodesBackwardTrip, edgesBackwardTrip);
 
+        // add delivery to wagon
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
-        Delivery *delivery = new Delivery(lastDeliveryTime, requests, edgesForwardTrip, edgesBackwardTrip, weight);
+        Delivery *delivery = new Delivery(lastDeliveryTime, requests, edgesForwardTrip, weight);
         wagon.addDelivery(delivery);
     }
     // wagon now is back at the central
@@ -250,6 +263,21 @@ void MeatWagons::secondIteration() {
 }
 
 void MeatWagons::thirdIteration() {
+}
+
+void MeatWagons::drawDeliveries(Delivery delivery) {
+    this->viewer = new GraphVisualizer(600, 600);
+
+    vector<Wagon> meatWagons (this->wagons.begin(), this->wagons.end());
+    this->viewer->setPath(delivery.getForwardPath(), "blue", true);
+
+    for(auto request : delivery.getRequests()) {
+        this->viewer->getViewer()->setVertexSize(request->getDest(), 30);
+        this->viewer->getViewer()->setVertexColor(request->getDest(), "orange");
+    }
+
+    this->viewer->getViewer()->rearrange();
+    this->viewer->draw(this->graph);
 }
 
 #endif //MEAT_WAGONS_MEATWAGONS_H
