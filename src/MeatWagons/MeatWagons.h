@@ -3,6 +3,7 @@
 #define MEAT_WAGONS_MEATWAGONS_H
 
 #include <set>
+#include <time.h>
 #include "Request.h"
 #include "../Graph/Reader.h"
 #include "../GraphViewer/GraphVisualizer.h"
@@ -180,12 +181,25 @@ void MeatWagons::removeRequest(const string &prisioner, const int &dest, const i
         //case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
     }
 }
-
+*/
 int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
-    return 0;
+    srand((unsigned) time(0));
+    int random_vertex;
+    int id;
+    while(true){
+        random_vertex = (rand() % graph->getNumVertex());
+        id = graph->getVertexSet()[random_vertex]->getId();
+
+        if(find(pickupNodes.begin(), pickupNodes.end(), id) != pickupNodes.end()){
+            continue;
+        }
+
+        return id;
+    }
+
 }
 
-
+/*
 // Iteration: Using a single van with capacity equal to 1
 // Receive prisioner
 // Deliver to a random point of interest(not the pickup)
