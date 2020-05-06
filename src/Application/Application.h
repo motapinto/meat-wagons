@@ -25,7 +25,7 @@ int stoint(const string &str, int &value) {
 
 class Application {
     private:
-        MeatWagons *controller = new MeatWagons(10, 100);
+        MeatWagons *controller = new MeatWagons(1, 100);
         GraphVisualizer *viewer = nullptr;
 
     public:
@@ -40,9 +40,9 @@ void Application::displayMenu()
     cout << "Menu Options: " << endl;
     cout << "\t1 - Read Graph" << endl;
     cout << "\t2 - Pre Process" << endl;
-    cout << "\t3 - Shortest Path (Dijkstra) <{Normal | Oriented | Bidirectional}> <origin node> <destination node>" << endl;
-    cout << "\t4 - Deliver (Iteration: <{1 | 2 | 3}>)"<< endl;
-    cout << "\t5 - Set Central <node id>"<< endl;
+    cout << "\t3 - Shortest Path" << endl;
+    cout << "\t4 - Deliver"<< endl;
+    cout << "\t5 - Set Central"<< endl;
     cout << "\t6 - Wagon Operation <{list | add | remove}> <operands>"<< endl;
     cout << "\t7 - Requests Operation <{list | add | remove}> <operands>"<< endl;
     cout << "\t0 - Exit" << endl << endl;
@@ -171,30 +171,32 @@ void Application::run()
 
         case 4: {
             cout << "\n--- Delivering ---";
-            cout << "\nProvide the following: <delivery id>";
-            cout << "\n(Type '0' or 'back' to go back)\n> ";
+            cout << "\t1 - Single Wagon with capacity 1" << endl; // dentro desta opcao: setMaxDist
+            cout << "\t2 - Single Wagon that groups requests" << endl; // dentro dest opcao: setmaxdist setvans
+            cout << "\t3 - Multiple Wagons that groups requests" << endl; // dentro dest opcao: setmaxdist setvans
+            cout << "\t0 - Exit" << endl << endl;
 
             int iteration;
             bool back = false;
 
             while(true) {
                 readline(input);
-                if(input == "0" || input == "back") {
+                if(input == "0") {
                     back = true;
                     break;
                 }
-                else if(input == "1" || input == "2" || input == "3")
+                else if(stoint(input, iteration) != 0 || iteration < 0 || iteration > 3) {
                     cout << "\nTry again\n> ";
+                    readline(input);
+                }
+                else  break;
             }
             if(back) break;
-            
 
             stringstream line(input);
-            if(line >> iteration) {
-                cout << "This operation is not ready yet!\n";
-                exit(0);
-                // controller->deliver(iteration);
-            }
+            if(line >> iteration) controller->deliver(iteration);
+            else controller->deliver(3);
+
 
             break;
         }

@@ -27,6 +27,7 @@ class MeatWagons {
         set<Wagon> wagons;
         multiset<Request> requests;
         int zoneMaxDist;
+        bool processed = false;
 
     public:
         MeatWagons(const int wagons, const int maxDist) {
@@ -42,7 +43,6 @@ class MeatWagons {
 
         Graph* getGraph() const;
         void setGraph(const string path);
-        void readRequests(string requestsPath);
         void showGraph();
 
         void preProcess(int node);
@@ -88,15 +88,10 @@ void MeatWagons::setGraph(const string graphPath) {
     Graph* graphRead = new Graph();
 
     if(!graphReader.readGraph(graphRead, central, pointsOfInterest)) throw MeatWagonsException("Graph is null");
-    readRequests(graphPath);
-
+    if(!graphReader.readRequests(requests)) throw MeatWagonsException("Graph is null");
+    this->processed = false;
     this->graph = graphRead;
     this->showGraph();
-}
-
-void MeatWagons::readRequests(string requestsPath) {
-    Reader graphReader = Reader(requestsPath);
-    if(!graphReader.readRequests(requests)) throw MeatWagonsException("Graph is null");
 }
 
 void MeatWagons::showGraph() {
@@ -113,6 +108,7 @@ void MeatWagons::preProcess(int node) {
             this->requests.erase(*it);
     }
 
+    this->processed = true;
     this->showGraph();
 }
 
@@ -169,10 +165,10 @@ void MeatWagons::removeRequest(const string &prisioner, const int &dest, const i
 }
 
 
-
-/*void MeatWagons::deliver(int iteration) {
+void MeatWagons::deliver(int iteration) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
-    if(this->requests.size() == 0) throw MeatWagonsException("No requests to process");
+    if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
+    if(this->requests.size() == 0) return;
 
     switch (iteration) {
         case 1: this->firstIteration();
@@ -191,36 +187,55 @@ int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
 // Deliver to a random point of interest(not the pickup)
 // Get back to central to process another request
 void MeatWagons::firstIteration() {
-    if(graph == nullptr) throw MeatWagonsException("Graph is null");
     if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
     if(wagons.begin()->getCapacity() != 1)  throw MeatWagonsException("Wrong iteration configuration");
 
-    for(auto it = requests.begin(); it!= requests.end(); it++) {
+    // 1 wagon of capacity = 1
+    auto wagonIt = this->wagons.begin();
+    auto wagon = *wagonIt;
+    this->wagons.erase(wagonIt);
+    wagon.init();
+
+    auto it = requests.begin();
+    while(it!= requests.end()) {
+        // requests are ordered by pickup time
         Request request = *it;
         it = requests.erase(it);
 
-        // pickup prisioner
-        graph->dijkstra(central, request.getDest());
-        vector<int> nodesPickUp, edgesPickUp;
-        graph->getPathTo(request.getDest(), nodesPickUp, edgesPickUp);
+        // add request for the van (no grouping in this iteration)
+        vector<Request*> requests = {&request}; //sclr da probs por causa do pointer
 
-        // deliver prisioner
+        // central -> dropOff path
+        vector<int> nodesForwardTrip, edgesForwardTrip;
         vector<int> pickupNodes;
+
+        // pickup prisioner path
+        graph->dijkstra(this->central, request.getDest());
+        int weight = graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
         pickupNodes.push_back(request.getDest());
-        graph->dijkstra(request.getDest(), chooseDropOf(pickupNodes));
-        vector<int> nodesDelivery, edgesDelivery;
-        graph->getPathTo(request.getDest(), nodesDelivery, edgesDelivery);
 
-        // return to central
+        // deliver prisioner path
+        int dropOffNode = chooseDropOf(pickupNodes);
+        graph->dijkstra(request.getDest(), dropOffNode);
+        weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
 
+        // return to central path
+        vector<int> nodesBackwardTrip, edgesBackwardTrip;
+        graph->dijkstra(dropOffNode, this->central);  // como e bidirectional sclr basta dar reverse
+        weight += graph->getPathTo(request.getDest(), nodesBackwardTrip, edgesBackwardTrip);
 
+        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
+        Delivery *delivery = new Delivery(lastDeliveryTime, requests, edgesForwardTrip, edgesBackwardTrip, weight);
+        wagon.addDelivery(delivery);
     }
+    // wagon now is back at the central
+    this->wagons.insert(wagon);
 }
 
 void MeatWagons::secondIteration() {
 }
 
 void MeatWagons::thirdIteration() {
-}*/
+}
 
 #endif //MEAT_WAGONS_MEATWAGONS_H

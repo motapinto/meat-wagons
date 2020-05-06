@@ -6,10 +6,16 @@ class Delivery {
     private:
         Time start, end;
         vector<Request*> requests;
-        vector<Vertex*> path;
+        vector<int> forwardPath, backwardPath;
 
     public:
-        Delivery(const vector<Request*> &requests, const vector<Vertex*> path) : requests(requests), path(path) {}
+        Delivery(const Time &start, const vector<Request*> &requests, const vector<int> &forwardPath, const vector<int> &backwardPath, const int weight) {
+            this->start = start;
+            this->requests = requests;
+            this->forwardPath = forwardPath;
+            this->backwardPath = backwardPath;
+            this->start.setSecond(this->start.getSecond() + weight);
+        }
 
         Time getStart() const;
         void setStart(const Time &start);
@@ -21,8 +27,11 @@ class Delivery {
         void setRequests(const vector<Request*> &requests);
         void addRequest(Request *request);
 
-        vector<Vertex *> getPath() const;
-        void setPath(const vector<Vertex*> &path);
+        vector<int> getForwardPath() const;
+        void setForwardPath(const vector<int> &path);
+
+        vector<int> getBackwardPath() const;
+        void setBackwardPath(const vector<int> &path);
 };
 
 Time Delivery::getStart() const {
@@ -53,12 +62,21 @@ void Delivery::addRequest(Request *request) {
     this->requests.push_back(request);
 }
 
-vector<Vertex *> Delivery::getPath() const {
-    return this->path;
+vector<int> Delivery::getForwardPath() const {
+    return this->forwardPath;
 }
 
-void Delivery::setPath(const vector<Vertex*> &path) {
-    this->path = path;
+void Delivery::setForwardPath(const vector<int> &path) {
+    this->forwardPath = path;
 }
+
+vector<int> Delivery::getBackwardPath() const {
+    return this->backwardPath;
+}
+
+void Delivery::setBackwardPath(const vector<int> &path) {
+    this->backwardPath = path;
+}
+
 
 #endif //MEAT_WAGONS_DELIVERY_H
