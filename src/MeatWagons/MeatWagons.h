@@ -43,6 +43,9 @@ class MeatWagons {
         string getGraphName() const;
         void setGraphName(string name);
 
+        int getMaxDist() const;
+        void setMaxDist(const int max);
+
         Graph* getGraph() const;
         void setGraph(const string path);
         void showGraph();
@@ -64,7 +67,7 @@ class MeatWagons {
         void secondIteration();
         void thirdIteration();
 
-        void drawDeliveries(Delivery delivery);
+        Delivery* drawDeliveries(int wagonIndex, int deliveryIndex);
 };
 
 int MeatWagons::getCentral() const {
@@ -81,6 +84,14 @@ string MeatWagons::getGraphName() const {
 
 void MeatWagons::setGraphName(string name) {
     this->graphName = name;
+}
+
+int MeatWagons::getMaxDist() const {
+    return this->zoneMaxDist;
+}
+
+void MeatWagons::setMaxDist(const int max) {
+    this->zoneMaxDist = max;
 }
 
 Graph* MeatWagons::getGraph() const {
@@ -261,19 +272,21 @@ void MeatWagons::secondIteration() {
 void MeatWagons::thirdIteration() {
 }
 
-void MeatWagons::drawDeliveries(Delivery delivery) {
+Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
+    if(wagonIndex > this->wagons.size()) return nullptr;
+
     this->viewer = new GraphVisualizer(600, 600);
+    Delivery * delivery = next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
 
-    vector<Wagon> meatWagons (this->wagons.begin(), this->wagons.end());
-    this->viewer->setPath(delivery.getForwardPath(), "blue", true);
+    for(auto request : delivery->getRequests())
+        this->viewer->setNode(request->getDest(), 30, "magenta");
 
-    for(auto request : delivery.getRequests()) {
-        this->viewer->getViewer()->setVertexSize(request->getDest(), 30);
-        this->viewer->getViewer()->setVertexColor(request->getDest(), "orange");
-    }
+    for(auto e : delivery->getForwardPath())
+        this->viewer->setPath(delivery->getForwardPath(), "blue", true);
 
-    this->viewer->getViewer()->rearrange();
     this->viewer->draw(this->graph);
+
+    return delivery;
 }
 
 #endif //MEAT_WAGONS_MEATWAGONS_H

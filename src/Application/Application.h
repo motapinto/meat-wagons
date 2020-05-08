@@ -3,6 +3,7 @@
 #define MEAT_WAGONS_APPLICATION_H
 #include <sstream>
 #include <fstream>
+#include <iomanip>
 #include "../MeatWagons/MeatWagons.h"
 
 void readline(string &str) {
@@ -171,12 +172,14 @@ void Application::run()
 
         case 4: {
             cout << "\n--- Delivering ---";
-            cout << "\t1 - Single Wagon with capacity 1" << endl; // dentro desta opcao: setMaxDist
-            cout << "\t2 - Single Wagon that groups requests" << endl; // dentro dest opcao: setmaxdist setvans
-            cout << "\t3 - Multiple Wagons that groups requests" << endl; // dentro dest opcao: setmaxdist setvans
+            cout << "\t1 - Single Wagon with capacity 1" << endl;
+            cout << "\t2 - Single Wagon that groups requests" << endl;
+            cout << "\t3 - Multiple Wagons that groups requests" << endl;
+            cout << "\t4 - Set Maximum Distance between Deliveries" << endl;
             cout << "\t0 - Exit" << endl << endl;
+            cout << "Current ZoneMaxDist: " << controller->getMaxDist() << endl;
 
-            int iteration;
+            int option;
             bool back = false;
 
             while(true) {
@@ -185,7 +188,7 @@ void Application::run()
                     back = true;
                     break;
                 }
-                else if(stoint(input, iteration) != 0 || iteration < 0 || iteration > 3) {
+                else if(stoint(input, option) != 0 || option < 0 || option > 4) {
                     cout << "\nTry again\n> ";
                     readline(input);
                 }
@@ -194,8 +197,41 @@ void Application::run()
             if(back) break;
 
             stringstream line(input);
-            if(line >> iteration) controller->deliver(iteration);
-            else controller->deliver(3);
+            if(line >> option && option < 4) controller->deliver(option);
+            else if(line >> option && option == 4) controller->setMaxDist(option);
+            else cout << "\nTry again\n> ";
+
+            while(true) {
+                int wagon, delivery;
+                cout << "\n--- Choose Wagon ---";
+                cout << "\t0 - Exit" << endl << endl;
+                cout << "\tWagon Index: ";
+
+                readline(input);
+                if(stoint(input, wagon) != 0 || wagon < 0) {
+                    cout << "\nTry again\n> ";
+                    readline(input);
+                }
+
+                cout << "\tDelivery Index: ";
+                readline(input);
+                if(stoint(input, delivery) != 0 || delivery < 0) {
+                    cout << "\nTry again\n> ";
+                    readline(input);
+                }
+
+                Delivery *deliveryChoosen = controller->drawDeliveries(option, delivery);
+                cout << "Leaving at: " << deliveryChoosen->getStart();
+                cout << "Returns at: " << deliveryChoosen->getEnd();
+                cout << "Requests done:" << endl;
+                for(auto r : deliveryChoosen->getRequests()) {
+                    cout << "\t" << "Prisoner: " << setfill(' ') << setw(10) << r->getPrisoner() << endl;
+                    cout << "\t" << "Priority: " << r->getPriority() ;
+                    cout << "\t" << "Arrives at: " << r->getArrival();
+                    cout << "\t" << "Delivered at: " << r->getDelivery();
+                }
+                break;
+            }
 
             break;
         }
