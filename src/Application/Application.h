@@ -197,7 +197,6 @@ void Application::run()
             if(line >> iteration) controller->deliver(iteration);
             else controller->deliver(3);
 
-
             break;
         }
 

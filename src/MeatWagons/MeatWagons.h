@@ -169,17 +169,14 @@ void MeatWagons::listRequests() const {
     }
 }
 
-
 void MeatWagons::addRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival) {
     Request request = Request(prisioner, dest, priority, arrival);
     requests.insert(request);
 }
 
-
 void MeatWagons::removeRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival) {
     requests.erase(Request(prisioner, dest, priority, arrival));
 }
-
 
 void MeatWagons::deliver(int iteration) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
@@ -208,7 +205,6 @@ int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
         return id;
     }
 }
-
 
 // Iteration: Using a single van with capacity equal to 1 (receive prisioner -> deliver to dropOff location -> return to central)
 void MeatWagons::firstIteration() {
