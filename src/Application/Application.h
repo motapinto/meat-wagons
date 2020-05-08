@@ -179,7 +179,6 @@ void Application::run()
             cout << "\t0 - Exit" << endl << endl;
             cout << "Current ZoneMaxDist: " << controller->getMaxDist() << endl;
 
-            int option;
             bool back = false;
 
             while(true) {
@@ -242,19 +241,24 @@ void Application::run()
                 break;
             }
             cout << "\n--- Setting Central Node ---";
-            cout << "\nProvide the following: <node id>";
-            cout << "\n(Type '0' or 'back' to go back)\n> ";
+            cout << "\n(Type '0' to go back)" << endl;
+            cout << "Current Central Id: " << controller->getCentral() << endl;
+            cout << "\nProvide the following: <node id> \n> " ;
 
             int centralID;
             bool back = false;
 
             while(true) {
                 readline(input);
-                if(input == "0" || input == "back") {
+                if(input == "0") {
                     back = true;
                     break;
                 }
-                else if(stoint(input, centralID)) cout << "\nTry again\n> ";
+                else if(stoint(input, centralID) != 0)  {
+                    cout << "\nTry again\n> ";
+                    readline(input);
+                }
+                else break;
             }
             if(back) break;
 
@@ -265,6 +269,11 @@ void Application::run()
         }
 
         case 6: {
+            if(controller->getGraph() == nullptr) {
+                cout << "No graph has been read yet!\n";
+                break;
+            }
+
             cout << "\n--- Wagon Operation ---";
             cout << "\nProvide the following: <list | add | remove> <operands>";
             cout << "\n(Type '0' or 'back' to go back)\n> ";
@@ -289,6 +298,11 @@ void Application::run()
         }
 
         case 7: {
+            if(controller->getGraph() == nullptr) {
+                cout << "No graph has been read yet!\n";
+                break;
+            }
+
             cout << "\n--- Requests ---";
             cout << "\nProvide the following <{1,2,3}>";
             cout << "\n(Type '0' or 'back' to go back)\n> ";
