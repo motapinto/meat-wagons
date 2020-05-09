@@ -65,7 +65,7 @@ class MeatWagons {
         void deliver(const int iteration);
         int chooseDropOf(const set<Vertex*> &pickupNodes);
         Vertex* getNearestNeighbour(Vertex *node,  const set<Vertex*> neighbours);
-        vector<int> tspPath(set<Vertex*> &tspNodes);
+        int tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath);
 
         void firstIteration();
         void secondIteration();
@@ -237,22 +237,25 @@ Vertex* MeatWagons::getNearestNeighbour(Vertex *node,  const set<Vertex*> neighb
     return nearestNeighbour;
 }
 
-vector<int> MeatWagons::tspPath(set<Vertex*> &tspNodes) {
+int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath) {
     // Because tspNodes is a set ordered by dist -> the first element is the closest to the central
-    vector <int> nodes, edges;
+    vector <int> nodes;
     unordered_set <int> processedNodes, processedEdges;
+    int weight = 0;
+
     Vertex *previous = *tspNodes.begin();
-    this->graph->getPathTo(previous->getId(), nodes, edges);
+    this->graph->getPathTo(previous->getId(), nodes, tspPath);
     tspNodes.erase(tspNodes.begin());
 
     while(!tspNodes.empty()) {
         Vertex *next = getNearestNeighbour(previous, tspNodes);
         this->graph->dijkstraBidirectional(previous->getId(), next->getId(), processedNodes, processedEdges);
-        this->graph->getPathTo(previous->getId(), nodes, edges);
+        weight += this->graph->getPathTo(previous->getId(), nodes, tspPath);
         tspNodes.erase(next);
         previous = next;
     }
-    return edges;
+    
+    return weight;
 }
 
 // Iteration: Using a single van with capacity equal to 1 (receive prisoner -> deliver to dropOff location -> return to central)
@@ -327,19 +330,19 @@ void MeatWagons::secondIteration() {
 
         int dropOffNode = chooseDropOf(tspNodes);
         tspNodes.insert( this->graph->findVertex(dropOffNode));
-        vector<int> tspPath = this->tspPath(tspNodes);
+        vector<int> tspPath;
+        int weight = this->tspPath(tspNodes, tspPath);
 
         // add delivery to wagon
-        //Time lastDeliveryTime = Time();
-        //Delivery *delivery = new Delivery(lastDeliveryTime, groupedRequests, tspPath);
-        //wagon.addDelivery(delivery);
+        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : groupedRequests.at(0)->getArrival();
+        Delivery *delivery = new Delivery(lastDeliveryTime, groupedRequests, tspPath, weight);
+        wagon.addDelivery(delivery);
 
         // wagon now is back at the central
         this->wagons.insert(wagon);
     }
 
 }
-
 void MeatWagons::thirdIteration() {
 }
 

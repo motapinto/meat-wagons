@@ -49,7 +49,7 @@ public:
     Vertex* dijkstraBackwardsInit(const int dest);
     bool dijkstraSingleSource(const int origin);
     bool dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges);
-    bool getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const;
+    int getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const;
 
     // dijkstra related
     double heuristicDistance(Vertex *origin, Vertex *dest);
@@ -289,8 +289,9 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
     return true;
 }
 
-bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
+int Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
     Vertex *final = findVertex(dest);
+    int weigth = 0;
 
     if(final == nullptr || (final->path == nullptr && final->invPath == nullptr))
         return false;
@@ -302,6 +303,7 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
         final = final->path;
         vert.push_back(final->getId());
         edges.push_back(final->getEdgePath().getId());
+        weigth += final->getEdgePath().getWeight();
     }
 
     cout << "distance: " << dist << endl;
@@ -309,7 +311,7 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
     reverse(vert.begin(), vert.end());
     reverse(edges.begin(), edges.end());
 
-    return true;
+    return weigth;
 }
 
 /**************** Optimizing Dijkstra ************/
