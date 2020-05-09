@@ -65,7 +65,7 @@ class MeatWagons {
         void deliver(const int iteration);
         int chooseDropOf(const set<Vertex*> &pickupNodes);
         Vertex* getNearestNeighbour(Vertex *node,  const set<Vertex*> neighbours);
-        int tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath);
+        int tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath, Time &deliveryTime);
 
         void firstIteration();
         void secondIteration();
@@ -237,11 +237,12 @@ Vertex* MeatWagons::getNearestNeighbour(Vertex *node,  const set<Vertex*> neighb
     return nearestNeighbour;
 }
 
-int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath) {
+int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath, Time &deliveryTime) {
     // Because tspNodes is a set ordered by dist -> the first element is the closest to the central
     vector <int> nodes;
     unordered_set <int> processedNodes, processedEdges;
     int weight = 0;
+    double totalTime = 0;
 
     Vertex *previous = *tspNodes.begin();
     this->graph->getPathTo(previous->getId(), nodes, tspPath);
@@ -251,10 +252,17 @@ int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath) {
         Vertex *next = getNearestNeighbour(previous, tspNodes);
         this->graph->dijkstraBidirectional(previous->getId(), next->getId(), processedNodes, processedEdges);
         weight += this->graph->getPathTo(previous->getId(), nodes, tspPath);
+        PRECISO DA EDGES E NAO DO VEC INT
+
+        for(auto edge : tspPath) {
+            totalTime += 0;
+            Time arrivalTime = deliveryTime.setSecond(deliveryTime.getSecond() + )
+        }
+
         tspNodes.erase(next);
         previous = next;
     }
-    
+
     return weight;
 }
 
@@ -321,8 +329,9 @@ void MeatWagons::secondIteration() {
         this->wagons.erase(wagonIt);
 
         // returned grouped requests and calculate tsp
-        vector<Request*> groupedRequests; // = groupRequests(wagon.capacity);
+        set<Request*> groupedRequests; // = groupRequests(wagon.capacity);
         set<Vertex*> tspNodes;
+
         for(auto r : groupedRequests) {
             auto tspNode = this->graph->findVertex(r->getDest());
             tspNodes.insert(tspNode);
@@ -330,13 +339,15 @@ void MeatWagons::secondIteration() {
 
         int dropOffNode = chooseDropOf(tspNodes);
         tspNodes.insert( this->graph->findVertex(dropOffNode));
+
+        // gets the time of the latest request (groupedRequests is a set ordered by arrival time)
+        Time deliveryTime = (*(--groupedRequests.end()))->getArrival();
         vector<int> tspPath;
-        int weight = this->tspPath(tspNodes, tspPath);
+        int weight = this->tspPath(tspNodes, tspPath, deliveryTime);
 
         // add delivery to wagon
-        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : groupedRequests.at(0)->getArrival();
-        Delivery *delivery = new Delivery(lastDeliveryTime, groupedRequests, tspPath, weight);
-        wagon.addDelivery(delivery);
+        //Delivery *delivery = new Delivery(lastDeliveryTime, groupedRequests, tspPath, weight);
+        //wagon.addDelivery(delivery);
 
         // wagon now is back at the central
         this->wagons.insert(wagon);
