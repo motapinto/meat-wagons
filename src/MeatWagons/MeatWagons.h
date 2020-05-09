@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <set>
 #include <time.h>
+#include <algorithm>
 #include "Request.h"
 #include "../Graph/Reader.h"
 #include "../GraphViewer/GraphVisualizer.h"
@@ -54,15 +55,17 @@ class MeatWagons {
         void shortestPath(int option, int origin, int dest);
 
         void listWagons() const;
-        void addWagon(const int &capacity);
-        void removeWagon(const int &id, const int &capacity);
+        void addWagon(const int capacity);
+        void removeWagon(const int id, const int capacity);
 
         void listRequests() const;
-        void addRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival);
-        void removeRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival);
+        void addRequest(const string &prisoner, const int dest, const int priority, const Time &arrival);
+        void removeRequest(const string &prisoner, const int dest, const int priority, const Time &arrival);
 
-        void deliver(int iteration);
-        int chooseDropOf(vector<int> const pickupNodes);
+        void deliver(const int iteration);
+        vector<Edge> tspPath(const set<Vertex*> &tspNodes);
+        int chooseDropOf(const vector<int> &pickupNodes);
+
         void firstIteration();
         void secondIteration();
         void thirdIteration();
@@ -165,11 +168,11 @@ void MeatWagons::listWagons() const {
     }
 }
 
-void MeatWagons::addWagon(const int &capacity) {
+void MeatWagons::addWagon(const int capacity) {
     wagons.insert(Wagon(wagons.size(), capacity));
 }
 
-void MeatWagons::removeWagon(const int &id, const int &capacity) {
+void MeatWagons::removeWagon(const int id, const int capacity) {
     wagons.erase(Wagon(id, capacity));
 }
 
@@ -180,16 +183,16 @@ void MeatWagons::listRequests() const {
     }
 }
 
-void MeatWagons::addRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival) {
+void MeatWagons::addRequest(const string &prisoner, const int dest, const int priority, const Time &arrival) {
     Request request = Request(prisoner, dest, priority, arrival);
     requests.insert(request);
 }
 
-void MeatWagons::removeRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival) {
+void MeatWagons::removeRequest(const string &prisoner, const int dest, const int priority, const Time &arrival) {
     requests.erase(Request(prisoner, dest, priority, arrival));
 }
 
-void MeatWagons::deliver(int iteration) {
+void MeatWagons::deliver(const int iteration) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
     if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
     if(this->requests.size() == 0) return;
@@ -201,7 +204,7 @@ void MeatWagons::deliver(int iteration) {
     }
 }
 
-int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
+int MeatWagons::chooseDropOf(const vector<int> &pickupNodes) {
     srand((unsigned) time(0));
     int random_vertex;
     int id;
@@ -274,13 +277,19 @@ void MeatWagons::secondIteration() {
     for(Wagon wagon : this->wagons) wagon.init();
 
     while(!requests.empty()) {
-        /*// requests are ordered by pickup time
-        vector<Request> groupedRequests;
-
         // get wagon
         auto wagonIt = this->wagons.begin();
         auto wagon = *wagonIt;
         this->wagons.erase(wagonIt);
+
+        // returned grouped requests and calculate tsp
+        vector<Request*> groupedRequests; // = grouRequests(wagon.capacity);
+        set<Vertex*> tspNodes;
+        for(auto r : groupedRequests) {
+            auto tspNode = this->graph->findVertex(r->getDest());
+            tspNodes.insert(tspNode);
+        }
+        vector<Edge> tspPath = this->tspPath();
 
         // central -> dropOff path
         vector<int> nodesForwardTrip, edgesForwardTrip;
@@ -304,7 +313,7 @@ void MeatWagons::secondIteration() {
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
-        this->wagons.insert(wagon);*/
+        this->wagons.insert(wagon);
     }
 
 }
@@ -312,9 +321,9 @@ void MeatWagons::secondIteration() {
 void MeatWagons::thirdIteration() {
 }
 
-/*void MeatWagons::tspPath() {
+vector<Edge> MeatWagons::tspPath(const set<Vertex*> &tspNodes) {
 
-}*/
+}
 
 Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     if(wagonIndex > this->wagons.size()) return nullptr;
