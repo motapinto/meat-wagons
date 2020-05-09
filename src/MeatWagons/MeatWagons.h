@@ -63,9 +63,11 @@ class MeatWagons {
         void firstIteration();
         void secondIteration();
         void thirdIteration();
+        void calculateCentralVertex() const;
 
         void drawDeliveries(Delivery delivery);
 };
+
 
 int MeatWagons::getCentral() const {
     return this->central;
@@ -91,10 +93,14 @@ void MeatWagons::setGraph(const string graphPath) {
     Reader graphReader = Reader(graphPath);
     Graph* graphRead = new Graph();
 
-    if(!graphReader.readGraph(graphRead, central, pointsOfInterest)) throw MeatWagonsException("Graph is null");
-    if(!graphReader.readRequests(requests)) throw MeatWagonsException("Graph is null");
+    if(!graphReader.readGraph(graphRead, central, pointsOfInterest))
+        throw MeatWagonsException("Graph is null");
+    if(!graphReader.readRequests(requests))
+        throw MeatWagonsException("Graph is null");
+
     this->processed = false;
     this->graph = graphRead;
+    cout << "Central vertex ID: " << this->getCentral() << endl << endl;
     this->showGraph();
 }
 
@@ -106,6 +112,8 @@ void MeatWagons::showGraph() {
 void MeatWagons::preProcess(int node) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
     if(!this->graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
+
+    int vertex = 0, max = 0, current = 0;
 
     for(auto it = this->requests.begin(); it != this->requests.end(); it++) {
         if(this->graph->findVertex((*it).getDest()) == nullptr)
@@ -190,6 +198,8 @@ void MeatWagons::deliver(int iteration) {
         case 1: this->firstIteration();
         //case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
         //case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+        default:
+            break;
     }
 }
 
