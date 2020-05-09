@@ -58,8 +58,8 @@ class MeatWagons {
         void removeWagon(const int &id, const int &capacity);
 
         void listRequests() const;
-        void addRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival);
-        void removeRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival);
+        void addRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival);
+        void removeRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival);
 
         void deliver(int iteration);
         int chooseDropOf(vector<int> const pickupNodes);
@@ -175,18 +175,18 @@ void MeatWagons::removeWagon(const int &id, const int &capacity) {
 
 void MeatWagons::listRequests() const {
     for (auto it = requests.begin(); it != requests.end(); it++) {
-        cout << "Prisioner " << (*it).getPrisoner() << " to be received in node " << (*it).getDest() << " with priority "
+        cout << "Prisoner " << (*it).getPrisoner() << " to be received in node " << (*it).getDest() << " with priority "
              << (*it).getPriority() << " at " << (*it).getArrival() << " and deliver at " << (*it).getDelivery() << endl << endl;
     }
 }
 
-void MeatWagons::addRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival) {
-    Request request = Request(prisioner, dest, priority, arrival);
+void MeatWagons::addRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival) {
+    Request request = Request(prisoner, dest, priority, arrival);
     requests.insert(request);
 }
 
-void MeatWagons::removeRequest(const string &prisioner, const int &dest, const int &priority, const Time &arrival) {
-    requests.erase(Request(prisioner, dest, priority, arrival));
+void MeatWagons::removeRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival) {
+    requests.erase(Request(prisoner, dest, priority, arrival));
 }
 
 void MeatWagons::deliver(int iteration) {
@@ -195,8 +195,8 @@ void MeatWagons::deliver(int iteration) {
     if(this->requests.size() == 0) return;
 
     switch (iteration) {
-        case 1: this->firstIteration();
-        //case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+        case 1: this->firstIteration(); break;
+        case 2: this->secondIteration();
         //case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
     }
 }
@@ -217,60 +217,104 @@ int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
     }
 }
 
-// Iteration: Using a single van with capacity equal to 1 (receive prisioner -> deliver to dropOff location -> return to central)
+// Iteration: Using a single van with capacity equal to 1 (receive prisoner -> deliver to dropOff location -> return to central)
 void MeatWagons::firstIteration() {
     if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
     if(wagons.begin()->getCapacity() != 1)  throw MeatWagonsException("Wrong iteration configuration");
 
-    // 1 wagon of capacity = 1
-    auto wagonIt = this->wagons.begin();
-    auto wagon = *wagonIt;
-    this->wagons.erase(wagonIt);
-    wagon.init();
+    if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
+
     unordered_set<int> processedEdges;
+    for(Wagon wagon : this->wagons) wagon.init();
 
-    auto it = requests.begin();
-    while(it!= requests.end()) {
+    while(!this->requests.empty()) {
         // requests are ordered by pickup time
-        Request request = *it;
-        it = requests.erase(it);
+        Request request = *this->requests.begin();
+        this->requests.erase(this->requests.begin());
 
-        // add request for the van (no grouping in this iteration)
-        vector<Request*> requests = {&request}; //sclr da probs por causa do pointer
+        // get wagon
+        auto wagonIt = this->wagons.begin();
+        auto wagon = *wagonIt;
+        this->wagons.erase(wagonIt);
 
         // central -> dropOff path
         vector<int> nodesForwardTrip, edgesForwardTrip;
         vector<int> pickupNodes;
 
-        // pickup prisioner path
-        graph->dijkstra(this->central, request.getDest(), processedEdges);
+        // pickup prisoner path
+        int weight = this->graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
+        pickupNodes.push_back(request.getDest());
+
+        // deliver prisoner path
+        int dropOffNode = chooseDropOf(pickupNodes);
+        this->graph->dijkstra(request.getDest(), dropOffNode, processedEdges);
+        weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
+
+        // return to central path (bidirectional graph -> path is equal to edgesForwardTrip)
+        weight *= 2;
+
+        // add delivery to wagon
+        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
+        Delivery *delivery = new Delivery(lastDeliveryTime, {&request}, edgesForwardTrip, weight);
+        wagon.addDelivery(delivery);
+
+        // wagon now is back at the central
+        this->wagons.insert(wagon);
+    }
+}
+
+//Iteration: Using a single van with capacity > 1 (receive prisoner -> deliver to dropOff location -> return to central)
+void MeatWagons::secondIteration() {
+    if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
+    if(wagons.begin()->getCapacity() <= 1)  throw MeatWagonsException("Wrong iteration configuration");
+
+    if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
+
+    unordered_set<int> processedEdges;
+    for(Wagon wagon : this->wagons) wagon.init();
+
+    while(!requests.empty()) {
+        /*// requests are ordered by pickup time
+        vector<Request> groupedRequests;
+
+        // get wagon
+        auto wagonIt = this->wagons.begin();
+        auto wagon = *wagonIt;
+        this->wagons.erase(wagonIt);
+
+        // central -> dropOff path
+        vector<int> nodesForwardTrip, edgesForwardTrip;
+        vector<int> pickupNodes;
+
+        // pickup prisoner path
         int weight = graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
         pickupNodes.push_back(request.getDest());
 
-        // deliver prisioner path
+        // deliver prisoner path
         int dropOffNode = chooseDropOf(pickupNodes);
         graph->dijkstra(request.getDest(), dropOffNode, processedEdges);
         weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
 
-        // return to central path
-        vector<int> nodesBackwardTrip, edgesBackwardTrip;
-        graph->dijkstra(dropOffNode, this->central, processedEdges);  // como e bidirectional sclr basta dar reverse
-        weight += graph->getPathTo(request.getDest(), nodesBackwardTrip, edgesBackwardTrip);
+        // return to central path (bidirectional graph -> path is equal to edgesForwardTrip)
+        weight *= 2;
 
         // add delivery to wagon
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
-        Delivery *delivery = new Delivery(lastDeliveryTime, requests, edgesForwardTrip, weight);
+        Delivery *delivery = new Delivery(lastDeliveryTime, {&request}, edgesForwardTrip, weight);
         wagon.addDelivery(delivery);
-    }
-    // wagon now is back at the central
-    this->wagons.insert(wagon);
-}
 
-void MeatWagons::secondIteration() {
+        // wagon now is back at the central
+        this->wagons.insert(wagon);*/
+    }
+
 }
 
 void MeatWagons::thirdIteration() {
 }
+
+/*void MeatWagons::tspPath() {
+
+}*/
 
 Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     if(wagonIndex > this->wagons.size()) return nullptr;
