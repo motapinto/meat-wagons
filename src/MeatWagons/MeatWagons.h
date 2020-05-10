@@ -66,7 +66,6 @@ class MeatWagons {
         void firstIteration();
         void secondIteration();
         void thirdIteration();
-        void calculateCentralVertex() const;
 
         Delivery* drawDeliveries(int wagonIndex, int deliveryIndex);
 };

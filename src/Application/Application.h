@@ -15,31 +15,7 @@ class Application {
     public:
         void run();
         void displayMenu();
-        void calculateCentralVertex() const;
 };
-
-
-void Application::calculateCentralVertex() const {
-    cout << endl;
-    int i = 0, vertex = 0, max = 0, curr;
-    Graph aux = *controller->getGraph();
-    for(auto vert : controller->getGraph()->getVertexSet()) {
-        aux.preProcess(vert->getId());
-        curr = aux.getVertexSet().size();
-        if(curr > max) {
-            max = curr;
-            vertex = vert->getId();
-        }
-        aux = *controller->getGraph();
-        i++;
-        cout << "[" << i 
-             << "] Max: " << setfill(' ') << setw(10) << left << max 
-             << " Current: " << setfill(' ') << setw(10) << left << curr 
-             << " Vertex: " << vert->getId() << endl;
-    }
-    cout << "\nCentral Vertex ID: " << vertex << endl;    
-}
-
 
 void Application::displayMenu()
 {
@@ -121,16 +97,11 @@ void Application::run()
 
             int node;
             bool back = false;
-            bool connectivity = false;
 
             while(true) {
                 readline(input);
                 if(input == "0" || input == "back") {
                     back = true;
-                    break;
-                }
-                else if(input == "connect" || input == "connectivity") {
-                    connectivity = true; //extra feature for connectivity analysis
                     break;
                 }
                 else if(input == "central") {
@@ -144,15 +115,12 @@ void Application::run()
             }
             if(back) break;
 
-            Vertex *v = controller->getGraph()->findVertex(node);
-            if(v == nullptr) {
+            if(controller->getGraph()->findVertex(node) == nullptr) {
                 cout << "Vertex does not exist" << endl << endl;
                 break;
             }
             
-            if(connectivity) this->calculateCentralVertex();     
-            else controller->preProcess(node);
-
+            controller->preProcess(node);
             break;
         }
         case 3: {
