@@ -93,7 +93,7 @@ bool Graph::preProcess(int origin) {
         }
     }
 
-    // ? deletes outgoing edges of the deleted nodes (no need to delete from invAdj as Vertex is a pointer)
+    // deletes outgoing edges of the deleted nodes (no need to delete from invAdj as Vertex is a pointer)
     for(auto vertex : vertexSet) {
         for(auto it = vertex->adj.begin(); it != vertex->adj.end(); it++)
             if(removed.find(it->getDest()->getId()) != removed.end())
@@ -126,7 +126,6 @@ bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
         return false;
 
     v1->addEdge(id, v2, v1->pos.euclideanDistance(v2->pos));
-    //v2->addEdge(id + 1000000, v1, v2->pos.euclideanDistance(v1->pos));
 
     return true;
 }
@@ -327,7 +326,6 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
     if(start == nullptr || final == nullptr)
         return false;
 
-
     MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
     int i = 0;
@@ -338,7 +336,8 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
 
         if(min->getId() == final->getId()) {
             cout << "iterations: " << i << endl;
-            break;        }
+            break;
+        }
 
         for(auto edge : min->adj) {
             auto elem = edge.dest;
@@ -484,7 +483,6 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
                     backwardMinQueue.decreaseKey(elem);
                 }
 
-
                 continue;
             }
         }
@@ -503,14 +501,9 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
                 elem->invEdgePath = edge;
                 elem->inv = true;
 
-                // if elem is not in queue
-                if(elem->invQueueIndex == 0) { //old dist(w) was infinite
-                    backwardMinQueue.insert(elem);
-                }
-                else {
-                    backwardMinQueue.decreaseKey(elem);
-                }
-
+                // if elem is not in queue [old dist(w) was infinite]
+                if(elem->invQueueIndex == 0) backwardMinQueue.insert(elem);
+                else backwardMinQueue.decreaseKey(elem);
 
                 continue;
             }

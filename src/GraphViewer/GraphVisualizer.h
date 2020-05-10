@@ -24,7 +24,7 @@ public:
     GraphViewer* getViewer() const ;
     void draw(Graph *graph);
     void setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath = false);
-    void reset();
+    void setNode(const int id, const int size, const string color);
 };
 
 GraphViewer* GraphVisualizer::getViewer() const {
@@ -79,6 +79,11 @@ void GraphVisualizer::setPath(const vector<int> &edges, const string &edgeColor,
         else
             gv->setEdgeThickness(id, 3);
     }
+}
+
+void GraphVisualizer::setNode(const int id, const int size, const string color) {
+    this->gv->setVertexSize(id, size);
+    this->gv->setVertexColor(id, color);
 }
 
 #endif //MEAT_WAGONS_GRAPHVISUALIZER_H
