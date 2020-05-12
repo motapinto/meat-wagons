@@ -232,7 +232,7 @@ void MeatWagons::firstIteration() {
 
     if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
 
-    unordered_set<int> processedEdges;
+    unordered_set<int> processedEdges, processedInvEdges;
     for(Wagon wagon : this->wagons) wagon.init();
 
     while(!this->requests.empty()) {
@@ -255,7 +255,7 @@ void MeatWagons::firstIteration() {
 
         // deliver prisoner path
         int dropOffNode = chooseDropOf(pickupNodes);
-        this->graph->dijkstra(request.getDest(), dropOffNode, processedEdges);
+        this->graph->dijkstraBidirectional(request.getDest(), dropOffNode, processedEdges, processedInvEdges);
         weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
 
         // return to central path (bidirectional graph -> path is equal to edgesForwardTrip)
