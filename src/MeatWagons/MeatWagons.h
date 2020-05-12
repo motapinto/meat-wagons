@@ -125,7 +125,7 @@ void MeatWagons::preProcess(int node) {
 
     for(auto it = this->requests.begin(); it != this->requests.end(); it++) {
         if(this->graph->findVertex((*it).getDest()) == nullptr)
-            this->requests.erase(*it);
+            it = this->requests.erase(it)--;
     }
 
     this->processed = true;
