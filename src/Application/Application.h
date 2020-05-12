@@ -25,7 +25,7 @@ int stoint(const string &str, int &value) {
 
 class Application {
     private:
-        MeatWagons *controller = new MeatWagons(10, 100);
+        MeatWagons *controller = new MeatWagons(10, 2000);
         GraphVisualizer *viewer = nullptr;
 
     public:
