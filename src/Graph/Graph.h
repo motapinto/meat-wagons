@@ -49,7 +49,7 @@ public:
     Vertex* dijkstraBackwardsInit(const int dest);
     bool dijkstraSingleSource(const int origin);
     bool dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges);
-    int getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const;
+    int getPathTo(const int dest, vector<int> &edges) const;
 
     // dijkstra related
     double heuristicDistance(Vertex *origin, Vertex *dest);
@@ -287,26 +287,23 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
     return true;
 }
 
-int Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) const {
+int Graph::getPathTo(const int dest, vector<int> &edges) const {
     Vertex *final = findVertex(dest);
     int weigth = 0;
 
     if(final == nullptr || (final->path == nullptr && final->invPath == nullptr))
         return false;
 
-    vert.push_back(final->getId());
     edges.push_back(final->getEdgePath().getId());
     int dist = final->dist;
     int weight = final->path->dist;
     while(final->path != nullptr) {
         final = final->path;
         weight += final->dist;
-        vert.push_back(final->getId());
         edges.push_back(final->getEdgePath().getId());
         weigth += final->getEdgePath().getWeight();
     }
     
-    reverse(vert.begin(), vert.end());
     reverse(edges.begin(), edges.end());
 
     return weight;

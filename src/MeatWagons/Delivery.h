@@ -13,7 +13,7 @@ class Delivery {
             this->start = start;
             this->requests = requests;
             this->forwardPath = forwardPath;
-            this->start.setSecond(this->start.getSecond() + weight);
+            this->start.setSeconds(this->start.getSecond() + weight);
         }
 
         Time getStart() const;
