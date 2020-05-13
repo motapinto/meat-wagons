@@ -9,7 +9,7 @@ using namespace std;
 
 class Vertex {
 public:
-    enum Tag {CENTRAL, INTEREST_POINT, DEFAULT};
+    enum Tag {CENTRAL, INTEREST_POINT, PICKUP, DROPOFF, DEFAULT};
 
 private:
     int id;                            // identifier of the vertex

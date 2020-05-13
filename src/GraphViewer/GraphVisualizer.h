@@ -24,7 +24,7 @@ public:
     GraphViewer* getViewer() const ;
     void draw(Graph *graph);
     void setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath = false);
-    void setNode(const int id, const int size, const string color);
+    void setNode(const int id, const int size, const string color, const string label);
 };
 
 GraphViewer* GraphVisualizer::getViewer() const {
@@ -60,6 +60,18 @@ void GraphVisualizer::draw(Graph *graph) {
             gv->setVertexSize(origin->getId(), 20);
         }
 
+        else if(origin->getTag() == Vertex::Tag::PICKUP) {
+            gv->setVertexColor(origin->getId(), "green");
+            gv->setVertexLabel(origin->getId(), "PICKUP");
+            gv->setVertexSize(origin->getId(), 30);
+        }
+
+        else if(origin->getTag() == Vertex::Tag::DROPOFF) {
+            gv->setVertexColor(origin->getId(), "magenta");
+            gv->setVertexLabel(origin->getId(), "DROPOFF");
+            gv->setVertexSize(origin->getId(), 30);
+        }
+
         else {
             gv->setVertexSize(origin->getId(), 5);
         }
@@ -81,9 +93,10 @@ void GraphVisualizer::setPath(const vector<int> &edges, const string &edgeColor,
     }
 }
 
-void GraphVisualizer::setNode(const int id, const int size, const string color) {
+void GraphVisualizer::setNode(const int id, const int size, const string color, const string label="") {
     this->gv->setVertexSize(id, size);
     this->gv->setVertexColor(id, color);
+    this->gv->setVertexLabel(id, label);
 }
 
 #endif //MEAT_WAGONS_GRAPHVISUALIZER_H

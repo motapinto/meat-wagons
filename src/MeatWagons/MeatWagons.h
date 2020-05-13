@@ -313,12 +313,12 @@ Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     this->viewer = new GraphVisualizer(600, 600);
     Delivery * delivery = next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
 
-    for(auto request : delivery->getRequests())
-        this->viewer->setNode(request.getDest(), 30, "magenta");
+    for(auto request : delivery->getRequests()) {
+        this->graph->findVertex(request.getDest())->setTag(Vertex::PICKUP);
+        this->graph->findVertex(delivery->getDropOff())->setTag(Vertex::DROPOFF);
+    }
 
-    for(auto e : delivery->getForwardPath())
-        this->viewer->setPath(delivery->getForwardPath(), "blue", true);
-
+    this->viewer->setPath(delivery->getForwardPath(), "blue", true);
     this->viewer->draw(this->graph);
 
     return delivery;
@@ -364,7 +364,7 @@ void MeatWagons::firstIteration() {
 
         // add delivery to wagon
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
-        Delivery *delivery = new Delivery(lastDeliveryTime, {request}, edgesForwardTrip, weight);
+        Delivery *delivery = new Delivery(lastDeliveryTime, {request}, edgesForwardTrip, weight, dropOffNode);
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
@@ -406,7 +406,7 @@ void MeatWagons::secondIteration() {
         Time deliveryTime = (*(--groupedRequests.end())).getArrival();
 
         // add delivery to wagon
-        Delivery *delivery = new Delivery(deliveryTime, groupedRequests, tspPath, weight);
+        Delivery *delivery = new Delivery(deliveryTime, groupedRequests, tspPath, weight, dropOffNode);
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
