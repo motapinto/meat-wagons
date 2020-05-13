@@ -299,7 +299,6 @@ int Graph::getPathTo(const int dest, vector<int> &edges) const {
     while(final->path != nullptr) {
         edges.push_back(final->getEdgePath().getId());
         final = final->path;
-        weight += final->dist;
         weigth += final->getEdgePath().getWeight();
     }
     

@@ -34,7 +34,7 @@ class MeatWagons {
 
     public:
         MeatWagons(const int wagons, const int maxDist) {
-            for(int i = 0; i < wagons; i++) this->wagons.insert(Wagon(i, 1));
+            for(int i = 0; i < wagons; i++) this->wagons.insert(Wagon(i, 2));
             this->zoneMaxDist = maxDist;
         }
 
@@ -194,12 +194,12 @@ void MeatWagons::deliver(int iteration) {
     if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
     if(this->requests.size() == 0) return;
 
-    //if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
+    //if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found"); not working dont know ehyyyy
 
     switch (iteration) {
         case 1: this->firstIteration(); break;
-        case 2: this->secondIteration();
-        //case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+        case 2: this->secondIteration(); break;
+        //case 3: this->thirdIteration(); break;
         default:
             break;
     }
@@ -293,13 +293,13 @@ int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath) {
     // Because tspNodes is a set ordered by dist -> the first element is the closest to the central
     Vertex *closest = *tspNodes.begin();
     this->graph->dijkstraBidirectional(central, closest->getId(), processedEdges, processedInvEdges);
-    this->graph->getPathTo(closest->getId(), tspPath);
+    weight += this->graph->getPathTo(closest->getId(), tspPath);
     tspNodes.erase(tspNodes.begin());
 
     while(!tspNodes.empty()) {
         Vertex *next = getNearestNeighbour(closest, tspNodes);
         this->graph->dijkstraBidirectional(closest->getId(), next->getId(), processedEdges, processedInvEdges);
-        weight += this->graph->getPathTo(closest->getId(), tspPath);
+        weight += this->graph->getPathTo(next->getId(), tspPath);
         tspNodes.erase(next);
         closest = next;
     }
@@ -392,6 +392,7 @@ void MeatWagons::secondIteration() {
         vector<Request> groupedRequests = groupRequests(wagon.getCapacity());
         set<Vertex*> tspNodes;
         for(auto r : groupedRequests) {
+            this->requests.erase(r);
             auto tspNode = this->graph->findVertex(r.getDest());
             tspNodes.insert(tspNode);
         }
