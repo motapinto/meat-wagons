@@ -18,16 +18,13 @@ class Time {
         Time(const int hour, const int minute, const int second) : hour(hour), minute(minute), second(second) {}
 
         int getHour() const;
-        void setHour(const int hour);
-
         int getMinute() const;
-        void setMinute(const int minute);
-
         int getSecond() const;
-        void setSecond(const int second);
         int toSeconds() const;
 
         bool operator<(const Time &time) const;
+        Time operator+(const Time &time) const;
+
         friend std::ostream &operator<<( std::ostream &output, const Time &time) {
             output << setfill('0') << left << setw(2) << time.getHour() << ":"
                    << setfill('0') << left << setw(2) << time.getMinute() << ":"
@@ -40,24 +37,12 @@ int Time::getHour() const {
     return this->hour;
 }
 
-void Time::setHour(const int hour) {
-    this->hour = hour;
-}
-
 int Time::getMinute() const {
     return this->minute;
 }
 
-void Time::setMinute(const int minute) {
-    this->minute = minute;
-}
-
 int Time::getSecond() const {
     return this->second;
-}
-
-void Time::setSecond(const int second) {
-    this->second = second;
 }
 
 int Time::toSeconds() const {
@@ -71,6 +56,17 @@ bool Time::operator<(const Time &time) const {
             else return this->second < time.second;
         else return this->minute < time.minute;
     else return this->hour < time.hour;
+}
+
+Time Time::operator+(const Time &time) const {
+    Time added = *this;
+    added.second += time.second;
+    added.minute += time.minute + (this->second / 60);
+    added.hour += time.hour + (this->minute % 60);
+    added.second %= 60;
+    added.minute %= 60;
+
+    return added;
 }
 
 #endif //MEAT_WAGONS_TIME_H
