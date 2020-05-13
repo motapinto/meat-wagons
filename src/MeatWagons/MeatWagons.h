@@ -67,6 +67,7 @@ class MeatWagons {
         void secondIteration();
         void thirdIteration();
 
+        set<Request> groupRequests(const int capacity);
         Delivery* drawDeliveries(int wagonIndex, int deliveryIndex);
 };
 
@@ -193,6 +194,61 @@ void MeatWagons::addRequest(const string &prisoner, const int &dest, const int &
 
 void MeatWagons::removeRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival) {
     requests.erase(Request(prisoner, dest, priority, arrival));
+}
+
+set<Request> MeatWagons::groupRequests(const int capacity){
+    set <Request> group;
+    int max_dist = 0, dist;
+
+    multiset<Request>::iterator it = requests.begin();
+    Request max_dist_request = *it;
+    group.insert((*it));
+
+    Vertex* initial_vert = this->graph->findVertex((*it).getDest());
+
+    it++;
+
+    for(it; it != requests.end(); it++){
+        Vertex * vert = this->graph->findVertex((*it).getDest());
+
+        dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
+
+        if(dist < this->zoneMaxDist){
+            if(group.size() < capacity){
+                group.insert(*it);
+
+                if(dist > max_dist){
+                    max_dist = dist;
+                    max_dist_request = *it;
+                }
+
+            }
+            else if(dist < max_dist){
+
+                group.erase(max_dist_request);
+
+                max_dist = dist;
+
+                // Check if there is a dist bigger then max_dist in the set
+                set<Request>::iterator itr = group.begin();
+
+                for(itr = group.begin(); itr != group.end(); itr++){
+                    Vertex * vert = this->graph->findVertex((*itr).getDest());
+
+                    dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
+
+                    if(dist > max_dist){
+                        max_dist = dist;
+                        max_dist_request = *itr;
+                    }
+                }
+
+                group.insert(*it);
+            }
+        }
+    }
+
+    return group;
 }
 
 void MeatWagons::deliver(int iteration) {
