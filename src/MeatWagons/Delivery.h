@@ -69,5 +69,4 @@ void Delivery::setForwardPath(const vector<int> &path) {
     this->forwardPath = path;
 }
 
-
 #endif //MEAT_WAGONS_DELIVERY_H

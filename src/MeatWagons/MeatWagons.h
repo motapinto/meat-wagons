@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <set>
 #include <time.h>
+#include <algorithm>
 #include "Request.h"
 #include "../Graph/Reader.h"
 #include "../GraphViewer/GraphVisualizer.h"
@@ -54,15 +55,18 @@ class MeatWagons {
         void shortestPath(int option, int origin, int dest);
 
         void listWagons() const;
-        void addWagon(const int &capacity);
-        void removeWagon(const int &id, const int &capacity);
+        void addWagon(const int capacity);
+        void removeWagon(const int id, const int capacity);
 
         void listRequests() const;
-        void addRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival);
-        void removeRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival);
+        void addRequest(const string &prisoner, const int dest, const int priority, const Time &arrival);
+        void removeRequest(const string &prisoner, const int dest, const int priority, const Time &arrival);
 
-        void deliver(int iteration);
-        int chooseDropOf(vector<int> const pickupNodes);
+        void deliver(const int iteration);
+        int chooseDropOf(const set<Vertex*> &pickupNodes);
+        Vertex* getNearestNeighbour(Vertex *node,  const set<Vertex*> neighbours);
+        int tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath, Time &deliveryTime);
+
         void firstIteration();
         void secondIteration();
         void thirdIteration();
@@ -173,11 +177,11 @@ void MeatWagons::listWagons() const {
     cout << endl;
 }
 
-void MeatWagons::addWagon(const int &capacity) {
+void MeatWagons::addWagon(const int capacity) {
     wagons.insert(Wagon(wagons.size(), capacity));
 }
 
-void MeatWagons::removeWagon(const int &id, const int &capacity) {
+void MeatWagons::removeWagon(const int id, const int capacity) {
     wagons.erase(Wagon(id, capacity));
 }
 
@@ -188,12 +192,12 @@ void MeatWagons::listRequests() const {
     }
 }
 
-void MeatWagons::addRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival) {
+void MeatWagons::addRequest(const string &prisoner, const int dest, const int priority, const Time &arrival) {
     Request request = Request(prisoner, dest, priority, arrival);
     requests.insert(request);
 }
 
-void MeatWagons::removeRequest(const string &prisoner, const int &dest, const int &priority, const Time &arrival) {
+void MeatWagons::removeRequest(const string &prisoner, const int dest, const int priority, const Time &arrival) {
     requests.erase(Request(prisoner, dest, priority, arrival));
 }
 
@@ -262,7 +266,7 @@ void MeatWagons::deliver(int iteration) {
     }
 }
 
-int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
+int MeatWagons::chooseDropOf(const set<Vertex*> &pickupNodes) {
     srand((unsigned) time(0));
     int random_vertex;
     int id;
@@ -271,11 +275,56 @@ int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
         random_vertex = (rand() % graph->getNumVertex());
         id = graph->getVertexSet()[random_vertex]->getId();
 
-        if(find(pickupNodes.begin(), pickupNodes.end(), id) != pickupNodes.end())
+        auto it = find_if(begin(pickupNodes), end(pickupNodes), [=](const Vertex* v) {return v->getId() == id;});
+        if(it != pickupNodes.end())
             continue;
 
         return id;
     }
+}
+
+Vertex* MeatWagons::getNearestNeighbour(Vertex *node,  const set<Vertex*> neighbours) {
+    double nearestDistance = this->graph->findVertex(this->central)->getPosition().euclideanDistance((*neighbours.begin())->getPosition());
+    auto nearestNeighbour = *neighbours.begin();
+
+    for(auto it = ++neighbours.begin(); it != neighbours.end(); it++) {
+        auto currDistance = this->graph->findVertex(this->central)->getPosition().euclideanDistance((*it)->getPosition()) < nearestDistance;
+        if(currDistance < nearestDistance) {
+            nearestDistance = currDistance;
+            nearestNeighbour = *it;
+        }
+    }
+
+    return nearestNeighbour;
+}
+
+int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath, Time &deliveryTime) {
+    // Because tspNodes is a set ordered by dist -> the first element is the closest to the central
+    vector <int> nodes;
+    unordered_set <int> processedNodes, processedEdges;
+    int weight = 0;
+    double totalTime = 0;
+
+    Vertex *previous = *tspNodes.begin();
+    this->graph->getPathTo(previous->getId(), nodes, tspPath);
+    tspNodes.erase(tspNodes.begin());
+
+    while(!tspNodes.empty()) {
+        Vertex *next = getNearestNeighbour(previous, tspNodes);
+        this->graph->dijkstraBidirectional(previous->getId(), next->getId(), processedNodes, processedEdges);
+        weight += this->graph->getPathTo(previous->getId(), nodes, tspPath);
+        PRECISO DA EDGES E NAO DO VEC INT
+
+        for(auto edge : tspPath) {
+            totalTime += 0;
+            Time arrivalTime = deliveryTime.setSecond(deliveryTime.getSecond() + )
+        }
+
+        tspNodes.erase(next);
+        previous = next;
+    }
+
+    return weight;
 }
 
 // Iteration: Using a single van with capacity equal to 1 (receive prisoner -> deliver to dropOff location -> return to central)
@@ -292,18 +341,18 @@ void MeatWagons::firstIteration() {
         this->requests.erase(this->requests.begin());
 
         // get wagon
-        auto wagonIt = this->wagons.begin();
+        auto wagonIt = --this->wagons.end();
         auto wagon = *wagonIt;
         this->wagons.erase(wagonIt);
 
         // central -> dropOff path
         vector<int> nodesForwardTrip, edgesForwardTrip;
-        vector<int> pickupNodes;
+        set<Vertex*> pickupNodes;
 
         // pickup prisoner path
         this->graph->dijkstraBidirectional(central, request.getDest(), processedEdges, processedInvEdges);
         int weight = this->graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
-        pickupNodes.push_back(request.getDest());
+        pickupNodes.insert(this->graph->findVertex(request.getDest()));
 
         // deliver prisoner path
         int dropOffNode = chooseDropOf(pickupNodes);
@@ -334,47 +383,39 @@ void MeatWagons::secondIteration() {
     for(Wagon wagon : this->wagons) wagon.init();
 
     while(!requests.empty()) {
-        /*// requests are ordered by pickup time
-        vector<Request> groupedRequests;
-
-        // get wagon
-        auto wagonIt = this->wagons.begin();
+        // get wagon with max capacity
+        auto wagonIt = --this->wagons.end();
         auto wagon = *wagonIt;
         this->wagons.erase(wagonIt);
 
-        // central -> dropOff path
-        vector<int> nodesForwardTrip, edgesForwardTrip;
-        vector<int> pickupNodes;
+        // returned grouped requests and calculate tsp
+        set<Request*> groupedRequests; // = groupRequests(wagon.capacity);
+        set<Vertex*> tspNodes;
 
-        // pickup prisoner path
-        int weight = graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
-        pickupNodes.push_back(request.getDest());
+        for(auto r : groupedRequests) {
+            auto tspNode = this->graph->findVertex(r->getDest());
+            tspNodes.insert(tspNode);
+        }
 
-        // deliver prisoner path
-        int dropOffNode = chooseDropOf(pickupNodes);
-        graph->dijkstra(request.getDest(), dropOffNode, processedEdges);
-        weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
+        int dropOffNode = chooseDropOf(tspNodes);
+        tspNodes.insert( this->graph->findVertex(dropOffNode));
 
-        // return to central path (bidirectional graph -> path is equal to edgesForwardTrip)
-        weight *= 2;
+        // gets the time of the latest request (groupedRequests is a set ordered by arrival time)
+        Time deliveryTime = (*(--groupedRequests.end()))->getArrival();
+        vector<int> tspPath;
+        int weight = this->tspPath(tspNodes, tspPath, deliveryTime);
 
         // add delivery to wagon
-        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
-        Delivery *delivery = new Delivery(lastDeliveryTime, {&request}, edgesForwardTrip, weight);
-        wagon.addDelivery(delivery);
+        //Delivery *delivery = new Delivery(lastDeliveryTime, groupedRequests, tspPath, weight);
+        //wagon.addDelivery(delivery);
 
         // wagon now is back at the central
-        this->wagons.insert(wagon);*/
+        this->wagons.insert(wagon);
     }
 
 }
-
 void MeatWagons::thirdIteration() {
 }
-
-/*void MeatWagons::tspPath() {
-
-}*/
 
 Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     if(wagonIndex > this->wagons.size()) return nullptr;
