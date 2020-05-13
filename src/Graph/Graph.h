@@ -89,15 +89,18 @@ bool Graph::preProcess(int origin) {
         if(!(*it)->visited) {
             vertexIndexes.erase((*it)->getId());
             removed.insert((*it)->getId());
-            it = vertexSet.erase(it) - 1;
+            it = vertexSet.erase(it);
+            it--;
         }
     }
 
     // deletes outgoing edges of the deleted nodes (no need to delete from invAdj as Vertex is a pointer)
     for(auto vertex : vertexSet) {
         for(auto it = vertex->adj.begin(); it != vertex->adj.end(); it++)
-            if(removed.find(it->getDest()->getId()) != removed.end())
-                it = vertex->adj.erase(it) - 1;
+            if(removed.find(it->getDest()->getId()) != removed.end()) {
+                it = vertex->adj.erase(it);
+                it--;
+            }
     }
 
     return true;
@@ -180,12 +183,11 @@ Vertex* Graph::dijkstraInit(const int origin) {
 }
 
 Vertex* Graph::dijkstraBackwardsInit(const int dest){
+    auto final = findVertex(dest);
+    final->invDist = 0;
+    final->invHeuristicValue = 0;
 
-    auto start = findVertex(dest);
-    start->invDist = 0;
-    start->invHeuristicValue = 0;
-
-    return start;
+    return final;
 }
 
 bool Graph::dijkstraSingleSource(const int origin)  {
@@ -294,8 +296,10 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
     vert.push_back(final->getId());
     edges.push_back(final->getEdgePath().getId());
     int dist = final->dist;
+    int weight = final->path->dist;
     while(final->path != nullptr) {
         final = final->path;
+        weight += final->dist;
         vert.push_back(final->getId());
         edges.push_back(final->getEdgePath().getId());
     }
@@ -303,7 +307,7 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
     reverse(vert.begin(), vert.end());
     reverse(edges.begin(), edges.end());
 
-    return true;
+    return weight;
 }
 
 /**************** Optimizing Dijkstra ************/
@@ -393,6 +397,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     Vertex *backwardMin = nullptr;
     Vertex *middle_vertex = nullptr;
 
+    int i=0;
     // strict alternation between forward and backward search
     while(!forwardMinQueue.empty() && !backwardMinQueue.empty()) {
         //forward search
@@ -498,6 +503,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
             middle_vertex = backwardMin;
             break;
         }
+        i+=2;
     }
 
     int min_dist = middle_vertex->heuristicValue + middle_vertex->invHeuristicValue;
