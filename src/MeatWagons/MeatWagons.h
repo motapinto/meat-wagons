@@ -200,6 +200,8 @@ void MeatWagons::deliver(int iteration) {
     if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
     if(this->requests.size() == 0) return;
 
+    if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
+
     switch (iteration) {
         case 1: this->firstIteration(); break;
         case 2: this->secondIteration();
@@ -229,8 +231,6 @@ int MeatWagons::chooseDropOf(vector<int> const pickupNodes) {
 void MeatWagons::firstIteration() {
     if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
     if(wagons.begin()->getCapacity() != 1)  throw MeatWagonsException("Wrong iteration configuration");
-
-    if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
 
     unordered_set<int> processedEdges, processedInvEdges;
     for(Wagon wagon : this->wagons) wagon.init();
