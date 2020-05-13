@@ -294,13 +294,12 @@ int Graph::getPathTo(const int dest, vector<int> &edges) const {
     if(final == nullptr || (final->path == nullptr && final->invPath == nullptr))
         return false;
 
-    edges.push_back(final->getEdgePath().getId());
     int dist = final->dist;
     int weight = final->path->dist;
     while(final->path != nullptr) {
+        edges.push_back(final->getEdgePath().getId());
         final = final->path;
         weight += final->dist;
-        edges.push_back(final->getEdgePath().getId());
         weigth += final->getEdgePath().getWeight();
     }
     

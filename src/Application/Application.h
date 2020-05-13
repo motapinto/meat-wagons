@@ -162,7 +162,6 @@ void Application::run()
                 controller->deliver(choice);
                 int wagon, delivery;
                 while(true) {
-                    //check wagon & delivery index
                     cout << "\n--- Choose Wagon ---" << endl;
                     cout << "\tWagon Index: ";
 
@@ -179,6 +178,7 @@ void Application::run()
                 if(back) break;
 
                 while(true) {
+                    cout << "\n--- Choose Delivery ---" << endl;
                     cout << "\tDelivery Index: ";
                     readline(input);
                     if(stoint(input, delivery) != 0 || delivery < 0) {
