@@ -12,26 +12,26 @@ public:
     enum Tag {CENTRAL, INTEREST_POINT, DEFAULT};
 
 private:
-    int id;                         // identifier of the vertex
-    Position pos;			              // content of the vertex
-    vector<Edge> adj;		            // outgoing edges
-    vector<Edge> invAdj;            // ingoing edges
-    Tag tag = DEFAULT;              // vertex Tag
-    bool inv = false;
+    int id;                            // identifier of the vertex
+    Position pos;			           // content of the vertex
+    vector<Edge> adj;		           // outgoing edges
+    vector<Edge> invAdj;               // ingoing edges
+    Tag tag = DEFAULT;                 // vertex Tag
     double dist = infinite;
     double invDist = infinite;
     Vertex *path = nullptr;
     Vertex *invPath = nullptr;
     Edge edgePath;
     Edge invEdgePath;
+    bool inv = false;
 
-    int queueIndex = 0; 		        // required by MutablePriorityQueue
+    int queueIndex = 0; 		    // required by MutablePriorityQueue
     double heuristicValue = 0;      // oriented search optimization (a*)
     double invHeuristicValue = 0;
     int invQueueIndex = 0;
     bool invVisited = false;
 
-    bool visited = false;		        // auxiliary field
+    bool visited = false;		      // auxiliary field
     bool processing = false;	      // auxiliary field
 
     void addEdge(const int &id, Vertex *dest, const double &weight);

@@ -110,7 +110,7 @@ void MeatWagons::setGraph(const string graphPath) {
 
     this->processed = false;
     this->graph = graphRead;
-    cout << "Central vertex ID: " << this->getCentral() << endl << endl;
+    this->graphName = graphPath.substr(graphPath.find_last_of('/') + 1);
     //this->showGraph();
 }
 
