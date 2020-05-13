@@ -71,8 +71,10 @@ class MeatWagons {
         void secondIteration();
         void thirdIteration();
 
+        set<Request> groupRequests(const int capacity);
         Delivery* drawDeliveries(int wagonIndex, int deliveryIndex);
 };
+
 
 int MeatWagons::getCentral() const {
     return this->central;
@@ -106,10 +108,14 @@ void MeatWagons::setGraph(const string graphPath) {
     Reader graphReader = Reader(graphPath);
     Graph* graphRead = new Graph();
 
-    if(!graphReader.readGraph(graphRead, central, pointsOfInterest)) throw MeatWagonsException("Graph is null");
-    if(!graphReader.readRequests(requests)) throw MeatWagonsException("Graph is null");
+    if(!graphReader.readGraph(graphRead, central, pointsOfInterest))
+        throw MeatWagonsException("Graph is null");
+    if(!graphReader.readRequests(requests))
+        throw MeatWagonsException("Graph is null");
+
     this->processed = false;
     this->graph = graphRead;
+    cout << "Central vertex ID: " << this->getCentral() << endl << endl;
     this->showGraph();
 }
 
@@ -124,7 +130,7 @@ void MeatWagons::preProcess(int node) {
 
     for(auto it = this->requests.begin(); it != this->requests.end(); it++) {
         if(this->graph->findVertex((*it).getDest()) == nullptr)
-            this->requests.erase(*it);
+            it = this->requests.erase(it)--;
     }
 
     this->processed = true;
@@ -164,9 +170,10 @@ void MeatWagons::shortestPath(int option, int origin, int dest) {
 
 void MeatWagons::listWagons() const {
     for (auto it = wagons.begin(); it != wagons.end(); it++) {
-        cout << "Wagon " << (*it).getId() << ": Capacity " << (*it).getCapacity() << " Available at: "
-             << (*it).getNextAvailableTime() << endl << endl;
+        cout << "[Wagon " << it->getId() << "] Capacity " << it->getCapacity() << " available at "
+             << it->getNextAvailableTime() << endl;
     }
+    cout << endl;
 }
 
 void MeatWagons::addWagon(const int capacity) {
@@ -193,15 +200,74 @@ void MeatWagons::removeRequest(const string &prisoner, const int dest, const int
     requests.erase(Request(prisoner, dest, priority, arrival));
 }
 
-void MeatWagons::deliver(const int iteration) {
+set<Request> MeatWagons::groupRequests(const int capacity){
+    set <Request> group;
+    int max_dist = 0, dist;
+
+    multiset<Request>::iterator it = requests.begin();
+    Request max_dist_request = *it;
+    group.insert((*it));
+
+    Vertex* initial_vert = this->graph->findVertex((*it).getDest());
+
+    it++;
+
+    for(it; it != requests.end(); it++){
+        Vertex * vert = this->graph->findVertex((*it).getDest());
+
+        dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
+
+        if(dist < this->zoneMaxDist){
+            if(group.size() < capacity){
+                group.insert(*it);
+
+                if(dist > max_dist){
+                    max_dist = dist;
+                    max_dist_request = *it;
+                }
+
+            }
+            else if(dist < max_dist){
+
+                group.erase(max_dist_request);
+
+                max_dist = dist;
+
+                // Check if there is a dist bigger then max_dist in the set
+                set<Request>::iterator itr = group.begin();
+
+                for(itr = group.begin(); itr != group.end(); itr++){
+                    Vertex * vert = this->graph->findVertex((*itr).getDest());
+
+                    dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
+
+                    if(dist > max_dist){
+                        max_dist = dist;
+                        max_dist_request = *itr;
+                    }
+                }
+
+                group.insert(*it);
+            }
+        }
+    }
+
+    return group;
+}
+
+void MeatWagons::deliver(int iteration) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
     if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
     if(this->requests.size() == 0) return;
+
+    if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
 
     switch (iteration) {
         case 1: this->firstIteration(); break;
         case 2: this->secondIteration();
         //case 3: if (!this->graph->dijkstraBidirectional(origin, dest)) throw MeatWagonsException("Vertex was not found");break;
+        default:
+            break;
     }
 }
 
@@ -271,9 +337,7 @@ void MeatWagons::firstIteration() {
     if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
     if(wagons.begin()->getCapacity() != 1)  throw MeatWagonsException("Wrong iteration configuration");
 
-    if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
-
-    unordered_set<int> processedEdges;
+    unordered_set<int> processedEdges, processedInvEdges;
     for(Wagon wagon : this->wagons) wagon.init();
 
     while(!this->requests.empty()) {
@@ -296,7 +360,7 @@ void MeatWagons::firstIteration() {
 
         // deliver prisoner path
         int dropOffNode = chooseDropOf(pickupNodes);
-        this->graph->dijkstra(request.getDest(), dropOffNode, processedEdges);
+        this->graph->dijkstraBidirectional(request.getDest(), dropOffNode, processedEdges, processedInvEdges);
         weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
 
         // return to central path (bidirectional graph -> path is equal to edgesForwardTrip)

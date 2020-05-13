@@ -65,7 +65,7 @@ void GraphVisualizer::draw(Graph *graph) {
         }
 
         for(Edge e : origin->getAdj()) {
-            gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::UNDIRECTED);
+            gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::DIRECTED);
         }
     }
     gv->rearrange();
