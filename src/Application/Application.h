@@ -163,7 +163,6 @@ void Application::run()
                 int wagon, delivery;
                 while(true) {
                     //check wagon & delivery index
-                    cout << "OLAAAAAAAAAAAAAAAAAAAAAAA" << endl;
                     cout << "\n--- Choose Wagon ---" << endl;
                     cout << "\tWagon Index: ";
 

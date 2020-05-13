@@ -13,8 +13,7 @@ class Delivery {
             this->start = start;
             this->requests = requests;
             this->forwardPath = forwardPath;
-            this->end = Time(this->start.toSeconds() + weight);
-            cout << this->end;
+            this->end = start + Time(0, 0, this->start.toSeconds() + weight);
         }
 
         Time getStart() const;
