@@ -205,39 +205,33 @@ set<Request> MeatWagons::groupRequests(const int capacity){
     group.insert((*it));
 
     Vertex* initial_vert = this->graph->findVertex((*it).getDest());
-
     it++;
 
-    for(it; it != requests.end(); it++){
+    for(it; it != requests.end(); it++) {
         Vertex * vert = this->graph->findVertex((*it).getDest());
-
         dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
 
-        if(dist < this->zoneMaxDist){
-            if(group.size() < capacity){
+        if(dist < this->zoneMaxDist) {
+            if(group.size() < capacity) {
                 group.insert(*it);
 
                 if(dist > max_dist){
                     max_dist = dist;
                     max_dist_request = *it;
                 }
-
             }
             else if(dist < max_dist){
-
                 group.erase(max_dist_request);
-
                 max_dist = dist;
 
                 // Check if there is a dist bigger then max_dist in the set
                 set<Request>::iterator itr = group.begin();
 
-                for(itr = group.begin(); itr != group.end(); itr++){
+                for(itr = group.begin(); itr != group.end(); itr++) {
                     Vertex * vert = this->graph->findVertex((*itr).getDest());
-
                     dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
 
-                    if(dist > max_dist){
+                    if(dist > max_dist) {
                         max_dist = dist;
                         max_dist_request = *itr;
                     }
@@ -312,7 +306,7 @@ void MeatWagons::firstIteration() {
         // deliver prisoner path
         int dropOffNode = chooseDropOf(pickupNodes);
         this->graph->dijkstraBidirectional(request.getDest(), dropOffNode, processedEdges, processedInvEdges);
-        weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
+        weight += graph->getPathTo(dropOffNode, nodesForwardTrip, edgesForwardTrip);
 
         // return to central path (bidirectional graph -> path is equal to edgesForwardTrip)
         weight *= 2;
