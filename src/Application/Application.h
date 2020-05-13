@@ -158,12 +158,13 @@ void Application::run()
                 while(stoint(input, newMaxDist) != 0 || newMaxDist < 1) readline(input);
                 controller->setMaxDist(newMaxDist);
             }
-            else { 
+            else {
                 controller->deliver(choice);
                 int wagon, delivery;
                 while(true) {
-                    //check wagon & delivery index 
-                    cout << "\n--- Choose Wagon --- \t\t\t(Type 'back' to go back)" << endl;
+                    //check wagon & delivery index
+                    cout << "OLAAAAAAAAAAAAAAAAAAAAAAA" << endl;
+                    cout << "\n--- Choose Wagon ---" << endl;
                     cout << "\tWagon Index: ";
 
                     readline(input);
@@ -192,16 +193,16 @@ void Application::run()
                 cout << "Returns at: " << deliveryChosen->getEnd() << endl;
                 cout << "Requests done:" << endl;
                 for(auto r : deliveryChosen->getRequests()) {
-                    cout << "\t" << "Prisoner: " << setfill(' ') << setw(10) << r->getPrisoner() << endl;
-                    cout << "\t" << "Priority: " << r->getPriority() ;
-                    cout << "\t" << "Arrives at: " << r->getArrival();
-                    cout << "\t" << "Delivered at: " << r->getDelivery();
+                    cout << "\t" << "Prisoner: " << setfill(' ') << setw(10) << r.getPrisoner() << endl;
+                    cout << "\t" << "Priority: " << r.getPriority() ;
+                    cout << "\t" << "Arrives at: " << r.getArrival();
+                    cout << "\t" << "Delivered at: " << r.getDelivery();
                 }
             }
             break;
         }
         case 5: {
-            cout << "\n--- Setting Central Node --- \t\t\t(Type 'back' to go back)";
+            cout << "\n--- Setting Central Node ---";
             cout << "\nCurrent Central Node ID: " << controller->getCentral();
             cout << "\nProvide <node id>\n>";
 

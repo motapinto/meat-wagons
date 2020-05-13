@@ -287,7 +287,7 @@ Vertex* MeatWagons::getNearestNeighbour(Vertex *node,  const set<Vertex*> &neigh
     auto nearestNeighbour = *neighbours.begin();
 
     for(auto it = ++neighbours.begin(); it != neighbours.end(); it++) {
-        auto currDistance = this->graph->findVertex(this->central)->getPosition().euclideanDistance((*it)->getPosition()) < nearestDistance;
+        auto currDistance = this->graph->findVertex(this->central)->getPosition().euclideanDistance((*it)->getPosition()    );
         if(currDistance < nearestDistance) {
             nearestDistance = currDistance;
             nearestNeighbour = *it;
@@ -295,6 +295,7 @@ Vertex* MeatWagons::getNearestNeighbour(Vertex *node,  const set<Vertex*> &neigh
     }
 
     return nearestNeighbour;
+    return nullptr;
 }
 
 int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath) {

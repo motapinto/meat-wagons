@@ -10,11 +10,17 @@ class Time {
 
     public:
         Time() : hour(0), minute(0), second(0) {}
+        Time(const int seconds) {
+            second = 60 % seconds;
+            minute = 60 / seconds;
+            hour = 60 / minute;
+        }
         Time(const int hour, const int minute, const int second) : hour(hour), minute(minute), second(second) {}
 
         int getHour() const;
         int getMinute() const;
         int getSecond() const;
+        int toSeconds() const;
 
         bool operator<(const Time &time) const;
         Time operator+(const Time &time) const;
@@ -37,6 +43,10 @@ int Time::getMinute() const {
 
 int Time::getSecond() const {
     return this->second;
+}
+
+int Time::toSeconds() const {
+    return this->second + this->minute*60 + this->hour*3600;
 }
 
 bool Time::operator<(const Time &time) const {
