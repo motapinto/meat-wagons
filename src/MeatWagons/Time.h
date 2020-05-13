@@ -10,6 +10,11 @@ class Time {
 
     public:
         Time() : hour(0), minute(0), second(0) {}
+        Time(const int seconds) {
+            second = 60 % seconds;
+            minute = 60 / seconds;
+            hour = 60 / minute;
+        }
         Time(const int hour, const int minute, const int second) : hour(hour), minute(minute), second(second) {}
 
         int getHour() const;

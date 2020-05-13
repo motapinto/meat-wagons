@@ -5,15 +5,16 @@
 class Delivery {
     private:
         Time start, end;
-        vector<Request*> requests;
+        vector<Request> requests;
         vector<int> forwardPath;
 
     public:
-        Delivery(const Time &start, const vector<Request*> &requests, const vector<int> &forwardPath, const int weight) {
+        Delivery(const Time &start, const vector<Request> &requests, const vector<int> &forwardPath, const int weight) {
             this->start = start;
             this->requests = requests;
             this->forwardPath = forwardPath;
-            this->start.setSecond(this->start.getSecond() + weight);
+            this->end = Time(this->start.toSeconds() + weight);
+            cout << this->end;
         }
 
         Time getStart() const;
@@ -22,9 +23,9 @@ class Delivery {
         Time getEnd() const;
         void setEnd(const Time &anEnd);
 
-        vector<Request*> getRequests() const;
-        void setRequests(const vector<Request*> &requests);
-        void addRequest(Request *request);
+        vector<Request> getRequests() const;
+        void setRequests(const vector<Request> &requests);
+        void addRequest(Request request);
 
         vector<int> getForwardPath() const;
         void setForwardPath(const vector<int> &path);
@@ -49,15 +50,15 @@ void Delivery::setEnd(const Time &anEnd) {
     this->end = anEnd;
 }
 
-vector<Request*> Delivery::getRequests() const {
+vector<Request> Delivery::getRequests() const {
     return this->requests;
 }
 
-void Delivery::setRequests(const vector<Request*> &requests) {
+void Delivery::setRequests(const vector<Request> &requests) {
     this->requests = requests;
 }
 
-void Delivery::addRequest(Request *request) {
+void Delivery::addRequest(Request request) {
     this->requests.push_back(request);
 }
 

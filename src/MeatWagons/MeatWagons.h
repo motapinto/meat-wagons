@@ -288,7 +288,7 @@ Vertex* MeatWagons::getNearestNeighbour(Vertex *node,  const set<Vertex*> neighb
     auto nearestNeighbour = *neighbours.begin();
 
     for(auto it = ++neighbours.begin(); it != neighbours.end(); it++) {
-        auto currDistance = this->graph->findVertex(this->central)->getPosition().euclideanDistance((*it)->getPosition()) < nearestDistance;
+        auto currDistance = this->graph->findVertex(this->central)->getPosition().euclideanDistance((*it)->getPosition()    );
         if(currDistance < nearestDistance) {
             nearestDistance = currDistance;
             nearestNeighbour = *it;
@@ -296,6 +296,7 @@ Vertex* MeatWagons::getNearestNeighbour(Vertex *node,  const set<Vertex*> neighb
     }
 
     return nearestNeighbour;
+    return nullptr;
 }
 
 int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath, Time &deliveryTime) {
@@ -313,11 +314,11 @@ int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<int> &tspPath, Time &deli
         Vertex *next = getNearestNeighbour(previous, tspNodes);
         this->graph->dijkstraBidirectional(previous->getId(), next->getId(), processedNodes, processedEdges);
         weight += this->graph->getPathTo(previous->getId(), nodes, tspPath);
-        PRECISO DA EDGES E NAO DO VEC INT
+        // PRECISO DA EDGES E NAO DO VEC INT
 
         for(auto edge : tspPath) {
             totalTime += 0;
-            Time arrivalTime = deliveryTime.setSecond(deliveryTime.getSecond() + )
+            // Time arrivalTime = deliveryTime.setSecond(deliveryTime.getSecond() + )
         }
 
         tspNodes.erase(next);
@@ -364,7 +365,7 @@ void MeatWagons::firstIteration() {
 
         // add delivery to wagon
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
-        Delivery *delivery = new Delivery(lastDeliveryTime, {&request}, edgesForwardTrip, weight);
+        Delivery *delivery = new Delivery(lastDeliveryTime, {request}, edgesForwardTrip, weight);
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
@@ -424,7 +425,7 @@ Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     Delivery * delivery = next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
 
     for(auto request : delivery->getRequests())
-        this->viewer->setNode(request->getDest(), 30, "magenta");
+        this->viewer->setNode(request.getDest(), 30, "magenta");
 
     for(auto e : delivery->getForwardPath())
         this->viewer->setPath(delivery->getForwardPath(), "blue", true);
