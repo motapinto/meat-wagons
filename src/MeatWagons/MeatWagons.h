@@ -59,8 +59,6 @@ class MeatWagons {
         void removeWagon(const int id, const int capacity);
 
         void listRequests() const;
-        void addRequest(const string &prisoner, const int dest, const int priority, const Time &arrival);
-        void removeRequest(const string &prisoner, const int dest, const int priority, const Time &arrival);
 
         void deliver(const int iteration);
         int chooseDropOff(const set<Vertex*> &pickupNodes);
@@ -191,15 +189,6 @@ void MeatWagons::listRequests() const {
     }
 }
 
-void MeatWagons::addRequest(const string &prisoner, const int dest, const int priority, const Time &arrival) {
-    Request request = Request(prisoner, dest, priority, arrival);
-    requests.insert(request);
-}
-
-void MeatWagons::removeRequest(const string &prisoner, const int dest, const int priority, const Time &arrival) {
-    requests.erase(Request(prisoner, dest, priority, arrival));
-}
-
 void MeatWagons::deliver(int iteration) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
     if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
@@ -234,52 +223,50 @@ int MeatWagons::chooseDropOff(const set<Vertex*> &pickupNodes) {
 }
 
 vector<Request> MeatWagons::groupRequests(const int capacity){
-    set <Request> group;
+    vector <Request> group;
     int max_dist = 0, dist;
 
-    multiset<Request>::iterator it = requests.begin();
-    Request max_dist_request = *it;
-    group.insert((*it));
-
+    auto it = requests.begin();
+    auto max_dist_request = it;
     Vertex* initial_vert = this->graph->findVertex((*it).getDest());
-    it++;
+    group.push_back((*it));
 
-    for(it; it != requests.end(); it++) {
-        Vertex * vert = this->graph->findVertex((*it).getDest());
+    /*it++;
+    int i = 0;
+    for(; it != requests.end(); it++) {
+        Vertex *vert = this->graph->findVertex((*it).getDest());
         dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
 
         if(dist < this->zoneMaxDist) {
             if(group.size() < capacity) {
-                group.insert(*it);
+                group.push_back(*it);
 
                 if(dist > max_dist) {
                     max_dist = dist;
-                    max_dist_request = *it;
+                    max_dist_request = it;
                 }
             }
             else if(dist < max_dist) {
-                group.erase(max_dist_request); // erase prob maybe?
+                group.erase(max_dist_request);
                 max_dist = dist;
 
-                // Check if there is a dist bigger then max_dist in the set
-                set<Request>::iterator itr = group.begin();
-
-                for(itr = group.begin(); itr != group.end(); itr++) {
-                    Vertex * vert = this->graph->findVertex((*itr).getDest());
-                    dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
+                // Check if there is a dist bigger then max_dist in the array
+                for(auto itr = group.begin(); itr != group.end(); itr++) {
+                    auto *vertex = this->graph->findVertex((*itr).getDest());
+                    dist = vertex->getPosition().euclideanDistance(initial_vert->getPosition());
 
                     if(dist > max_dist) {
                         max_dist = dist;
-                        max_dist_request = *itr;
+                        max_dist_request = itr;
                     }
                 }
 
-                group.insert(*it);
+                group.push_back(*it);
             }
         }
-    }
+    }*/
 
-    //return group;
+    return group;
 }
 
 Vertex* MeatWagons::getNearestNeighbour(Vertex *node,  const set<Vertex*> &neighbours) {
@@ -337,7 +324,9 @@ Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     return delivery;
 }
 
-// Iteration: Using a single van with capacity equal to 1 (receive prisoner -> deliver to dropOff location -> return to central)
+/**
+ * Iteration: Using a single van with capacity equal to 1 (receive prisoner -> deliver to dropOff location -> return to central)
+ */
 void MeatWagons::firstIteration() {
     if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
     if(wagons.begin()->getCapacity() != 1)  throw MeatWagonsException("Wrong iteration configuration");
@@ -351,7 +340,8 @@ void MeatWagons::firstIteration() {
         this->requests.erase(this->requests.begin());
 
         // get wagon
-        auto wagonIt = --this->wagons.end();
+        auto wagonIt = this->wagons.end();
+        wagonIt --;
         auto wagon = *wagonIt;
         this->wagons.erase(wagonIt);
 
@@ -382,7 +372,9 @@ void MeatWagons::firstIteration() {
     }
 }
 
-//Iteration: Using a single van with capacity > 1 (receive prisoner -> deliver to dropOff location -> return to central)
+/**
+ * Iteration: Using a single van with capacity > 1 (receive prisoner -> deliver to dropOff location -> return to central)
+ */
 void MeatWagons::secondIteration() {
     if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
     if(wagons.begin()->getCapacity() <= 1)  throw MeatWagonsException("Wrong iteration configuration");
@@ -423,7 +415,9 @@ void MeatWagons::secondIteration() {
 
 }
 
-//Iteration: Using many vans with capacity > 1 (receive prisoner -> deliver to dropOff location -> return to central)
+/**
+ * Iteration: Using many vans with capacity > 1 (receive prisoner -> deliver to dropOff location -> return to central)
+ */
 void MeatWagons::thirdIteration() {
 }
 

@@ -27,7 +27,7 @@ void Application::displayMenu()
     if(controller->getGraph() != nullptr) {cout << "4 - Deliver" << endl;}
     if(controller->getGraph() != nullptr) {cout << "5 - Set Central" << endl;}
     if(controller->getGraph() != nullptr) {cout << "6 - Wagon Operation" << endl;}
-    if(controller->getGraph() != nullptr) {cout << "7 - Requests Operation" << endl;}
+    if(controller->getGraph() != nullptr) {cout << "7 - List Requests" << endl;}
     cout << "0 - Exit" << endl << endl;
 
     if(controller->getGraph() == nullptr) {cout << "Graph not read yet!" << endl << endl;}
@@ -276,48 +276,8 @@ void Application::run()
             break;
         }
         case 7: {
-            cout << "\n--- Requests --- \t\t\t(Type 'back' to go back)";
-            cout << "\t1 - List Requests\n";
-            cout << "\t2 - Add Requests\n";
-            cout << "\t3 - Remove Requests\n>";
-
-            while (true) {
-                int choice;
-                readline(input);
-                if (input == "back") break;
-                else if (stoint(input, choice) || choice < 1 || choice > 3) {
-                    cout << "\nTry again\n>";
-                    break;
-                }
-
-                if(choice == 1) {
-                    cout << "\n--- Listing Requests ---" << endl;
-                    controller->listRequests();
-                    break;
-                }
-                if(choice == 2) {
-                    cout << "\n--- Adding Requests ---" << endl;
-                    cout << "Provide <prisoner> <destination> <priority> <hour> <minutes> <seconds>\n>";
-
-                    readline(input);
-                    string prisoner;
-                    stringstream line(input);
-                    int dest, priority, hour, minute, second;
-                    if (line >> prisoner >> dest >> priority >> hour >> minute >> second)
-                        controller->addRequest(prisoner, dest, priority, Time(hour, minute, second));
-                }
-                if (choice == 3) {
-                    cout << "\n--- Removing Requests ---" << endl;
-                    cout << "Provide <prisoner> <destination> <priority> <hour> <minutes> <seconds>\n>";
-
-                    readline(input);
-                    string prisoner;
-                    stringstream line(input);
-                    int dest, priority, hour, minute, second;
-                    if (line >> prisoner >> dest >> priority >> hour >> minute >> second)
-                        controller->removeRequest(prisoner, dest, priority, Time(hour, minute, second));
-                }
-            }
+            cout << "\n--- List Requests ---";
+            controller->listRequests();
             break;
         }
         default:
