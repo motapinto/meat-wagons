@@ -102,7 +102,7 @@ void Application::run()
             cout << endl << "1 - Original Dijkstra";
             cout << endl << "2 - Oriented Dijkstra (A*)";
             cout << endl << "3 - Bidirectional Oriented Dijkstra(Oriented A*)";
-            cout << endl << "Input: > ";
+            cout << endl << "\bInput: > ";
 
             while(true) {
                 readline(input);
@@ -122,6 +122,8 @@ void Application::run()
                     }
                 }
                 else cout << "\bInput: > ";
+
+                break;
             }
 
             break;
@@ -135,69 +137,60 @@ void Application::run()
             cout << "Current ZoneMaxDist: " << controller->getMaxDist() << endl << ">";
 
             int choice;
-            bool back = false;
-
             while(true) {
                 readline(input);
-                if(input == "back") {
-                    back = true;
-                    break;
-                }
-                else if(stoint(input, choice) != 0 || choice < 0 || choice > 4) {
-                    cout << "\nTry again\n>";
-                    break;
-                }
-                else break;
-            }
-            if(back) break;
-
-            if(choice == 4) {
-                int newMaxDist;
-                cout << "\n--- Setting new max distance ---\n>";
-                readline(input);
-                while(stoint(input, newMaxDist) != 0 || newMaxDist < 1) readline(input);
-                controller->setMaxDist(newMaxDist);
-            }
-            else {
-                controller->deliver(choice);
-                int wagon, delivery;
-                while(true) {
-                    cout << "\n--- Choose Wagon ---" << endl;
-                    cout << "\tWagon Index: ";
-
-                    readline(input);
-                    if(input == "back") {
-                        back = true;
+                if(input == "back") break;
+                else if(stoint(input, choice) == 0 && choice >= 0 && choice <= 4) {
+                    if (choice != 4) {
+                        controller->deliver(choice);
+                        int wagon, delivery;
+                        while (true) {
+                            cout << endl << "--- Choose Wagon ---" << endl;
+                            cout << "Wagon Index: ";
+                            readline(input);
+                            if (input == "back") break;
+                            else if (stoint(input, wagon) == 0 && wagon >= 0) {
+                                while (true) {
+                                    cout << endl << "--- Choose Delivery ---" << endl;
+                                    cout << "Delivery Index: ";
+                                    readline(input);
+                                    if (input == "back") break;
+                                    else if (stoint(input, delivery) == 0 && delivery >= 0) {
+                                        Delivery *deliveryChosen = controller->drawDeliveries(wagon, delivery);
+                                        cout << "Leaving at: " << deliveryChosen->getStart() << endl;
+                                        cout << "Returns at: " << deliveryChosen->getEnd() << endl;
+                                        cout << "Requests done:" << endl;
+                                        for (auto r : deliveryChosen->getRequests()) {
+                                            cout << "\tPrisoner: " << setfill(' ') << setw(10) << r.getPrisoner();
+                                            cout << "\tPriority: " << r.getPriority();
+                                            cout << "\tArrives at: " << r.getArrival();
+                                            cout << "\tDelivered at: " << r.getDelivery();
+                                        }
+                                    }
+                                    else cout << endl << "\bInput: > ";
+                                }
+                            } else cout << endl << "\bInput: > ";
+                        }
+                    } else {
+                        int newMaxDist;
+                        cout << "\n--- Setting new max distance ---\n>";
+                        readline(input);
+                        while (true) {
+                            readline(input);
+                            if (input == "back") break;
+                            else if (stoint(input, newMaxDist) == 0 || newMaxDist >= 1)
+                                controller->setMaxDist(newMaxDist);
+                            else cout << endl << "\bInput: > ";
+                            readline(input);
+                        }
                         break;
                     }
-                    else if(stoint(input, wagon) != 0 || wagon < 0) {
-                        cout << "\nTry again\n>";
-                    }
-                    else break;
                 }
-                if(back) break;
+                else cout << "\bInput: > ";
 
-                while(true) {
-                    cout << "\n--- Choose Delivery ---" << endl;
-                    cout << "\tDelivery Index: ";
-                    readline(input);
-                    if(stoint(input, delivery) != 0 || delivery < 0) {
-                        cout << "\nTry again\n>";
-                    }
-                    else break;
-                }
-
-                Delivery *deliveryChosen = controller->drawDeliveries(wagon, delivery);
-                cout << "Leaving at: " << deliveryChosen->getStart() << endl;
-                cout << "Returns at: " << deliveryChosen->getEnd() << endl;
-                cout << "Requests done:" << endl;
-                for(auto r : deliveryChosen->getRequests()) {
-                    cout << "\t" << "Prisoner: " << setfill(' ') << setw(10) << r.getPrisoner() << endl;
-                    cout << "\t" << "Priority: " << r.getPriority() ;
-                    cout << "\t" << "Arrives at: " << r.getArrival();
-                    cout << "\t" << "Delivered at: " << r.getDelivery();
-                }
+                break;
             }
+
             break;
         }
         case 5: {
