@@ -227,6 +227,8 @@ bool Graph::dijkstraSingleSource(const int origin)  {
             }
         }
     }
+
+
     return true;
 }
 
@@ -297,9 +299,7 @@ bool Graph::getPathTo(const int dest, vector<int> &vert, vector<int> &edges) con
         vert.push_back(final->getId());
         edges.push_back(final->getEdgePath().getId());
     }
-
-    cout << "distance: " << dist << endl;
-
+    
     reverse(vert.begin(), vert.end());
     reverse(edges.begin(), edges.end());
 
