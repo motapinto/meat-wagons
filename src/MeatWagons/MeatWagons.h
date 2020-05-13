@@ -327,7 +327,7 @@ Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     Delivery * delivery = next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
 
     for(auto request : delivery->getRequests())
-        this->viewer->setNode(request->getDest(), 30, "magenta");
+        this->viewer->setNode(request.getDest(), 30, "magenta");
 
     for(auto e : delivery->getForwardPath())
         this->viewer->setPath(delivery->getForwardPath(), "blue", true);
@@ -425,42 +425,6 @@ void MeatWagons::secondIteration() {
 
 //Iteration: Using many vans with capacity > 1 (receive prisoner -> deliver to dropOff location -> return to central)
 void MeatWagons::thirdIteration() {
-    if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration");
-    if(wagons.begin()->getCapacity() <= 1)  throw MeatWagonsException("Wrong iteration configuration");
-
-    unordered_set<int> processedEdges;
-    for(Wagon wagon : this->wagons) wagon.init();
-
-    while(!requests.empty()) {
-        // get wagon with max capacity
-        auto wagonIt = --this->wagons.end();
-        auto wagon = *wagonIt;
-        this->wagons.erase(wagonIt);
-
-        // returned grouped requests and calculate tsp
-        set<Request *> groupedRequests; // = groupRequests(wagon.capacity);
-        set<Vertex *> tspNodes;
-
-        for (auto r : groupedRequests) {
-            auto tspNode = this->graph->findVertex(r->getDest());
-            tspNodes.insert(tspNode);
-        }
-
-        int dropOffNode = chooseDropOff(tspNodes);
-        tspNodes.insert(this->graph->findVertex(dropOffNode));
-
-        // gets the time of the latest request (groupedRequests is a set ordered by arrival time)
-        Time deliveryTime = (*(--groupedRequests.end()))->getArrival();
-        vector<int> tspPath;
-        int weight = this->tspPath(tspNodes, tspPath, deliveryTime);
-
-        // add delivery to wagon
-        //Delivery *delivery = new Delivery(deliveryTime, groupedRequests, tspPath, weight);
-        //wagon.addDelivery(delivery);
-
-        // wagon now is back at the central
-        this->wagons.insert(wagon);
-    }
 }
 
 #endif //MEAT_WAGONS_MEATWAGONS_H
