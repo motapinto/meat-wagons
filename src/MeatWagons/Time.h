@@ -1,6 +1,8 @@
 #pragma once
 #ifndef MEAT_WAGONS_TIME_H
 #define MEAT_WAGONS_TIME_H
+#include <iomanip>
+using namespace std;
 
 class Time {
     private:
@@ -22,7 +24,9 @@ class Time {
 
         bool operator<(const Time &time) const;
         friend std::ostream &operator<<( std::ostream &output, const Time &time) {
-            output << time.getHour() << ":" << time.getMinute() << ":" << time.getSecond();
+            output << setfill('0') << left << setw(2) << time.getHour() << ":"
+                   << setfill('0') << left << setw(2) << time.getMinute() << ":"
+                   << setfill('0') << left << setw(2) << time.getSecond();
             return output;
         }
 };

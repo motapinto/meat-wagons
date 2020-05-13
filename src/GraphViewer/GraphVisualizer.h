@@ -6,25 +6,30 @@
 #include "GraphViewer/cpp/graphviewer.h"
 
 class GraphVisualizer {
-    private:
-        int width, height;
-        GraphViewer *gv;
+private:
+    int width, height;
+    GraphViewer *gv;
 
-    public:
-        GraphVisualizer(const int width, const int height) {
-            this->width = width;
-            this->height = height;
-            this->gv = new GraphViewer(1, 1, false);
-        }
+public:
+    GraphVisualizer(const int width, const int height) {
+        this->width = width;
+        this->height = height;
+        this->gv = new GraphViewer(1, 1, false);
+    }
 
-        ~GraphVisualizer() {
-            delete gv;
-        }
+    ~GraphVisualizer() {
+        delete gv;
+    }
 
-        void draw(Graph *graph);
-        void setPath(vector<int> vert, vector<int> edges);
-        void reset();
+    GraphViewer* getViewer() const ;
+    void draw(Graph *graph);
+    void setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath = false);
+    void setNode(const int id, const int size, const string color);
 };
+
+GraphViewer* GraphVisualizer::getViewer() const {
+    return gv;
+}
 
 // no final tentar fazer animacao como na tp com sleeps
 void GraphVisualizer::draw(Graph *graph) {
@@ -32,7 +37,7 @@ void GraphVisualizer::draw(Graph *graph) {
     //vertexes settings
     gv->defineVertexColor("black");
     //edges settings
-    gv->defineEdgeColor("black");
+    gv->defineEdgeColor("gray");
     gv->defineEdgeCurved(false);
 
     vector<Vertex*> vertexSet = graph->getVertexSet();
@@ -60,23 +65,25 @@ void GraphVisualizer::draw(Graph *graph) {
         }
 
         for(Edge e : origin->getAdj()) {
-            gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::UNDIRECTED);
+            gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::DIRECTED);
         }
     }
     gv->rearrange();
 }
 
-void GraphVisualizer::setPath(vector<int> vert, vector<int> edges) {
-    for(int id : vert) {
-        this->gv->setVertexColor(id, "green");
-        this->gv->setVertexSize(id, 2);
-        this->gv->setVertexSize(id, 10);
-    }
-
+void GraphVisualizer::setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath) {
     for(int id : edges) {
-        this->gv->setEdgeColor(id, "blue");
-        this->gv->setEdgeThickness(id, 10);
+        this->gv->setEdgeColor(id, edgeColor);
+        if(isShortestPath)
+            this->gv->setEdgeThickness(id, 8);
+        else
+            gv->setEdgeThickness(id, 3);
     }
+}
+
+void GraphVisualizer::setNode(const int id, const int size, const string color) {
+    this->gv->setVertexSize(id, size);
+    this->gv->setVertexColor(id, color);
 }
 
 #endif //MEAT_WAGONS_GRAPHVISUALIZER_H

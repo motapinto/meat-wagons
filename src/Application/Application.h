@@ -3,29 +3,13 @@
 #define MEAT_WAGONS_APPLICATION_H
 #include <sstream>
 #include <fstream>
+#include <iomanip>
+#include "../utils.h"
 #include "../MeatWagons/MeatWagons.h"
-
-void readline(string &str) {
-    str.clear();
-    cin.clear();
-    fflush(stdin);
-    getline(cin, str);
-    while (str.empty()) getline(cin, str);
-}
-int stoint(const string &str, int &value) {
-  // wrapping stoi because it may throw an exception
-  try {
-    value = stoi(str, nullptr, 10);
-    return 0;
-  }
-  catch (const invalid_argument &ia) { return -1; }
-  catch (const out_of_range &oor) { return -2; }
-  catch (const exception &e) { return -3; }
-}
 
 class Application {
     private:
-        MeatWagons *controller = new MeatWagons(10, 2000);
+        MeatWagons *controller = new MeatWagons(1, 100);
         GraphVisualizer *viewer = nullptr;
 
     public:
@@ -33,24 +17,23 @@ class Application {
         void displayMenu();
 };
 
-
 void Application::displayMenu()
 {
-    cout << "\b---------------------------------------------------" << endl;
+    cout << "---------------------------------------------------------------------" << endl;
     cout << "Menu Options: " << endl;
     cout << "\t1 - Read Graph" << endl;
     cout << "\t2 - Pre Process" << endl;
-    cout << "\t3 - Shortest Path (Dijkstra) <{Normal | Oriented | Bidirectional}> <origin node> <destination node>" << endl;
-    cout << "\t4 - Deliver (Iteration: <{1 | 2 | 3}>)"<< endl;
-    cout << "\t5 - Set Central <node id>"<< endl;
-    cout << "\t6 - Wagon Operation <{list | add | remove}> <operands>"<< endl;
-    cout << "\t7 - Requests Operation <{list | add | remove}> <operands>"<< endl;
+    cout << "\t3 - Shortest Path" << endl;
+    cout << "\t4 - Deliver"<< endl;
+    cout << "\t5 - Set Central"<< endl;
+    cout << "\t6 - Wagon Operation"<< endl;
+    cout << "\t7 - Requests Operation"<< endl;
     cout << "\t0 - Exit" << endl << endl;
         
     if(controller->getGraph() == nullptr) cout << "Graph not read yet!" << endl;
     else cout << "Graph read for: '" << controller->getGraphName() << "'" << endl;
 
-    cout << "\b> ";
+    cout << ">";
 }
 
 
@@ -62,21 +45,20 @@ void Application::run()
     displayMenu();
     while(true) {
         readline(input);
-        if(stoint(input, option) == 0 && option >= 0 && option <= 7) 
-            break;
-        else cout << "\b> ";
+        if(stoint(input, option) == 0 && option >= 0 && option <= 7) break;
+        else cout << ">";
     }
 
+    // curly brackets are needed to initialize new variables in case scopes
     switch (option) {
-        // curly brackets are needed to initialize new variables in case scopes
-        case 0:
-          cout << endl << "Exiting";
-          exit(0);
-
+        case 0: {
+            cout << endl << "Exiting";
+            exit(0);
+        }
         case 1: {
-            cout << "\n--- Reading Graph ---";
-            cout << "\nProvide the following: <graph & requests folder path> (Type '0' or 'back' to go back)";
-            cout << "\nExample: 'maps/PortugalMaps/Porto'\n> ";
+            cout << "\n--- Reading Graph --- \t\t\t(Type '0' or 'back' to go back)";
+            cout << "\nProvide <graph folder path>";
+            cout << "\nExample: 'maps/PortugalMaps/Porto' (or just 'Porto')\n>";
 
             bool back = false;
             readline(input);
@@ -86,8 +68,12 @@ void Application::run()
                     back = true;
                     break;
                 }
-                else if(strstr(strdup(input.c_str()), "maps/") == nullptr) {
-                    cout << "\nTry again\n> ";
+                else if (input == "Aveiro" || input == "Braga" || input == "Coimbra" || input == "Ermesinde" || input == "Fafe" || input == "Gondomar" || input == "Lisboa" || input == "Maia" || input == "Porto" || input == "Viseu" || input == "Portugal") {
+                    input = "maps/PortugalMaps/" + input;
+                    break;
+                }
+                else if(strstr(_strdup(input.c_str()), "maps/") == nullptr) {
+                    cout << "\nTry again\n>";
                     readline(input);
                 }
                 else break;
@@ -95,49 +81,52 @@ void Application::run()
             if(back) break;
 
             stringstream line(input);
-            controller->setGraph(line.str());
-
-            stringstream name;
-            for (size_t i = line.str().find_last_of('/') + 1; i < line.str().size(); ++i)
-                name << line.str().at(i);
-
-            controller->setGraphName(name.str());
+            string name = line.str();
+            controller->setGraph(name);
+            controller->setGraphName(name.substr(name.find_last_of('/') + 1));
 
             break;
         }
-
         case 2: {
-            cout << "\n--- Processing node ---";
-            cout << "\nProvide the following: <node id>\n(Type '0' or 'back' to go back)\n> ";
+            if(controller->getGraph() == nullptr) {
+                cout << "No graph has been read yet!\n";
+                break;
+            }
+            cout << "\n--- Processing node --- \t\t\t(Type '0' or 'back' to go back)";
+            cout << "\nProvide <node id> \t\t\t\t('central' for central node id)\n>";
 
             int node;
             bool back = false;
-            readline(input);
 
             while(true) {
+                readline(input);
                 if(input == "0" || input == "back") {
                     back = true;
                     break;
                 }
+                else if(input == "central") {
+                    node = controller->getCentral();
+                    break;
+                }
                 else if(stoint(input, node) != 0 || node < 0) {
-                    cout << "\nTry again\n> ";
-                    readline(input);
+                    cout << "\nTry again\n>";
                 }
                 else break;
             }
             if(back) break;
 
-            stringstream line(input);
-            if (!(line >> node)) controller->preProcess(controller->getCentral());
-            else controller->preProcess(node);
-
+            if(controller->getGraph()->findVertex(node) == nullptr) {
+                cout << "Vertex does not exist" << endl << endl;
+                break;
+            }
+            
+            controller->preProcess(node);
             break;
         }
-
         case 3: {
-            cout << "\n--- Finding Shortest Path ---";
-            cout << "\nProvide the following: <Normal | Oriented |Bidirectional> <origin node> <destination node> (Type '0' or 'back' to go back)";
-            cout << "\nExample: 'Normal 90379359 411018963'\n> ";
+            cout << "\n--- Finding Shortest Path --- \t\t\t(Type '0' or 'back' to go back)";
+            cout << "\nProvide <Normal|Oriented|Bidirectional> <origin node> <destination node>";
+            cout << "\nExample: 'Normal 90379359 411018963'\n>";
 
             string variant;
             int origin, dest;
@@ -161,20 +150,22 @@ void Application::run()
                         controller->shortestPath(3, origin, dest);
                         break;
                     }
-                    else cout << "\nTry again\n> ";                    
+                    else cout << "\nTry again\n>";
                 }
-                else cout << "\nTry again\n> ";
+                else cout << "\nTry again\n>";
             }
 
             break;
         }
-
         case 4: {
-            cout << "\n--- Delivering ---";
-            cout << "\nProvide the following: <delivery id>";
-            cout << "\n(Type '0' or 'back' to go back)\n> ";
+            cout << "\n--- Delivering --- \t\t\t(Type '0' or 'back' to go back)\n";
+            cout << "\t1 - Single Wagon with capacity 1" << endl;
+            cout << "\t2 - Single Wagon that groups requests" << endl;
+            cout << "\t3 - Multiple Wagons that groups requests" << endl;
+            cout << "\t4 - Set Maximum Distance between Deliveries" << endl;
+            cout << "Current ZoneMaxDist: " << controller->getMaxDist() << endl << ">";
 
-            int iteration;
+            int choice;
             bool back = false;
 
             while(true) {
@@ -183,30 +174,71 @@ void Application::run()
                     back = true;
                     break;
                 }
-                else if(input == "1" || input == "2" || input == "3")
-                    cout << "\nTry again\n> ";
+                else if(stoint(input, choice) != 0 || choice < 0 || choice > 4) {
+                    cout << "\nTry again\n>";
+                    break;
+                }
+                else break;
             }
             if(back) break;
-            
 
-            stringstream line(input);
-            if(line >> iteration) {
-                cout << "This operation is not ready yet!\n";
-                exit(0);
-                // controller->deliver(iteration);
+            if(choice == 4) {
+                int newMaxDist;
+                cout << "\n--- Setting new max distance ---\n>";
+                readline(input);
+                while(stoint(input, newMaxDist) != 0 || newMaxDist < 1) readline(input);
+                controller->setMaxDist(newMaxDist);
             }
+            else { 
+                controller->deliver(choice);
+                int wagon, delivery;
+                while(true) {
+                    //check wagon & delivery index 
+                    cout << "\n--- Choose Wagon --- \t\t\t(Type '0' or 'back' to go back)" << endl;
+                    cout << "\tWagon Index: ";
 
+                    readline(input);
+                    if(input == "0" || input == "back") {
+                        back = true;
+                        break;
+                    }
+                    else if(stoint(input, wagon) != 0 || wagon < 0) {
+                        cout << "\nTry again\n>";
+                    }
+                    else break;
+                }
+                if(back) break;
+
+                while(true) {
+                    cout << "\tDelivery Index: ";
+                    readline(input);
+                    if(stoint(input, delivery) != 0 || delivery < 0) {
+                        cout << "\nTry again\n>";
+                    }
+                    else break;
+                }
+
+                Delivery *deliveryChosen = controller->drawDeliveries(wagon, delivery);
+                cout << "Leaving at: " << deliveryChosen->getStart();
+                cout << "Returns at: " << deliveryChosen->getEnd();
+                cout << "Requests done:" << endl;
+                for(auto r : deliveryChosen->getRequests()) {
+                    cout << "\t" << "Prisoner: " << setfill(' ') << setw(10) << r->getPrisoner() << endl;
+                    cout << "\t" << "Priority: " << r->getPriority() ;
+                    cout << "\t" << "Arrives at: " << r->getArrival();
+                    cout << "\t" << "Delivered at: " << r->getDelivery();
+                }
+            }
             break;
         }
-
         case 5: {
             if(controller->getGraph() == nullptr) {
                 cout << "No graph has been read yet!\n";
                 break;
             }
-            cout << "\n--- Setting Central Node ---";
-            cout << "\nProvide the following: <node id>";
-            cout << "\n(Type '0' or 'back' to go back)\n> ";
+            cout << "\n--- Setting Central Node --- \t\t\t(Type '0' or 'back' to go back)";
+            cout << "\nCurrent Central Node ID: " << controller->getCentral();
+            cout << "\nProvide <node id>\n>";
 
             int centralID;
             bool back = false;
@@ -217,60 +249,112 @@ void Application::run()
                     back = true;
                     break;
                 }
-                else if(stoint(input, centralID)) cout << "\nTry again\n> ";
+                else if(stoint(input, centralID)) {
+                    cout << "\nTry again\n>";
+                    break;
+                }
+                else break;
             }
             if(back) break;
 
-            stringstream line(input);
-            if (line >> centralID) controller->setCentral(centralID);
+            Vertex *v = controller->getGraph()->findVertex(centralID);
+            
+            if(v == nullptr) cout << "Vertex does not exist" << endl << endl;
+            else controller->setCentral(centralID);
 
             break;
         }
-
         case 6: {
-            cout << "\n--- Wagon Operation ---";
-            cout << "\nProvide the following: <list | add | remove> <operands>";
-            cout << "\n(Type '0' or 'back' to go back)\n> ";
-            cout << "\n> ";
+            if(controller->getGraph() == nullptr) {
+                cout << "No graph has been read yet!\n";
+                break;
+            }
+            cout << "\n--- Wagon Operation --- \t\t\t(Type '0' or 'back' to go back)\n";
+            cout << "\t1 - List Wagons\n";
+            cout << "\t2 - Add Wagons\n";
+            cout << "\t3 - Remove Wagons\n>";
 
-            readline(input); if(input == "0") break;
-            stringstream line(input);
-            string variant;
-
-            if(line >> variant) {
-                if(variant == "list") controller->listWagons();
-                else if(variant == "add") {
-                    int capacity;
-                    if (line >> capacity) controller->addWagon(capacity);
+            while(true) {
+                int choice;
+                readline(input);
+                if(input == "0" || input == "back") break;
+                else if(stoint(input, choice) || choice < 1 || choice > 3) {
+                    cout << "\nTry again\n>";
+                    break;
                 }
-                else if(variant == "remove") {
+
+                if(choice == 1) {
+                    cout << "\n--- Listing Wagons ---" << endl;
+                    controller->listWagons();
+                    break;
+                }
+                else if(choice == 2) {
+                    cout << "\n--- Adding Wagons ---" << endl;
+                    cout << "Provide <capacity>\n>";
+
+                    readline(input);
+                    int capacity;
+                    stringstream line(input);
+                    if (line >> capacity)
+                        controller->addWagon(capacity);
+                    break;
+                }
+                else if(choice == 3) {
+                    cout << "\n--- Removing Wagons ---" << endl;
+                    cout << "Provide <id> <capacity>\n>";
+
+                    readline(input);
                     int id, capacity;
-                    if (line>> id && line >> capacity) controller->removeWagon(id, capacity);
+                    stringstream line(input);
+                    if (line >> id && line >> capacity)
+                        controller->removeWagon(id, capacity);
+                    break;
                 }
             }
             break;
         }
-
         case 7: {
-            cout << "\n--- Requests ---";
-            cout << "\nProvide the following <{1,2,3}>";
-            cout << "\n(Type '0' or 'back' to go back)\n> ";
-            cout << "\n> ";
+            if(controller->getGraph() == nullptr) {
+                cout << "No graph has been read yet!\n";
+                break;
+            }
+            cout << "\n--- Requests --- \t\t\t(Type '0' or 'back' to go back)";
+            cout << "\t1 - List Resquests\n";
+            cout << "\t2 - Add Requests\n";
+            cout << "\t3 - Remove Requests\n>";
 
-            readline(input); if(input == "0") break;
-            stringstream line(input);
-            string variant;
-            
-            if(line >> variant) {
-                if(variant == "list") controller->listRequests();
-                else if(variant == "add") {
+            while (true) {
+                int choice;
+                readline(input);
+                if (input == "0" || input == "back") break;
+                else if (stoint(input, choice) || choice < 1 || choice > 3) {
+                    cout << "\nTry again\n>";
+                    break;
+                }
+
+                if(choice == 1) {
+                    cout << "\n--- Listing Requests ---" << endl;
+                    controller->listRequests();
+                    break;
+                }
+                if(choice == 2) {
+                    cout << "\n--- Adding Requests ---" << endl;
+                    cout << "Provide <prisoner> <destination> <priority> <hour> <minutes> <seconds>\n>";
+
+                    readline(input);
                     string prisoner;
+                    stringstream line(input);
                     int dest, priority, hour, minute, second;
                     if (line >> prisoner >> dest >> priority >> hour >> minute >> second)
                         controller->addRequest(prisoner, dest, priority, Time(hour, minute, second));
                 }
-                else if(variant == "remove") {
+                if (choice == 3) {
+                    cout << "\n--- Removing Requests ---" << endl;
+                    cout << "Provide <prisoner> <destination> <priority> <hour> <minutes> <seconds>\n>";
+
+                    readline(input);
                     string prisoner;
+                    stringstream line(input);
                     int dest, priority, hour, minute, second;
                     if (line >> prisoner >> dest >> priority >> hour >> minute >> second)
                         controller->removeRequest(prisoner, dest, priority, Time(hour, minute, second));
@@ -278,7 +362,6 @@ void Application::run()
             }
             break;
         }
-
         default:
             break;
     }
