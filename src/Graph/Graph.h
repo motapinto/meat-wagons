@@ -379,9 +379,13 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     if(start == nullptr || final == nullptr) return false;
 
     MutablePriorityQueue<Vertex> forwardMinQueue;
+    forwardMinQueue.setInv(false);
     forwardMinQueue.insert(start);
+
     MutablePriorityQueue<Vertex> backwardMinQueue;
+    backwardMinQueue.setInv(true);
     backwardMinQueue.insert(final);
+
     vector<int> processed;
     vector<int> backward_processed;
 
@@ -403,7 +407,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
             if(elem->visited) continue;
             processedEdges.insert(edge.getId());
 
-            if(forwardMin->dist + weight + heuristicDistance(elem, final) < elem->heuristicValue ) {
+            if(forwardMin->dist + weight < elem->dist ) {
                 elem->dist = forwardMin->dist + weight;
                 elem->path = forwardMin;
                 elem->edgePath = edge;
@@ -423,7 +427,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
             if(elem->visited) continue;
             processedEdges.insert(edge.getId());
 
-            if(forwardMin->dist + weight + heuristicDistance(elem, final) < elem->heuristicValue ) {
+            if(forwardMin->dist + weight < elem->dist ) {
                 elem->dist = forwardMin->dist + weight;
                 elem->path = forwardMin;
                 elem->edgePath = edge;
@@ -453,7 +457,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
             if(elem->invVisited) continue;
             processedEdgesInv.insert(edge.getId());
 
-            if(backwardMin->invDist + weight + heuristicDistance(elem, start) < elem->invHeuristicValue) {
+            if(backwardMin->invDist  < elem->invDist) {
                 elem->invDist = backwardMin->invDist + weight;
                 elem->invHeuristicValue = elem->invDist + heuristicDistance(elem, start);
                 elem->invPath = backwardMin;
@@ -475,7 +479,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
             if(elem->invVisited) continue;
             processedEdgesInv.insert(edge.getId());
 
-            if(backwardMin->invDist + weight + heuristicDistance(elem, start) < elem->invHeuristicValue) {
+            if(backwardMin->invDist < elem->invDist) {
                 elem->invDist = backwardMin->invDist + weight;
                 elem->invHeuristicValue = elem->invDist + heuristicDistance(elem, start);
                 elem->invPath = backwardMin;
@@ -524,6 +528,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
         middle_vertex->invPath->dist = middle_vertex->dist + middle_vertex->invEdgePath.getWeight();
         middle_vertex = middle_vertex->invPath;
     }
+
 
     return true;
 }

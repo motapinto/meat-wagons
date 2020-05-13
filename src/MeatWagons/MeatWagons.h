@@ -197,7 +197,7 @@ void MeatWagons::removeRequest(const string &prisoner, const int &dest, const in
 
 void MeatWagons::deliver(int iteration) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
-    if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
+    //if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
     if(this->requests.size() == 0) return;
 
     if(!this->graph->dijkstraSingleSource(this->central)) throw MeatWagonsException("Vertex was not found");
@@ -256,7 +256,7 @@ void MeatWagons::firstIteration() {
         // deliver prisoner path
         int dropOffNode = chooseDropOf(pickupNodes);
         this->graph->dijkstraBidirectional(request.getDest(), dropOffNode, processedEdges, processedInvEdges);
-        weight += graph->getPathTo(request.getDest(), nodesForwardTrip, edgesForwardTrip);
+        weight += graph->getPathTo(dropOffNode, nodesForwardTrip, edgesForwardTrip);
 
         // return to central path (bidirectional graph -> path is equal to edgesForwardTrip)
         weight *= 2;
