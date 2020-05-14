@@ -27,29 +27,31 @@ class Edge {
         }
 
         /* get methods */
-        const int getId() const;
-        const Vertex* getOrigin() const;
-        const Vertex* getDest() const;
-        const double getWeight() const;
+        int getId() const;
+        Vertex* getDest() const;
+        double getWeight() const;
+        static vector<int> getIds(vector<Edge> edges);
 
         friend class Graph;
         friend class Vertex;
 };
 
-const int Edge::getId() const {
+int Edge::getId() const {
 	return this->id;
 }
 
-const Vertex* Edge::getOrigin() const {
-    return this->origin;
-}
-
-const Vertex* Edge::getDest() const {
+Vertex* Edge::getDest() const {
 	return this->dest;
 }
 
-const double Edge::getWeight() const {
+double Edge::getWeight() const {
 	return this->weight;
+}
+
+vector<int> Edge::getIds(vector<Edge> edges)  {
+    vector<int> ids;
+    for(Edge edge : edges) ids.push_back(edge.id);
+    return ids;
 }
 
 #endif

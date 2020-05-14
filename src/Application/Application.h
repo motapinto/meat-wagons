@@ -151,7 +151,7 @@ void Application::run()
                             if (input == "back") break;
                             else if (stoint(input, wagon) == 0 && wagon >= 0) {
                                 while (true) {
-                                    cout << endl << "--- Choose Delivery ---" << endl;
+                                    cout << endl << "--- Choose Delivery --- [For wagon index = " << wagon << " ]" << endl;
                                     cout << "Delivery Index: ";
                                     readline(input);
                                     if (input == "back") break;

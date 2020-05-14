@@ -22,8 +22,9 @@ class Request {
         int getPriority() const;
         Time getArrival() const;
         Time getDelivery() const;
+        void setDelivery(const Time &time);
         bool getAssigned() const;
-        void setAssigned(const bool assigned);
+        void setAssigned(const bool value);
 
         bool operator<(const Request &request) const;
 };
@@ -47,12 +48,16 @@ Time Request::getDelivery() const {
     return this->deliver;
 }
 
+void Request::setDelivery(const Time &time) {
+    this->deliver = time;
+}
+
 bool Request::getAssigned() const {
     return this->assigned;
 }
 
-void Request::setAssigned(const bool assigned) {
-    this->assigned = assigned;
+void Request::setAssigned(const bool value) {
+    this->assigned = value;
 }
 
 bool Request::operator<(const Request &request) const {
