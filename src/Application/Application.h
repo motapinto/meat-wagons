@@ -160,7 +160,7 @@ void Application::run()
                                         cout << "Leaving at: " << deliveryChosen->getStart() << endl;
                                         cout << "Returns at: " << deliveryChosen->getEnd() << endl;
                                         cout << "Requests done:" << endl;
-                                        for (auto r : deliveryChosen->getRequests()) {
+                                        for (const Request &r : deliveryChosen->getRequests()) {
                                             cout << "\tPrisoner: " << setfill(' ') << setw(10) << r.getPrisoner();
                                             cout << "\tPriority: " << r.getPriority();
                                             cout << "\tArrives at: " << r.getArrival();
