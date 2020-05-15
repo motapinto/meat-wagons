@@ -224,47 +224,48 @@ int MeatWagons::chooseDropOff(const set<Vertex*> &pickupNodes) {
 
 vector<Request> MeatWagons::groupRequests(const int capacity){
     vector <Request> group;
-    int max_dist = 0, dist;
+    int max_dist = 0, dist, pos = 0;
 
     auto it = requests.begin();
-    auto max_dist_request = it;
+    auto max_dist_request_pos= 0;
     Vertex* initial_vert = this->graph->findVertex((*it).getDest());
     group.push_back((*it));
 
-    /*it++;
-    int i = 0;
+    it++;
+
     for(; it != requests.end(); it++) {
         Vertex *vert = this->graph->findVertex((*it).getDest());
         dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
-
+        pos++;
         if(dist < this->zoneMaxDist) {
             if(group.size() < capacity) {
                 group.push_back(*it);
 
                 if(dist > max_dist) {
                     max_dist = dist;
-                    max_dist_request = it;
+                    max_dist_request_pos = pos;
                 }
             }
             else if(dist < max_dist) {
-                group.erase(max_dist_request);
+                group.erase(group.begin() + max_dist_request_pos);
                 max_dist = dist;
+                max_dist_request_pos = pos;
 
                 // Check if there is a dist bigger then max_dist in the array
-                for(auto itr = group.begin(); itr != group.end(); itr++) {
-                    auto *vertex = this->graph->findVertex((*itr).getDest());
+                for(auto itr = 0; itr < group.size(); itr++) {
+                    auto *vertex = this->graph->findVertex(group[0].getDest());
                     dist = vertex->getPosition().euclideanDistance(initial_vert->getPosition());
 
                     if(dist > max_dist) {
                         max_dist = dist;
-                        max_dist_request = itr;
+                        max_dist_request_pos = itr;
                     }
                 }
 
                 group.push_back(*it);
             }
         }
-    }*/
+    }
 
     return group;
 }
