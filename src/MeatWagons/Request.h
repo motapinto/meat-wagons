@@ -14,29 +14,40 @@ class Request {
         bool assigned = false;
         Time realArrival, realDeliver;
         bool processed;
+        int distFromCentral;
 
     public:
+        Request() {}
         Request(const string &prisoner, const int dest, const int priority, const Time &arrival) :
             prisoner(prisoner), dest(dest), priority(priority), arrival(arrival) {
             processed = false;
         }
 
         string getPrisoner() const;
+
         int getDest() const;
+
         int getPriority() const;
+
         Time getArrival() const;
-        Time getDelivery() const;
-        void setDelivery(const Time &time);
-        bool getAssigned() const;
+
         Time getRealArrival() const;
+
         Time getRealDeliver() const;
         bool isProcessed();
         void setProcessed(bool t);
+
         void setRealArrival(const Time &time);
+
         void setRealDeliver(const Time &time);
+
+        bool getAssigned() const;
         void setAssigned(const bool value);
 
-        bool operator<(const Request &request) const;
+        int getDistFromCentral() const;
+        void setDistFromCentral(int distFromCentral);
+
+    bool operator<(const Request &request) const;
 };
 
 string Request::getPrisoner() const {
@@ -53,13 +64,6 @@ int Request::getPriority() const {
 
 Time Request::getArrival() const {
     return this->arrival;
-}
-Time Request::getDelivery() const {
-    return this->deliver;
-}
-
-void Request::setDelivery(const Time &time) {
-    this->deliver = time;
 }
 
 bool Request::getAssigned() const {
@@ -96,6 +100,14 @@ void Request::setAssigned(const bool value) {
 
 bool Request::operator<(const Request &request) const {
     return this->arrival < request.arrival;
+}
+
+int Request::getDistFromCentral() const {
+    return distFromCentral;
+}
+
+void Request::setDistFromCentral(int distFromCentral) {
+    this->distFromCentral = distFromCentral;
 }
 
 #endif //MEAT_WAGONS_REQUEST_H

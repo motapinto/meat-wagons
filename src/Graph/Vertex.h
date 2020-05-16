@@ -57,8 +57,6 @@ public:
     bool operator<(Vertex &vertex) const; //required by MutablePriorityQueue
     friend class Graph;
     friend class MutablePriorityQueue<Vertex>;
-
-    friend class Graph;
 };
 
 /**
@@ -69,23 +67,6 @@ void Vertex::addEdge(const int &id, Vertex *dest, const double &weight) {
     Edge edge = Edge(id, dest, this, weight);
     adj.push_back(edge);
     dest->invAdj.push_back(edge);
-}
-
-bool Vertex::operator<(Vertex &vertex) const {
-
-    if(heuristicValue != infinite){
-        return this->heuristicValue < vertex.heuristicValue;
-    }
-
-    if(invHeuristicValue != infinite){
-        return this->invHeuristicValue < vertex.invHeuristicValue;
-    }
-
-    if(invDist != infinite){
-        return this->invDist < vertex.invDist;
-    }
-
-    return this->dist < vertex.dist;
 }
 
 int Vertex::getId() const {
@@ -122,6 +103,20 @@ Vertex::Tag Vertex::getTag() const {
 
 void Vertex::setTag(Vertex::Tag tag) {
     this->tag = tag;
+}
+
+bool Vertex::operator<(Vertex &vertex) const {
+
+    if(heuristicValue != infinite)
+        return this->heuristicValue < vertex.heuristicValue;
+
+    if(invHeuristicValue != infinite)
+        return this->invHeuristicValue < vertex.invHeuristicValue;
+
+    if(invDist != infinite)
+        return this->invDist < vertex.invDist;
+
+    return this->dist < vertex.dist;
 }
 
 #endif
