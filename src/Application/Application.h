@@ -9,7 +9,7 @@
 
 class Application {
     private:
-        MeatWagons *controller = new MeatWagons(1, 100);
+        MeatWagons *controller = new MeatWagons(1, 2000);
         GraphVisualizer *viewer = nullptr;
 
     public:
@@ -164,7 +164,7 @@ void Application::run()
                                             cout << "\tPrisoner: " << setfill(' ') << setw(10) << r.getPrisoner();
                                             cout << "\tPriority: " << r.getPriority();
                                             cout << "\tArrives at: " << r.getArrival();
-                                            cout << "\tDelivered at: " << r.getDelivery();
+                                            cout << "\tDelivered at: " << r.getDelivery() << endl;
                                         }
                                     }
                                     else cout << endl << "\bInput: > ";

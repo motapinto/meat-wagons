@@ -1,4 +1,4 @@
-#pragma once
+    #pragma once
 #ifndef MEAT_WAGONS_TIME_H
 #define MEAT_WAGONS_TIME_H
 #include <iomanip>
@@ -19,11 +19,12 @@ class Time {
 
         bool operator<(const Time &time) const;
         Time operator+(const Time &time) const;
+        Time operator-(const Time &time) const;
 
         friend std::ostream &operator<<( std::ostream &output, const Time &time) {
-            output << setfill('0') << left << setw(2) << time.getHour() << ":"
-                   << setfill('0') << left << setw(2) << time.getMinute() << ":"
-                   << setfill('0') << left << setw(2) << time.getSecond();
+            output << setfill('0') << right << setw(2) << time.getHour() << ":"
+                   << setfill('0') << right << setw(2) << time.getMinute() << ":"
+                   << setfill('0') << right << setw(2) << time.getSecond();
             return output;
         }
 };
@@ -56,12 +57,27 @@ bool Time::operator<(const Time &time) const {
 Time Time::operator+(const Time &time) const {
     Time added = *this;
     added.second += time.second;
-    added.minute += time.minute + (this->second / 60);
-    added.hour += time.hour + (this->minute % 60);
-    added.second %= 60;
+    added.minute += time.minute + (added.second / 60);
+    added.hour += time.hour + (added.minute / 60);
+
     added.minute %= 60;
+    added.second %= 60;
+    added.hour %= 24;
 
     return added;
 }
+
+Time Time::operator-(const Time &time) const {
+        Time added = *this;
+        added.second -= time.second;
+        added.minute -= abs((time.minute + (added.second / 60)));
+        added.hour -= abs((time.hour + (added.minute / 60)));
+
+        added.minute = abs(added.minute % 60);
+        added.second = abs(added.second % 60);
+        added.hour = abs(added.hour % 24);
+
+        return added;
+    }
 
 #endif //MEAT_WAGONS_TIME_H

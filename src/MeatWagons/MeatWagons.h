@@ -34,7 +34,7 @@ class MeatWagons {
 
     public:
         MeatWagons(const int wagons, const int maxDist) {
-            for(int i = 0; i < wagons; i++) this->wagons.insert(Wagon(i, 4));
+            for(int i = 0; i < wagons; i++) this->wagons.insert(Wagon(i, 1));
             this->zoneMaxDist = maxDist;
         }
 
@@ -315,7 +315,7 @@ int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<Edge> &tspPath) {
  */
 Time MeatWagons::setDeliveriesTime(const vector<Edge> &tspPath, vector<Request> &groupedRequests, const Time &latestRequest) {
     for(Request &r : groupedRequests) r.setAssigned(false);
-
+    int i = 0;
     Time time = Time();
     for(Edge edge : tspPath) {
         time = time + Time(0, 0, edge.getWeight());
@@ -323,11 +323,13 @@ Time MeatWagons::setDeliveriesTime(const vector<Edge> &tspPath, vector<Request> 
         for(Request &r : groupedRequests) {
             if(r.getAssigned()) continue;
             if(r.getDest() == edge.getDest()->getId()) {
+                i++;
                 r.setDelivery(arrival);
                 r.setAssigned(true);
             }
         }
     }
+    cout << i << endl;
     return time;
 }
 
@@ -376,19 +378,24 @@ void MeatWagons::firstIteration() {
         // pickup prisoner path
         this->graph->dijkstraBidirectional(central, request.getDest(), processedEdges, processedInvEdges);
         int weight = this->graph->getPathTo(request.getDest(), edgesForwardTrip);
+        int distToPrisioner = weight;
         pickupNodes.insert(this->graph->findVertex(request.getDest()));
+
 
         // deliver prisoner path
         int dropOffNode = chooseDropOff(pickupNodes);
         this->graph->dijkstraBidirectional(request.getDest(), dropOffNode, processedEdges, processedInvEdges);
-        weight += graph->getPathTo(dropOffNode, edgesForwardTrip);
+        int dist = graph->getPathTo(dropOffNode, edgesForwardTrip);
+        weight += dist;
+        request.setDelivery(request.getArrival() + Time(0, 0, dist / 9));
 
-        // return to central path (bidirectional graph -> path is equal to edgesForwardTrip)
-        weight *= 2;
+        // return to central path
+        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
+        weight += graph->getPathTo(central, edgesForwardTrip);
 
         // add delivery to wagon
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
-        Delivery *delivery = new Delivery(lastDeliveryTime, {request}, edgesForwardTrip, weight, dropOffNode);
+        Delivery *delivery = new Delivery(lastDeliveryTime - Time(0, 0 ,distToPrisioner / 9), {request}, edgesForwardTrip, weight / 9, dropOffNode);
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
