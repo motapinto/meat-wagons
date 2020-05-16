@@ -388,16 +388,19 @@ void MeatWagons::firstIteration() {
         this->graph->dijkstraBidirectional(request.getDest(), dropOffNode, processedEdges, processedInvEdges);
         int dist = graph->getPathTo(dropOffNode, edgesForwardTrip);
         weight += dist;
-        request.setDelivery(request.getArrival() + Time(0, 0, dist / 9));
+        request.setDelivery(request.getArrival() + Time(0, 0, dist / averageVelocity));
 
         // return to central path
         this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         weight += graph->getPathTo(central, edgesForwardTrip);
 
         // add delivery to wagon
-        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : Time(0, 0, 0);
-        Time start_time = lastDeliveryTime + (request.getArrival() - Time(0, 0 ,distToPrisioner / averageVelocity));
-        Delivery *delivery = new Delivery( start_time, {request}, edgesForwardTrip, weight / averageVelocity, dropOffNode);
+        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
+
+        request.setRealArrival(lastDeliveryTime + Time(0, 0 ,distToPrisioner / averageVelocity));
+        request.setRealDeliver(request.getRealArrival() + Time(0, 0, dist / averageVelocity));
+        Delivery *delivery = new Delivery(lastDeliveryTime, {request}, edgesForwardTrip, weight / averageVelocity, dropOffNode);
+
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central

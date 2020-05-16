@@ -163,8 +163,8 @@ void Application::run()
                                         for (const Request &r : deliveryChosen->getRequests()) {
                                             cout << "\tPrisoner: " << setfill(' ') << setw(10) << r.getPrisoner();
                                             cout << "\tPriority: " << r.getPriority();
-                                            cout << "\tArrives at: " << r.getArrival();
-                                            cout << "\tDelivered at: " << r.getDelivery() << endl;
+                                            cout << "\tArrives at: " << r.getRealArrival();
+                                            cout << "\tDelivered at: " << r.getRealDeliver() << endl;
                                         }
                                     }
                                     else cout << endl << "\bInput: > ";
