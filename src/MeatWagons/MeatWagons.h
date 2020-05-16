@@ -31,6 +31,7 @@ class MeatWagons {
         multiset<Request> requests;
         int zoneMaxDist;
         bool processed = false;
+        const static int averageVelocity = 9;
 
     public:
         MeatWagons(const int wagons, const int maxDist) {
@@ -395,7 +396,8 @@ void MeatWagons::firstIteration() {
 
         // add delivery to wagon
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : Time(0, 0, 0);
-        Delivery *delivery = new Delivery(lastDeliveryTime + (request.getArrival() - Time(0, 0 ,distToPrisioner / 9)), {request}, edgesForwardTrip, weight / 9, dropOffNode);
+        Time start_time = lastDeliveryTime + (request.getArrival() - Time(0, 0 ,distToPrisioner / averageVelocity));
+        Delivery *delivery = new Delivery( start_time, {request}, edgesForwardTrip, weight / averageVelocity, dropOffNode);
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
