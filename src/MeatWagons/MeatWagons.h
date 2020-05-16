@@ -33,9 +33,9 @@ class MeatWagons {
         bool processed = false;
 
     public:
-        MeatWagons(const int wagons, const int maxDist) {
+        MeatWagons(const int wagons) {
             for(int i = 0; i < wagons; i++) this->wagons.insert(Wagon(i, 4));
-            this->zoneMaxDist = maxDist;
+            this->zoneMaxDist = 2000;
         }
 
         int getCentral() const;
@@ -316,14 +316,25 @@ int MeatWagons::tspPath(set<Vertex*> &tspNodes, vector<Edge> &tspPath) {
 Time MeatWagons::setDeliveriesTime(const vector<Edge> &tspPath, vector<Request> &groupedRequests, const Time &latestRequest) {
     for(Request &r : groupedRequests) r.setAssigned(false);
 
+    for(auto edge : tspPath) {
+        for(auto req : groupedRequests) {
+            if(req.getDest() == edge.getDest()->getId())
+                cout << "node: " << req.getDest();
+        }
+    }
+
+
     Time time = Time();
     for(Edge edge : tspPath) {
+        int nodeId = edge.getDest()->getId();
+        // time it takes to cross the road(edge)
         time = time + Time(0, 0, edge.getWeight());
-        Time arrival = latestRequest + time;
+        // add time to the time of the last request
+        Time arrivalAtDest = latestRequest + time;
         for(Request &r : groupedRequests) {
             if(r.getAssigned()) continue;
-            if(r.getDest() == edge.getDest()->getId()) {
-                r.setDelivery(arrival);
+            if(r.getDest() == nodeId) {
+                r.setDelivery(arrivalAtDest);
                 r.setAssigned(true);
             }
         }

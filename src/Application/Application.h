@@ -9,7 +9,7 @@
 
 class Application {
     private:
-        MeatWagons *controller = new MeatWagons(1, 100);
+        MeatWagons *controller = new MeatWagons(1);
         GraphVisualizer *viewer = nullptr;
 
     public:

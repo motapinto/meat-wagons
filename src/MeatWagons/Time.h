@@ -55,11 +55,13 @@ bool Time::operator<(const Time &time) const {
 
 Time Time::operator+(const Time &time) const {
     Time added = *this;
+
     added.second += time.second;
-    added.minute += time.minute + (this->second / 60);
-    added.hour += time.hour + (this->minute % 60);
-    added.second %= 60;
+    added.minute += time.minute + (added.second / 60);
+    added.hour += time.hour + (added.minute / 60);
     added.minute %= 60;
+    added.second %= 60;
+    added.hour %= 24;
 
     return added;
 }
