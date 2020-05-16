@@ -453,7 +453,45 @@ void MeatWagons::secondIteration() {
  * Iteration: Using many vans with capacity > 1 (receive prisoner -> deliver to dropOff location -> return to central)
  */
 void MeatWagons::thirdIteration() {
+    if(wagons.size() <= 1)  throw MeatWagonsException("Wrong iteration configuration");
 
+    unordered_set<int> processedEdges;
+    for(Wagon wagon : this->wagons) wagon.init();
+
+    while(!requests.empty()) {
+        // get wagon with max capacity
+        auto wagonIt = --this->wagons.end();
+        auto wagon = *wagonIt;
+        this->wagons.erase(wagonIt);
+
+        // returned grouped requests and insert tsp nodes
+        vector<Request> groupedRequests = groupRequests(wagon.getCapacity());
+        set<Vertex*> tspNodes;
+        Time latestRequest = groupedRequests.at(0).getArrival();
+        for(auto r : groupedRequests) {
+            this->requests.erase(r);
+            Vertex *tspNode = this->graph->findVertex(r.getDest());
+            tspNodes.insert(tspNode);
+            if(latestRequest < r.getArrival()) latestRequest = r.getArrival();
+        }
+
+        // choose drop off node and calculates tsp path
+        int dropOffNode = chooseDropOff(tspNodes);
+        tspNodes.insert( this->graph->findVertex(dropOffNode));
+        vector<Edge> tspPath;
+        int weight = this->tspPath(tspNodes, tspPath);
+
+        // gets the time of the latest request (groupedRequests is a set ordered by arrival time)
+        Time totalTime = setDeliveriesTime(tspPath, groupedRequests, latestRequest);
+        wagon.setNextAvailableTime(latestRequest + totalTime);
+
+        // add delivery to wagon
+        Delivery *delivery = new Delivery(latestRequest, groupedRequests, tspPath, weight, dropOffNode);
+        wagon.addDelivery(delivery);
+
+        // wagon now is back at the central
+        this->wagons.insert(wagon);
+    }
 }
 
 #endif //MEAT_WAGONS_MEATWAGONS_H
