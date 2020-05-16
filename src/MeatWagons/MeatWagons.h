@@ -394,8 +394,8 @@ void MeatWagons::firstIteration() {
         weight += graph->getPathTo(central, edgesForwardTrip);
 
         // add delivery to wagon
-        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
-        Delivery *delivery = new Delivery(lastDeliveryTime - Time(0, 0 ,distToPrisioner / 9), {request}, edgesForwardTrip, weight / 9, dropOffNode);
+        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : Time(0, 0, 0);
+        Delivery *delivery = new Delivery(lastDeliveryTime + (request.getArrival() - Time(0, 0 ,distToPrisioner / 9)), {request}, edgesForwardTrip, weight / 9, dropOffNode);
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
