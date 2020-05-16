@@ -35,7 +35,7 @@ class MeatWagons {
 
     public:
         MeatWagons(const int wagons) {
-            for(int i = 0; i < wagons; i++) this->wagons.insert(Wagon(i, 1));
+            for(int i = 0; i < wagons; i++) this->wagons.insert(Wagon(i, 4));
             this->zoneMaxDist = 2000;
         }
 
@@ -227,49 +227,58 @@ int MeatWagons::chooseDropOff(const set<Vertex*> &pickupNodes) {
 
 vector<Request *> MeatWagons::groupRequests(const int capacity){
     vector <Request *> group;
-    int max_dist = 0, dist, pos = 0;
+    int max_dist = 0, dist, pos = 0, max_dist_request_pos = 0;
 
     auto it = requests.begin();
-    auto max_dist_request_pos= 0;
     Vertex* initial_vert = this->graph->findVertex((*it)->getDest());
     group.push_back((*it));
 
     it++;
-
-    for(it; it != requests.end(); it++) {
+    while(it != requests.end()) {
         if((*it)->isProcessed()) continue;
 
         Vertex *vert = this->graph->findVertex((*it)->getDest());
         dist = vert->getPosition().euclideanDistance(initial_vert->getPosition());
-        pos++;
-        if(dist < this->zoneMaxDist) {
-            if(group.size() < capacity) {
-                group.push_back(*it);
+
+        if(dist >= this->zoneMaxDist) { it++; continue; };
+
+        if(group.size() < capacity) {
+            group.push_back(*it);
+            pos++;
+
+            if(dist > max_dist) {
+                max_dist = dist;
+                max_dist_request_pos = pos;
+            }
+        }
+
+        else if(dist < max_dist) {
+            vector <Request *> groupInit;
+            groupInit.assign(group.begin(), group.begin() + max_dist_request_pos);
+            vector <Request *> groupFinal;
+            groupFinal.assign(group.begin() + max_dist_request_pos + 1, group.end());
+            group.clear();
+            group.insert(group.end(), groupInit.begin(), groupInit.end());
+            group.insert(group.end(), groupFinal.begin(), groupFinal.end());
+
+            max_dist = dist;
+            max_dist_request_pos = pos;
+
+            // Check if there is a dist bigger then max_dist in the array
+            for(auto itr = 0; itr < group.size(); itr++) {
+                auto *vertex = this->graph->findVertex(group[0]->getDest());
+                dist = vertex->getPosition().euclideanDistance(initial_vert->getPosition());
 
                 if(dist > max_dist) {
                     max_dist = dist;
-                    max_dist_request_pos = pos;
+                    max_dist_request_pos = itr;
                 }
             }
-            else if(dist < max_dist) {
-                group.erase(group.begin() + max_dist_request_pos);
-                max_dist = dist;
-                max_dist_request_pos = pos;
 
-                // Check if there is a dist bigger then max_dist in the array
-                for(auto itr = 0; itr < group.size(); itr++) {
-                    auto *vertex = this->graph->findVertex(group[0]->getDest());
-                    dist = vertex->getPosition().euclideanDistance(initial_vert->getPosition());
-
-                    if(dist > max_dist) {
-                        max_dist = dist;
-                        max_dist_request_pos = itr;
-                    }
-                }
-
-                group.push_back(*it);
-            }
+            group.push_back(*it);
         }
+
+        it++;
     }
 
     return group;
@@ -335,26 +344,27 @@ Time MeatWagons::setDeliveriesTime(const vector<Edge> &tspPath, vector<Request *
 
         if(countLastDist) lastRequestDist += edge.getWeight();
         for(int i = 0; i < groupedRequests.size(); i++) {
-            Request r = *this->requests.find(groupedRequests.at(i));
+            Request *r = *this->requests.find(groupedRequests.at(i));
+            if(r->isProcessed()) continue;
             if(r->getAssigned()) continue;
             if(i == groupedRequests.size() - 1) countLastDist = true;
             if(r->getDest() == nodeId) {
                 r->setDistFromCentral(distTillRequest);
                 r->setRealArrival(latestRequest + totalTime);
                 r->setAssigned(true);
+                r->setProcessed(true);
             }
         }
     }
 
-    Request lastRequest = groupedRequests.at(groupedRequests.size() - 1);
-    lastRequest.setRealDeliver(lastRequest.getRealArrival() + Time(0, 0, lastRequestDist / averageVelocity));
-    Time realDeliver = lastRequest.getRealDeliver();
+    Request *lastRequest = groupedRequests.at(groupedRequests.size() - 1);
+    lastRequest->setRealDeliver(lastRequest->getRealArrival() + Time(0, 0, lastRequestDist / averageVelocity));
+    Time realDeliver = lastRequest->getRealDeliver();
 
-    for(Request r : groupedRequests) {
-        r.setRealDeliver(realDeliver);
+    for(Request *r : groupedRequests) {
+        r->setRealDeliver(realDeliver);
         this->requests.erase(r);
     }
-
 
     return totalTime;
 }
@@ -388,7 +398,6 @@ void MeatWagons::firstIteration() {
     for(Wagon wagon : this->wagons) wagon.init();
 
     auto requestPos = requests.begin();
-
     while(requestPos != requests.end()) {
 
         if((*requestPos)->isProcessed()){
@@ -440,7 +449,6 @@ void MeatWagons::firstIteration() {
 
         // wagon now is back at the central
         this->wagons.insert(wagon);
-
         requestPos++;
     }
 }
@@ -464,15 +472,11 @@ void MeatWagons::secondIteration() {
         // returned grouped requests and insert tsp nodes
         vector<Request *> groupedRequests = groupRequests(wagon.getCapacity());
         set<Vertex*> tspNodes;
-
         Time latestRequestTime = groupedRequests.at(0)->getArrival();
-
         for(auto r : groupedRequests) {
-            r->setProcessed(true);
             Vertex *tspNode = this->graph->findVertex(r->getDest());
             tspNodes.insert(tspNode);
             if(latestRequestTime < r->getArrival()) latestRequestTime = r->getArrival();
-
         }
 
         // choose drop off node and calculates tsp path
@@ -486,7 +490,7 @@ void MeatWagons::secondIteration() {
         wagon.setNextAvailableTime(latestRequestTime + totalTime);
 
         // add delivery to wagon
-        int tripDist = totalDist - groupedRequests.at(0).getDistFromCentral();
+        int tripDist = totalDist - groupedRequests.at(0)->getDistFromCentral();
         Delivery *delivery = new Delivery(latestRequestTime - Time(0, 0, tripDist / averageVelocity), groupedRequests, tspPath, totalDist, dropOffNode);
         wagon.addDelivery(delivery);
 
