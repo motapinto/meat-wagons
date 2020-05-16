@@ -5,12 +5,12 @@
 class Delivery {
     private:
         Time start, end;
-        vector<Request> requests;
+        vector<Request*> requests;
         vector<Edge> forwardPath;
         int dropOff;
 
     public:
-        Delivery(const Time &start, const vector<Request> &requests, const vector<Edge> &forwardPath, const int weight, const int dropOff) {
+        Delivery(const Time &start, vector<Request*> &requests, const vector<Edge> &forwardPath, const int weight, const int dropOff) {
             this->start = start;
             this->requests = requests;
             this->forwardPath = forwardPath;
@@ -20,7 +20,7 @@ class Delivery {
 
         Time getStart() const;
         Time getEnd() const;
-        vector<Request> getRequests() const;
+        vector<Request*> getRequests() const;
         vector<Edge> getForwardPath() const;
         int getDropOff() const;
 };
@@ -33,7 +33,7 @@ Time Delivery::getEnd() const {
     return this->end;
 }
 
-vector<Request> Delivery::getRequests() const {
+vector<Request*> Delivery::getRequests() const {
     return this->requests;
 }
 

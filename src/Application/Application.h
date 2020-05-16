@@ -161,11 +161,11 @@ void Application::run()
                                         cout << "Wagon[" << wagon << "] leaves central at: " << deliveryChosen->getStart() << endl;
                                         cout << "Wagon[" << wagon << "] returns to central at: " << deliveryChosen->getEnd() << endl;
                                         cout << "Requests done:" << endl;
-                                        for (const Request &r : deliveryChosen->getRequests()) {
-                                            cout << "\tPrisoner: " << setfill(' ') << setw(10) << r.getPrisoner();
-                                            cout << "\tPriority: " << r.getPriority();
-                                            cout << "\tArrives at: " << r.getRealArrival();
-                                            cout << "\tDelivered at: " << r.getRealDeliver() << endl;
+                                        for (const Request *r : deliveryChosen->getRequests()) {
+                                            cout << "\tPrisoner: " << setfill(' ') << setw(10) << r->getPrisoner();
+                                            cout << "\tPriority: " << r->getPriority();
+                                            cout << "\tArrives at: " << r->getRealArrival();
+                                            cout << "\tDelivered at: " << r->getRealDeliver() << endl;
                                         }
                                     }
                                     else cout << endl << "\bInput: > ";

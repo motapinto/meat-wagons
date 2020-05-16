@@ -13,12 +13,15 @@ class Request {
         Time arrival, deliver;
         bool assigned = false;
         Time realArrival, realDeliver;
+        bool processed;
         int distFromCentral;
 
     public:
         Request() {}
         Request(const string &prisoner, const int dest, const int priority, const Time &arrival) :
-            prisoner(prisoner), dest(dest), priority(priority), arrival(arrival) {}
+            prisoner(prisoner), dest(dest), priority(priority), arrival(arrival) {
+            processed = false;
+        }
 
         string getPrisoner() const;
 
@@ -29,9 +32,13 @@ class Request {
         Time getArrival() const;
 
         Time getRealArrival() const;
-        void setRealArrival(const Time &time);
 
         Time getRealDeliver() const;
+        bool isProcessed();
+        void setProcessed(bool t);
+
+        void setRealArrival(const Time &time);
+
         void setRealDeliver(const Time &time);
 
         bool getAssigned() const;
@@ -69,6 +76,14 @@ Time Request::getRealArrival() const {
 
 Time Request::getRealDeliver() const {
     return this->realDeliver;
+}
+
+bool Request::isProcessed() {
+    return processed;
+}
+
+void Request::setProcessed(bool t) {
+    processed = t;
 }
 
 void Request::setRealArrival(const Time &time){
