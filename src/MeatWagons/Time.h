@@ -20,6 +20,7 @@ class Time {
         bool operator<(const Time &time) const;
         Time operator+(const Time &time) const;
         Time operator-(const Time &time) const;
+        bool operator<=(const Time &time) const;
 
         friend std::ostream &operator<<( std::ostream &output, const Time &time) {
             output << setfill('0') << right << setw(2) << time.getHour() << ":"
@@ -52,6 +53,19 @@ bool Time::operator<(const Time &time) const {
             else return this->second < time.second;
         else return this->minute < time.minute;
     else return this->hour < time.hour;
+}
+
+
+bool Time::operator<=(const Time &time) const {
+    if (this->hour == time.hour){
+        if (this->minute == time.minute){
+            if (this->second == time.second) return true;
+            else return this->second < time.second;
+        }
+        else return this->minute < time.minute;
+    }
+    else return this->hour < time.hour;
+
 }
 
 Time Time::operator+(const Time &time) const {
