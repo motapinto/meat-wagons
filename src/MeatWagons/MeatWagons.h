@@ -436,7 +436,7 @@ void MeatWagons::firstIteration() {
 
         // add delivery to wagon and updates request times
 
-        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request->getArrival()- Time(0, 0, distToPrisoner / averageVelocity);
+        Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request->getArrival() - Time(0, 0, distToPrisoner / averageVelocity);
         request->setRealArrival(lastDeliveryTime + Time(0, 0 , distToPrisoner / averageVelocity));
         request->setRealDeliver(request->getRealArrival() + Time(0, 0, dropOffDist / averageVelocity));
 
@@ -444,7 +444,6 @@ void MeatWagons::firstIteration() {
         vr.push_back(request);
 
         Delivery *delivery = new Delivery(lastDeliveryTime, vr, edgesForwardTrip, totalDist / averageVelocity, dropOffNode);
-
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
@@ -472,11 +471,11 @@ void MeatWagons::secondIteration() {
         // returned grouped requests and insert tsp nodes
         vector<Request *> groupedRequests = groupRequests(wagon.getCapacity());
         set<Vertex*> tspNodes;
-        Time latestRequestTime = groupedRequests.at(0)->getArrival();
+        Request *earliestRequest = groupedRequests.at(0);
         for(auto r : groupedRequests) {
             Vertex *tspNode = this->graph->findVertex(r->getDest());
             tspNodes.insert(tspNode);
-            if(latestRequestTime < r->getArrival()) latestRequestTime = r->getArrival();
+            if(r->getArrival() < earliestRequest->getArrival() ) earliestRequest = r;
         }
 
         // choose drop off node and calculates tsp path
@@ -485,17 +484,19 @@ void MeatWagons::secondIteration() {
         vector<Edge> tspPath;
         int totalDist = this->tspPath(tspNodes, tspPath);
 
+        //Time earliestRequestTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : earliestRequest->getArrival() - Time(0, 0, distToPrisoner / averageVelocity);
+
         // gets the time of the latest request (groupedRequests is a set ordered by arrival time)
-        Time totalTime = setDeliveriesTime(tspPath, groupedRequests, latestRequestTime);
-        wagon.setNextAvailableTime(latestRequestTime + totalTime);
+        //Time totalTime = setDeliveriesTime(tspPath, groupedRequests, latestRequestTime);
+        //wagon.setNextAvailableTime(latestRequestTime + totalTime);
 
         // add delivery to wagon
-        int tripDist = totalDist - groupedRequests.at(0)->getDistFromCentral();
-        Delivery *delivery = new Delivery(latestRequestTime - Time(0, 0, tripDist / averageVelocity), groupedRequests, tspPath, totalDist, dropOffNode);
-        wagon.addDelivery(delivery);
+        //int tripDist = totalDist - groupedRequests.at(0)->getDistFromCentral();
+        //Delivery *delivery = new Delivery(latestRequestTime - Time(0, 0, tripDist / averageVelocity), groupedRequests, tspPath, totalDist / averageVelocity, dropOffNode);
+        //wagon.addDelivery(delivery);
 
         // wagon now is back at the central
-        this->wagons.insert(wagon);
+        //this->wagons.insert(wagon);
     }
 }
 
