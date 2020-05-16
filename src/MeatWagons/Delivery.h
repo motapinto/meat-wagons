@@ -14,7 +14,7 @@ class Delivery {
             this->start = start;
             this->requests = requests;
             this->forwardPath = forwardPath;
-            this->end = start + Time(0, 0, this->start.toSeconds() + weight);
+            this->end = start + Time(0, 0, weight);
             this->dropOff = dropOff;
         }
 
