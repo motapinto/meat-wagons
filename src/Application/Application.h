@@ -146,19 +146,20 @@ void Application::run()
                         int wagon, delivery;
                         while (true) {
                             cout << endl << "--- Choose Wagon ---" << endl;
-                            cout << "Wagon Index: ";
+                            cout << "Wagon Index > ";
                             readline(input);
                             if (input == "back") break;
                             else if (stoint(input, wagon) == 0 && wagon >= 0) {
                                 while (true) {
-                                    cout << endl << "--- Choose Delivery --- [For wagon index = " << wagon << " ]" << endl;
-                                    cout << "Delivery Index: ";
+                                    cout << endl << "--- Choose a Delivery from Wagon[" << wagon << "] --- "<< endl;
+                                    cout << "Delivery Index > ";
                                     readline(input);
+                                    cout << endl;
                                     if (input == "back") break;
                                     else if (stoint(input, delivery) == 0 && delivery >= 0) {
                                         Delivery *deliveryChosen = controller->drawDeliveries(wagon, delivery);
-                                        cout << "Leaving at: " << deliveryChosen->getStart() << endl;
-                                        cout << "Returns at: " << deliveryChosen->getEnd() << endl;
+                                        cout << "Wagon[" << wagon << "] leaves central at: " << deliveryChosen->getStart() << endl;
+                                        cout << "Wagon[" << wagon << "] returns to central at: " << deliveryChosen->getEnd() << endl;
                                         cout << "Requests done:" << endl;
                                         for (const Request &r : deliveryChosen->getRequests()) {
                                             cout << "\tPrisoner: " << setfill(' ') << setw(10) << r.getPrisoner();

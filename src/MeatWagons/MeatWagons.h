@@ -332,7 +332,7 @@ Time MeatWagons::setDeliveriesTime(const vector<Edge> &tspPath, vector<Request> 
             }
         }
     }
-    cout << i << endl;
+
     return time;
 }
 
@@ -380,29 +380,25 @@ void MeatWagons::firstIteration() {
 
         // pickup prisoner path
         this->graph->dijkstraBidirectional(central, request.getDest(), processedEdges, processedInvEdges);
-        int weight = this->graph->getPathTo(request.getDest(), edgesForwardTrip);
-        int distToPrisioner = weight;
+        int distToPrisoner = this->graph->getPathTo(request.getDest(), edgesForwardTrip);
         pickupNodes.insert(this->graph->findVertex(request.getDest()));
-
 
         // deliver prisoner path
         int dropOffNode = chooseDropOff(pickupNodes);
         this->graph->dijkstraBidirectional(request.getDest(), dropOffNode, processedEdges, processedInvEdges);
-        int dist = graph->getPathTo(dropOffNode, edgesForwardTrip);
-        weight += dist;
-        request.setDelivery(request.getArrival() + Time(0, 0, dist / averageVelocity));
+        int dropOffDist = graph->getPathTo(dropOffNode, edgesForwardTrip);
+        int totalDist = dropOffDist + distToPrisoner;
+        request.setDelivery(request.getArrival() + Time(0, 0, dropOffDist / averageVelocity));
 
         // return to central path
         this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
-        weight += graph->getPathTo(central, edgesForwardTrip);
+        totalDist += graph->getPathTo(central, edgesForwardTrip);
 
-        // add delivery to wagon
+        // add delivery to wagon and updates request times
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request.getArrival();
-
-        request.setRealArrival(lastDeliveryTime + Time(0, 0 ,distToPrisioner / averageVelocity));
-        request.setRealDeliver(request.getRealArrival() + Time(0, 0, dist / averageVelocity));
-        Delivery *delivery = new Delivery(lastDeliveryTime, {request}, edgesForwardTrip, weight / averageVelocity, dropOffNode);
-
+        request.setRealArrival(lastDeliveryTime + Time(0, 0 , distToPrisoner / averageVelocity));
+        request.setRealDeliver(request.getRealArrival() + Time(0, 0, dropOffDist / averageVelocity));
+        Delivery *delivery = new Delivery(lastDeliveryTime, {request}, edgesForwardTrip, totalDist / averageVelocity, dropOffNode);
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
