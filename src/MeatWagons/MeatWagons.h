@@ -380,6 +380,11 @@ Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     this->viewer->setPath(path, "blue", true);
     this->viewer->draw(this->graph);
 
+    for(auto request : delivery->getRequests()) {
+        this->graph->findVertex(request->getDest())->setTag(Vertex::INTEREST_POINT);
+        this->graph->findVertex(delivery->getDropOff())->setTag(Vertex::INTEREST_POINT);
+    }
+
     return delivery;
 }
 
