@@ -196,8 +196,6 @@ void MeatWagons::deliver(int iteration) {
     if(!this->processed) this->preProcess(central);
     if(this->requests.size() == 0) return;
 
-    this->graph->djikstraInitCentral(central);
-
     switch (iteration) {
         case 1: this->firstIteration(); break;
         case 2: this->secondIteration(); break;
@@ -393,10 +391,10 @@ void MeatWagons::firstIteration() {
     unordered_set<int> processedEdges, processedInvEdges;
     for(Wagon wagon : this->wagons) wagon.init();
 
+    this->graph->dijkstraOriginal(central);
 
     auto requestPos = requests.begin();
     while(requestPos != requests.end()) {
-
         if((*requestPos)->isProcessed()){
             requestPos++;
             continue;
@@ -418,6 +416,7 @@ void MeatWagons::firstIteration() {
         // pickup prisoner path
         int distToPrisoner = this->graph->getPathFromCentralTo(request->getDest(), edgesForwardTrip);
         cout << distToPrisoner << endl;
+        cout << "b" << endl;
 
         // deliver prisoner path
         int dropOffNode = chooseDropOff(pickupNodes);

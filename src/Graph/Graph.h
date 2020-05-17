@@ -163,14 +163,14 @@ vector<Vertex*> Graph::getVertexSet() const {
 Vertex* Graph::djikstraInitCentral(const int origin) {
     for(auto vertex : vertexSet) {
         vertex->visited = false;
-        vertex->dist = infinite;
+        vertex->distCentral = infinite;
         vertex->pathCentral = NULL;
         vertex->edgePathCentral = Edge();
         vertex->queueIndex = 0;
     }
 
     auto start = findVertex(origin);
-    start->dist = 0;
+    start->distCentral = 0;
 
     return start;
 }
