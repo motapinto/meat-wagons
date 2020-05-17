@@ -25,7 +25,7 @@ class MeatWagons {
         int central;
         Graph *graph = nullptr;
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
-        unordered_map<int, Vertex*> pointsOfInterest;
+        vector<Vertex*> pointsOfInterest;
         string graphName;
         set<Wagon> wagons;
         multiset<Request*> requests;
@@ -128,9 +128,13 @@ void MeatWagons::preProcess(int node) {
     if(!this->graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
 
     for(auto it = this->requests.begin(); it != this->requests.end(); it++) {
-        if(this->graph->findVertex((*it)->getDest()) == nullptr) {
+        Vertex *vert = this->graph->findVertex((*it)->getDest());
+        if(vert == nullptr) {
             it = this->requests.erase(it);
             it--;
+
+            auto itr = find(this->pointsOfInterest.begin(), this->pointsOfInterest.end(), vert);
+            if(itr != this->pointsOfInterest.end()) this->pointsOfInterest.erase(itr);
         }
     }
 
@@ -210,12 +214,14 @@ void MeatWagons::deliver(int iteration) {
 
 int MeatWagons::chooseDropOff(const set<Vertex*> &pickupNodes) {
     srand((unsigned) time(0));
-    int random_vertex;
-    int id;
+    int id, randomId;
 
     while(true){
-        random_vertex = (rand() % graph->getNumVertex());
-        id = graph->getVertexSet()[random_vertex]->getId();
+        //randomId = (rand() % this->requests.size());
+        //id = this->pointsOfInterest.at(randomId)->getId();
+
+        randomId = (rand() % graph->getNumVertex());
+        id = graph->getVertexSet()[randomId]->getId();
 
         auto it = find_if(begin(pickupNodes), end(pickupNodes), [=](const Vertex* v) {return v->getId() == id;});
         if(it != pickupNodes.end())
