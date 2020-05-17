@@ -43,9 +43,8 @@ class MeatWagons {
         void setCentral(const int &id);
 
         string getGraphName() const;
-        void setGraphName(string name);
 
-        int getMaxDist() const;
+    int getMaxDist() const;
         void setMaxDist(const int max);
 
         Graph* getGraph() const;
@@ -85,10 +84,6 @@ void MeatWagons::setCentral(const int &id) {
 
 string MeatWagons::getGraphName() const {
     return this->graphName;
-}
-
-void MeatWagons::setGraphName(string name) {
-    this->graphName = name;
 }
 
 int MeatWagons::getMaxDist() const {
@@ -198,11 +193,10 @@ void MeatWagons::listRequests() const {
 }
 
 void MeatWagons::deliver(int iteration) {
-    if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
-    if(!this->processed) throw MeatWagonsException("Graph was not pre processed");
+    if(!this->processed) this->preProcess(central);
     if(this->requests.size() == 0) return;
 
-    if(!this->graph->dijkstraOriginal(this->central)) throw MeatWagonsException("Vertex was not found");
+    this->graph->djikstraInitCentral(central);
 
     switch (iteration) {
         case 1: this->firstIteration(); break;
@@ -217,11 +211,8 @@ int MeatWagons::chooseDropOff(const set<Vertex*> &pickupNodes) {
     int id, randomId;
 
     while(true){
-        //randomId = (rand() % this->requests.size());
-        //id = this->pointsOfInterest.at(randomId)->getId();
-
-        randomId = (rand() % graph->getNumVertex());
-        id = graph->getVertexSet()[randomId]->getId();
+        randomId = (rand() % this->requests.size());
+        id = this->pointsOfInterest.at(randomId)->getId();
 
         auto it = find_if(begin(pickupNodes), end(pickupNodes), [=](const Vertex* v) {return v->getId() == id;});
         if(it != pickupNodes.end())
@@ -426,18 +417,18 @@ void MeatWagons::firstIteration() {
 
         // pickup prisoner path
         int distToPrisoner = this->graph->getPathFromCentralTo(request->getDest(), edgesForwardTrip);
-        pickupNodes.insert(this->graph->findVertex(request->getDest()));
+        cout << distToPrisoner << endl;
 
         // deliver prisoner path
         int dropOffNode = chooseDropOff(pickupNodes);
         this->graph->dijkstraBidirectional(request->getDest(), dropOffNode, processedEdges, processedInvEdges);
         int dropOffDist = graph->getPathTo(dropOffNode, edgesForwardTrip);
         int totalDist = dropOffDist + distToPrisoner;
-
+        cout << "c" << endl;
         // return to central path
         this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, edgesForwardTrip);
-
+        cout << "d" << endl;
         // add delivery to wagon and updates request times
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request->getArrival() - Time(0, 0, distToPrisoner / averageVelocity);
         request->setRealArrival(lastDeliveryTime + Time(0, 0 , distToPrisoner / averageVelocity));

@@ -45,6 +45,7 @@ public:
     bool preProcess(int origin);
 
     // dijkstra
+    Vertex* djikstraInitCentral(const int origin);
     Vertex* dijkstraInit(const int origin);
     Vertex* dijkstraBackwardsInit(const int dest);
     bool dijkstraOriginal(const int origin);
@@ -159,20 +160,31 @@ vector<Vertex*> Graph::getVertexSet() const {
 }
 
 /**************** Dijkstra ************/
+Vertex* Graph::djikstraInitCentral(const int origin) {
+    for(auto vertex : vertexSet) {
+        vertex->visited = false;
+        vertex->dist = infinite;
+        vertex->pathCentral = NULL;
+        vertex->edgePathCentral = Edge();
+        vertex->queueIndex = 0;
+    }
+
+    auto start = findVertex(origin);
+    start->dist = 0;
+
+    return start;
+}
+
 Vertex* Graph::dijkstraInit(const int origin) {
     for(auto vertex : vertexSet) {
         vertex->visited = false;
         vertex->invVisited = false;
         vertex->dist = infinite;
         vertex->path = NULL;
-        vertex->pathCentral = NULL;
         vertex->edgePath = Edge();
-        vertex->edgePathCentral = Edge();
         vertex->invDist = infinite;
         vertex->invPath = NULL;
-        vertex->invPathCentral = NULL;
         vertex->invEdgePath = Edge();
-        Edge();
         vertex->heuristicValue = infinite;
         vertex->invHeuristicValue = infinite;
         vertex->queueIndex = 0;
@@ -196,7 +208,7 @@ Vertex* Graph::dijkstraBackwardsInit(const int dest){
 }
 
 bool Graph::dijkstraOriginal(const int origin)  {
-    auto start = dijkstraInit(origin);
+    auto start = djikstraInitCentral(origin);
 
     if(start == nullptr) return false;
 
@@ -224,7 +236,7 @@ bool Graph::dijkstraOriginal(const int origin)  {
         for(auto edge : min->invAdj) {
             auto elem = edge.origin;
 
-            if(elem->dist > min->distCentral + edge.weight) {
+            if(elem->distCentral > min->distCentral + edge.weight) {
                 elem->distCentral = min->distCentral + edge.weight;
                 elem->pathCentral = min;
                 elem->edgePathCentral = edge;
@@ -316,7 +328,7 @@ int Graph::getPathFromCentralTo(const int dest, vector<Edge> &edges) const {
     Vertex *final = findVertex(dest);
     int weigth = 0;
 
-    if(final == nullptr || (final->pathCentral == nullptr && final->invPathCentral == nullptr))
+    if(final == nullptr || final->pathCentral == nullptr)
         return false;
 
     int dist = final->distCentral;

@@ -22,7 +22,6 @@ private:
     double invDist = infinite;
     // central path
     Vertex *pathCentral = nullptr;
-    Vertex *invPathCentral = nullptr;
     Edge edgePathCentral;
     // others path
     Vertex *path = nullptr;
