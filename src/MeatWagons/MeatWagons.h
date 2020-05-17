@@ -123,14 +123,18 @@ void MeatWagons::preProcess(int node) {
     if(!this->graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
 
     for(auto it = this->requests.begin(); it != this->requests.end(); it++) {
+        Request *r = *it;
+        if((*it)->getPrisoner() == "Mickey") {
+            cout << "a" << endl;
+        }
         Vertex *vert = this->graph->findVertex((*it)->getDest());
         if(vert == nullptr) {
-            it = this->requests.erase(it);
-            it--;
-
-            auto itr = find(this->pointsOfInterest.begin(), this->pointsOfInterest.end(), vert);
-            if(itr != this->pointsOfInterest.end()) this->pointsOfInterest.erase(itr);
+            it = --this->requests.erase(it);
         }
+
+
+        auto itr = find(this->pointsOfInterest.begin(), this->pointsOfInterest.end(), vert);
+        if(itr != this->pointsOfInterest.end()) this->pointsOfInterest.erase(itr);
     }
 
     this->processed = true;
@@ -195,6 +199,7 @@ void MeatWagons::listRequests() const {
 void MeatWagons::deliver(int iteration) {
     if(!this->processed) this->preProcess(central);
     if(this->requests.size() == 0) return;
+    if(!this->graph->dijkstraOriginal(central)) return;
 
     switch (iteration) {
         case 1: this->firstIteration(); break;
@@ -391,8 +396,6 @@ void MeatWagons::firstIteration() {
     unordered_set<int> processedEdges, processedInvEdges;
     for(Wagon wagon : this->wagons) wagon.init();
 
-    this->graph->dijkstraOriginal(central);
-
     auto requestPos = requests.begin();
     while(requestPos != requests.end()) {
         if((*requestPos)->isProcessed()){
@@ -401,8 +404,10 @@ void MeatWagons::firstIteration() {
         }
 
         // requests are ordered by pickup time
-        Request* request = *requestPos;
+        Request *request = *requestPos;
         request->setProcessed(true);
+        cout << "requestdest: " << request->getDest() << endl;
+
 
         // get wagon
         auto wagonIt = --this->wagons.end();
