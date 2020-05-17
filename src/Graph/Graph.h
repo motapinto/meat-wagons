@@ -306,42 +306,38 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
 
 int Graph::getPathTo(const int dest, vector<Edge> &edges) const {
     Vertex *final = findVertex(dest);
-    int weigth = 0;
 
     if(final == nullptr || (final->path == nullptr && final->invPath == nullptr))
         return false;
 
     int dist = final->dist;
-    int weight = final->path->dist;
+
     while(final->path != nullptr) {
         edges.push_back(final->getEdgePath());
         final = final->path;
-        weigth += final->getEdgePath().getWeight();
+
     }
     
     reverse(edges.begin(), edges.end());
 
-    return weight;
+    return dist;
 }
 
 int Graph::getPathFromCentralTo(const int dest, vector<Edge> &edges) const {
     Vertex *final = findVertex(dest);
-    int weigth = 0;
 
     if(final == nullptr || final->pathCentral == nullptr)
         return false;
 
     int dist = final->distCentral;
-    int weight = final->pathCentral->distCentral;
     while(final->pathCentral != nullptr) {
         edges.push_back(final->edgePathCentral);
         final = final->pathCentral;
-        weigth += final->edgePathCentral.weight;
     }
 
     reverse(edges.begin(), edges.end());
 
-    return weight;
+    return dist;
 }
 
 /**************** Optimizing Dijkstra ************/
@@ -413,6 +409,9 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
 bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_set<int> &processedEdges, unordered_set<int> &processedEdgesInv) {
     auto start = dijkstraInit(origin);
     auto final = dijkstraBackwardsInit(dest);
+
+    processedEdges.clear();
+    processedEdgesInv.clear();
 
     if(start == nullptr || final == nullptr) return false;
 
