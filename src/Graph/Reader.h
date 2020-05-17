@@ -12,13 +12,13 @@ class Reader {
     public:
         Reader(const string &path) : path(path) {}
 
-        bool readGraph(Graph *graph, int &central, vector<Vertex*> &pointsOfInterest);
+        bool readGraph(Graph *graph, int &central);
         bool readRequests(multiset<Request*> &requestVector);
-        bool setTags(Graph *graph, vector<Vertex*> &pointsOfInterest);
+        bool setTags(Graph *graph);
         bool setCentral(Graph *graph, int &central);
 };
 
-bool Reader::readGraph(Graph *graph, int &central, vector<Vertex*> &pointsOfInterest) {
+bool Reader::readGraph(Graph *graph, int &central) {
     ifstream nodesStream(path + "/nodes.txt");
     ifstream edgesStream(path + "/edges.txt");
 
@@ -50,7 +50,7 @@ bool Reader::readGraph(Graph *graph, int &central, vector<Vertex*> &pointsOfInte
     nodesStream.close();
     edgesStream.close();
 
-    setTags(graph, pointsOfInterest);
+    setTags(graph);
     setCentral(graph, central);
 
     return true;
@@ -74,7 +74,7 @@ bool Reader::readRequests(multiset<Request*> &requestVector) {
     return true;
 }
 
-bool Reader::setTags(Graph *graph, vector<Vertex*> &pointsOfInterest) {
+bool Reader::setTags(Graph *graph) {
     ifstream tagsStream(path + "/tags.txt");
 
     if(!tagsStream.is_open()) return false;
@@ -89,7 +89,6 @@ bool Reader::setTags(Graph *graph, vector<Vertex*> &pointsOfInterest) {
         Vertex *vertex = graph->findVertex(id);
         if(vertex == nullptr) return false;
         vertex->setTag(Vertex::INTEREST_POINT);
-        pointsOfInterest.push_back(vertex);
     }
     return true;
 }

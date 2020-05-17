@@ -102,7 +102,7 @@ void MeatWagons::setGraph(const string graphPath) {
     Reader graphReader = Reader(graphPath);
     Graph* graphRead = new Graph();
 
-    if(!graphReader.readGraph(graphRead, central, pointsOfInterest))
+    if(!graphReader.readGraph(graphRead, central))
         throw MeatWagonsException("Graph is null");
     if(!graphReader.readRequests(requests))
         throw MeatWagonsException("Graph is null");
@@ -122,20 +122,16 @@ void MeatWagons::preProcess(int node) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
     if(!this->graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
 
-    multiset<Request*>::iterator it = this->requests.begin();
-    for( it; it != this->requests.end(); it++) {
+    for(int i = 0; i < this->requests.size(); i++) {
+        auto it = next(this->requests.begin(), i);
         Request *r = *it;
-        if((r)->getPrisoner() == "Mickey") {
-            cout << "a" << endl;
-        }
         Vertex *vert = this->graph->findVertex((r)->getDest());
         if(vert == nullptr) {
-            it = --this->requests.erase(it);
+            this->requests.erase(it);
+            i--;
+        } else {
+            this->pointsOfInterest.push_back(vert);
         }
-
-
-        auto itr = find(this->pointsOfInterest.begin(), this->pointsOfInterest.end(), vert);
-        if(itr != this->pointsOfInterest.end()) this->pointsOfInterest.erase(itr);
     }
 
     this->processed = true;
