@@ -47,9 +47,10 @@ public:
     // dijkstra
     Vertex* dijkstraInit(const int origin);
     Vertex* dijkstraBackwardsInit(const int dest);
-    bool dijkstraSingleSource(const int origin);
+    bool dijkstraOriginal(const int origin);
     bool dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges);
     int getPathTo(const int dest, vector<Edge> &edges) const;
+    int getPathFromCentralTo(const int dest, vector<Edge> &edges) const;
 
     // dijkstra related
     double heuristicDistance(Vertex *origin, Vertex *dest);
@@ -164,10 +165,14 @@ Vertex* Graph::dijkstraInit(const int origin) {
         vertex->invVisited = false;
         vertex->dist = infinite;
         vertex->path = NULL;
+        vertex->pathCentral = NULL;
         vertex->edgePath = Edge();
+        vertex->edgePathCentral = Edge();
         vertex->invDist = infinite;
         vertex->invPath = NULL;
+        vertex->invPathCentral = NULL;
         vertex->invEdgePath = Edge();
+        Edge();
         vertex->heuristicValue = infinite;
         vertex->invHeuristicValue = infinite;
         vertex->queueIndex = 0;
@@ -190,8 +195,9 @@ Vertex* Graph::dijkstraBackwardsInit(const int dest){
     return final;
 }
 
-bool Graph::dijkstraSingleSource(const int origin)  {
+bool Graph::dijkstraOriginal(const int origin)  {
     auto start = dijkstraInit(origin);
+
     if(start == nullptr) return false;
 
     MutablePriorityQueue<Vertex> minQueue;
@@ -204,10 +210,10 @@ bool Graph::dijkstraSingleSource(const int origin)  {
         for(auto edge : min->adj) {
             auto elem = edge.dest;
 
-            if(elem->dist > min->dist + edge.weight) {
-                elem->dist = min->dist + edge.weight;
-                elem->path = min;
-                elem->edgePath = edge;
+            if(elem->distCentral > min->distCentral + edge.weight) {
+                elem->distCentral = min->distCentral + edge.weight;
+                elem->pathCentral = min;
+                elem->edgePathCentral = edge;
 
                 // if elem is not in queue (old dist(w) was infinite)
                 if(elem->queueIndex == 0) minQueue.insert(elem);
@@ -216,12 +222,12 @@ bool Graph::dijkstraSingleSource(const int origin)  {
         }
 
         for(auto edge : min->invAdj) {
-            auto elem = edge.dest;
+            auto elem = edge.origin;
 
-            if(elem->dist > min->dist + edge.weight) {
-                elem->dist = min->dist + edge.weight;
-                elem->path = min;
-                elem->edgePath = edge;
+            if(elem->dist > min->distCentral + edge.weight) {
+                elem->distCentral = min->distCentral + edge.weight;
+                elem->pathCentral = min;
+                elem->edgePathCentral = edge;
 
                 // if elem is not in queue (old dist(w) was infinite)
                 if(elem->queueIndex == 0) minQueue.insert(elem);
@@ -229,7 +235,6 @@ bool Graph::dijkstraSingleSource(const int origin)  {
             }
         }
     }
-
 
     return true;
 }
@@ -287,7 +292,7 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
     return true;
 }
 
-    int Graph::getPathTo(const int dest, vector<Edge> &edges) const {
+int Graph::getPathTo(const int dest, vector<Edge> &edges) const {
     Vertex *final = findVertex(dest);
     int weigth = 0;
 
@@ -302,6 +307,26 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
         weigth += final->getEdgePath().getWeight();
     }
     
+    reverse(edges.begin(), edges.end());
+
+    return weight;
+}
+
+int Graph::getPathFromCentralTo(const int dest, vector<Edge> &edges) const {
+    Vertex *final = findVertex(dest);
+    int weigth = 0;
+
+    if(final == nullptr || (final->pathCentral == nullptr && final->invPathCentral == nullptr))
+        return false;
+
+    int dist = final->distCentral;
+    int weight = final->pathCentral->distCentral;
+    while(final->pathCentral != nullptr) {
+        edges.push_back(final->edgePathCentral);
+        final = final->pathCentral;
+        weigth += final->edgePathCentral.weight;
+    }
+
     reverse(edges.begin(), edges.end());
 
     return weight;

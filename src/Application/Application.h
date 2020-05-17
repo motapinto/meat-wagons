@@ -9,8 +9,7 @@
 
 class Application {
     private:
-        MeatWagons *controller = new MeatWagons(1);
-        GraphVisualizer *viewer = nullptr;
+        MeatWagons *controller = new MeatWagons(3);
 
     public:
         void run();
@@ -129,12 +128,13 @@ void Application::run()
             break;
         }
         case 4: {
-            cout << endl << "--- Delivering ---" << endl;
-            cout << "1 - Single Wagon with capacity 1" << endl;
-            cout << "2 - Single Wagon that groups requests" << endl;
-            cout << "3 - Multiple Wagons that groups requests" << endl;
-            cout << "4 - Set Maximum Distance between Deliveries" << endl;
-            cout << "Current ZoneMaxDist: " << controller->getMaxDist() << endl << ">";
+            cout << endl << "--- Delivering ---";
+            cout << endl << "1 - Single Wagon with capacity 1";
+            cout << endl << "2 - Single Wagon that groups requests";
+            cout << endl << "3 - Multiple Wagons that groups requests";
+            cout << endl << "4 - Set Maximum Distance between Deliveries";
+            cout << endl << "Current ZoneMaxDist: " << controller->getMaxDist();
+            cout << endl << "\bInput: > ";
 
             int choice;
             while(true) {

@@ -18,7 +18,13 @@ private:
     vector<Edge> invAdj;               // ingoing edges
     Tag tag = DEFAULT;                 // vertex Tag
     double dist = infinite;
+    double distCentral = infinite;
     double invDist = infinite;
+    // central path
+    Vertex *pathCentral = nullptr;
+    Vertex *invPathCentral = nullptr;
+    Edge edgePathCentral;
+    // others path
     Vertex *path = nullptr;
     Vertex *invPath = nullptr;
     Edge edgePath;
@@ -30,9 +36,7 @@ private:
     double invHeuristicValue = 0;
     int invQueueIndex = 0;
     bool invVisited = false;
-
     bool visited = false;		      // auxiliary field
-    bool processing = false;	      // auxiliary field
 
     void addEdge(const int &id, Vertex *dest, const double &weight);
     const static int infinite = 99999999;
