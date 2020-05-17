@@ -415,7 +415,6 @@ void MeatWagons::firstIteration() {
 
         // pickup prisoner path
         int distToPrisoner = this->graph->getPathFromCentralTo(request->getDest(), edgesForwardTrip);
-        cout << distToPrisoner << endl;
 
         // deliver prisoner path
         int dropOffNode = chooseDropOff(pickupNodes);
