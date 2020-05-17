@@ -122,12 +122,13 @@ void MeatWagons::preProcess(int node) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
     if(!this->graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
 
-    for(auto it = this->requests.begin(); it != this->requests.end(); it++) {
+    multiset<Request*>::iterator it = this->requests.begin();
+    for( it; it != this->requests.end(); it++) {
         Request *r = *it;
-        if((*it)->getPrisoner() == "Mickey") {
+        if((r)->getPrisoner() == "Mickey") {
             cout << "a" << endl;
         }
-        Vertex *vert = this->graph->findVertex((*it)->getDest());
+        Vertex *vert = this->graph->findVertex((r)->getDest());
         if(vert == nullptr) {
             it = --this->requests.erase(it);
         }
