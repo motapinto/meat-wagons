@@ -403,8 +403,6 @@ void MeatWagons::firstIteration() {
         // requests are ordered by pickup time
         Request *request = *requestPos;
         request->setProcessed(true);
-        cout << "requestdest: " << request->getDest() << endl;
-
 
         // get wagon
         auto wagonIt = --this->wagons.end();
@@ -418,18 +416,17 @@ void MeatWagons::firstIteration() {
         // pickup prisoner path
         int distToPrisoner = this->graph->getPathFromCentralTo(request->getDest(), edgesForwardTrip);
         cout << distToPrisoner << endl;
-        cout << "b" << endl;
 
         // deliver prisoner path
         int dropOffNode = chooseDropOff(pickupNodes);
         this->graph->dijkstraBidirectional(request->getDest(), dropOffNode, processedEdges, processedInvEdges);
         int dropOffDist = graph->getPathTo(dropOffNode, edgesForwardTrip);
         int totalDist = dropOffDist + distToPrisoner;
-        cout << "c" << endl;
+
         // return to central path
         this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, edgesForwardTrip);
-        cout << "d" << endl;
+
         // add delivery to wagon and updates request times
         Time lastDeliveryTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request->getArrival() - Time(0, 0, distToPrisoner / averageVelocity);
         request->setRealArrival(lastDeliveryTime + Time(0, 0 , distToPrisoner / averageVelocity));
