@@ -121,8 +121,6 @@ void Application::run()
                     }
                 }
                 else cout << "\bInput: > ";
-
-                break;
             }
 
             break;
@@ -187,7 +185,10 @@ void Application::run()
                         break;
                     }
                 }
-                else cout << "\bInput: > ";
+                else {
+                    cout << "\bInput: > ";
+                    continue;
+                }
 
                 break;
             }
@@ -195,47 +196,46 @@ void Application::run()
             break;
         }
         case 5: {
-            cout << "\n--- Setting Central Node ---";
-            cout << "\nCurrent Central Node ID: " << controller->getCentral();
-            cout << "\nProvide <node id>\n>";
+            cout << endl << "--- Change Central Node ---";
+            cout << endl <<"Current Central Node ID: " << controller->getCentral();
+            cout << endl << "Provide <node id>>";
+            cout << endl << "\bInput: > ";
 
             int centralID;
-            bool back = false;
-
             while(true) {
                 readline(input);
-                if(input == "back") {
-                    back = true;
-                    break;
-                }
-                else if(stoint(input, centralID)) {
-                    cout << "\nTry again\n>";
-                    break;
-                }
-                else break;
-            }
-            if(back) break;
+                if(input == "back") break;
+                else if(stoint(input, centralID) == 0) {
+                    Vertex *v = controller->getGraph()->findVertex(centralID);
+                    if(v == nullptr) cout << "Vertex does not exist" << endl << endl;
+                    else controller->setCentral(centralID);
 
-            Vertex *v = controller->getGraph()->findVertex(centralID);
-            
-            if(v == nullptr) cout << "Vertex does not exist" << endl << endl;
-            else controller->setCentral(centralID);
+                    break;
+                }
+                else {
+                    cout << "\bInput: > ";
+                    continue;
+                }
+
+                break;
+            }
 
             break;
         }
         case 6: {
-            cout << "\n--- Wagon Operation --- \t\t\t(Type 'back' to go back)\n";
-            cout << "\t1 - List Wagons\n";
-            cout << "\t2 - Add Wagons\n";
-            cout << "\t3 - Remove Wagons\n>";
+            cout << endl << "--- Wagon Operation --- ";
+            cout << endl << "1 - List Wagons";
+            cout << endl << "2 - Add Wagons";
+            cout << endl << "3 - Remove Wagons>";
+            cout << endl << "\bInput: > ";
 
             while(true) {
                 int choice;
                 readline(input);
                 if(input == "back") break;
                 else if(stoint(input, choice) || choice < 1 || choice > 3) {
-                    cout << "\nTry again\n>";
-                    break;
+                    cout << endl << "\bInput: > ";
+                    continue;
                 }
 
                 if(choice == 1) {
@@ -244,8 +244,9 @@ void Application::run()
                     break;
                 }
                 else if(choice == 2) {
-                    cout << "\n--- Adding Wagons ---" << endl;
-                    cout << "Provide <capacity>\n>";
+                    cout << endl << "--- Adding Wagons ---";
+                    cout << endl << "Provide <capacity>";
+                    cout << endl << "\bInput: > ";
 
                     readline(input);
                     int capacity;

@@ -328,7 +328,6 @@ int MeatWagons::tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, v
         r->setDistFromCentral(totalDist);
         r->setRealArrival(startTime + Time(0, 0, totalDist / averageVelocity));
     }
-    cout << r->getPrisoner() << r->getDest() << endl;
 
     while(!tspNodes.empty()) {
         Vertex *next = getNearestNeighbour(closest, tspNodes);
@@ -339,7 +338,7 @@ int MeatWagons::tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, v
             r->setDistFromCentral(totalDist);
             r->setRealArrival(startTime + Time(0, 0, totalDist / averageVelocity));
         }
-        cout << r->getPrisoner() << r->getDest() << endl;
+        
         tspNodes.erase(std::find(tspNodes.begin(), tspNodes.end(), next));
         closest = next;
     }
@@ -362,8 +361,10 @@ Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     Delivery * delivery = next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
 
     for(auto request : delivery->getRequests()) {
+        stringstream stream;
+        stream << request->getRealArrival();
         this->graph->findVertex(request->getDest())->setTag(Vertex::PICKUP);
-        this->viewer->getViewer()->setVertexLabel(request->getDest(), request->getPrisoner());
+        this->viewer->getViewer()->setVertexLabel(request->getDest(), request->getPrisoner() + " arrival at: " + stream.str());
         this->graph->findVertex(delivery->getDropOff())->setTag(Vertex::DROPOFF);
     }
 
