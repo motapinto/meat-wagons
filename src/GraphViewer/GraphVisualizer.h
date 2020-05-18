@@ -2,6 +2,7 @@
 #ifndef MEAT_WAGONS_GRAPHVISUALIZER_H
 #define MEAT_WAGONS_GRAPHVISUALIZER_H
 
+#include <thread>
 #include "../Graph/Graph.h"
 #include "GraphViewer/cpp/graphviewer.h"
 
@@ -22,14 +23,21 @@ public:
     }
 
     GraphViewer* getViewer() const ;
+    void drawFromThread(Graph *graph);
     void draw(Graph *graph);
     void setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath = false);
     void setNode(const int id, const int size, const string color, const string label);
+    void drawShortestPathFromThread(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph);
     void drawShortestPath(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph);
 };
 
 GraphViewer* GraphVisualizer::getViewer() const {
     return gv;
+}
+
+void GraphVisualizer::drawFromThread(Graph *graph) {
+    thread threadProcess(&GraphVisualizer::draw, this, graph);
+    threadProcess.detach();
 }
 
 // no final tentar fazer animacao como na tp com sleeps
@@ -97,6 +105,11 @@ void GraphVisualizer::setNode(const int id, const int size, const string color, 
     this->gv->setVertexSize(id, size);
     this->gv->setVertexColor(id, color);
     this->gv->setVertexLabel(id, label);
+}
+
+void GraphVisualizer::drawShortestPathFromThread(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph) {
+    thread threadProcess(&GraphVisualizer::drawShortestPath, this, processedEdges, processedEdgesInv, edges, graph);
+    threadProcess.detach();
 }
 
 void GraphVisualizer::drawShortestPath(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph) {

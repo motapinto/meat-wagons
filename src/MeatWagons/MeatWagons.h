@@ -115,6 +115,11 @@ multiset<Request*> MeatWagons::getRequests() const {
     return this->requests;
 }
 
+/**
+ *
+ * @param graphPath
+ * @return
+ */
 bool MeatWagons::setGraph(const string graphPath) {
     Reader graphReader = Reader(graphPath);
     Graph* graphRead = new Graph();
@@ -127,14 +132,21 @@ bool MeatWagons::setGraph(const string graphPath) {
     this->processed = false;
     this->graph = graphRead;
     this->graphName = graphPath.substr(graphPath.find_last_of('/') + 1);
-    this->viewer->draw(this->graph);
+
+    this->viewer->drawFromThread(this->graph);
+    this->processed = false;
     return true;
 }
 
-
+/**
+ *
+ * @param node
+ * @return
+ */
 bool MeatWagons::preProcess(const int node) {
     if(this->graph == nullptr) return false;
     if(!this->graph->preProcess(node)) return false;
+    if(!this->graph->dijkstraOriginal(central)) return false;
 
 
     for(int i = 0; i < this->requests.size(); i++) {
@@ -150,12 +162,12 @@ bool MeatWagons::preProcess(const int node) {
     }
 
     this->processed = true;
-
-    this->viewer->draw(this->graph);
+    this->viewer->drawFromThread(this->graph);
     return true;
 }
+
 /**
- * @brief It calculates the shortest path from one point to another with different algorithms
+ * @brief Calculates the shortest path from one point to another with different algorithms
  * @param option - integer representing the algorithm to be used
  * @param origin - start point to calculate the distance
  * @param dest - destination of the path
@@ -172,7 +184,7 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
 
     vector<Edge> edges;
     this->graph->getPathTo(dest, edges);
-    this->viewer->drawShortestPath(processedEdges, processedEdgesInv, edges, this->graph);
+    this->viewer->drawShortestPathFromThread(processedEdges, processedEdgesInv, edges, this->graph);
 
     return true;
 }
@@ -184,7 +196,6 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
 void MeatWagons::deliver(int iteration) {
     if(!this->processed) this->preProcess(central);
     if(this->requests.size() == 0) return;
-    if(!this->graph->dijkstraOriginal(central)) return;
 
     switch (iteration) {
         case 1: this->firstIteration(); break;
@@ -225,14 +236,11 @@ vector<Request *> MeatWagons::groupRequests(const int capacity){
     // Initialize the vector where we will put the grouped requests
     vector <Request *> group;
     int max_dist = 0, dist, pos = 0, max_dist_request_pos = 0;
-
     auto it = requests.begin();
     // We start with the first request since they are ordered by the arrival
     Vertex* initial_vert = this->graph->findVertex((*it)->getDest());
     group.push_back((*it));
-
     it++;
-
     // Iterate over the requests to find the nearest to the first one
     while(it != requests.end()) {
         if((*it)->isProcessed()) continue;
@@ -358,11 +366,9 @@ int MeatWagons::tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, v
 
     // Set the real arrival time for the first request
     if(r != nullptr){
-
         // If the startTime is equal to the arrival it means the wagon is ready to leave before the arrival
-        if(startTime == r->getArrival()) {
+        if(startTime == r->getArrival())
             startTime = startTime - Time(0, 0, totalDist / averageVelocity);
-        }
 
         r->setDistFromCentral(totalDist);
         r->setRealArrival(startTime + Time(0, 0, totalDist / averageVelocity));
