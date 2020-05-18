@@ -155,7 +155,7 @@ void Application::run()
                                     readline(deliveryInput);
                                     if (deliveryInput == "back") break;
                                     else if (stoint(deliveryInput, delivery) == 0 && delivery >= 0) {
-                                        Delivery *deliveryChosen = controller->drawDeliveries(wagon, delivery);
+                                        Delivery *deliveryChosen = controller->drawDeliveriesFromThread(wagon, delivery);
                                         cout << "Wagon[" << wagon << "] leaves central at: " << deliveryChosen->getStart() << endl;
                                         cout << "Wagon[" << wagon << "] returns to central at: " << deliveryChosen->getEnd() << endl;
                                         cout << "Requests done:" << endl;

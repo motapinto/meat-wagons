@@ -15,15 +15,6 @@ bool compareRequests(Request* r1, Request* r2){
     return r1->getArrival() < r2->getArrival();
 }
 
-class MeatWagonsException : public std::exception {
-    public:
-        MeatWagonsException(string  msg) : msg_(std::move(msg)) {}
-        string getMessage() const {return(msg_);}
-
-    private:
-        string msg_;
-};
-
 class MeatWagons {
     private:
         int central;
@@ -66,11 +57,12 @@ class MeatWagons {
         vector<Request*> groupRequests(const int capacity);
         Vertex* getNearestNeighbour(Vertex *node,  const vector<Vertex*> &neighbours);
         int tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, vector<Edge> &tspPath, int dropOffNode, Time& startTime);
-        Delivery* drawDeliveries(int wagonIndex, int deliveryIndex);
+        Delivery* drawDeliveriesFromThread(int wagonIndex, int deliveryIndex);
+        bool drawDeliveries(int wagonIndex, int deliveryIndex);
         Request* findRequest(Vertex * vert, vector<Request *> requests);
-        void firstIteration();
-        void secondIteration();
-        void thirdIteration();
+        bool firstIteration();
+        bool secondIteration();
+        bool thirdIteration();
 };
 
 int MeatWagons::getCentral() const {
@@ -173,7 +165,7 @@ bool MeatWagons::preProcess(const int node) {
  * @param dest - destination of the path
  */
 bool MeatWagons::shortestPath(const int option, const int origin, const int dest) {
-    if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
+    if(this->graph == nullptr) return false;
 
     unordered_set<int> processedEdges, processedEdgesInv;
     switch (option) {
@@ -406,8 +398,14 @@ int MeatWagons::tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, v
     return totalDist;
 }
 
-Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
-    if(wagonIndex > this->wagons.size()) return nullptr;
+Delivery* MeatWagons::drawDeliveriesFromThread(int wagonIndex, int deliveryIndex) {
+    thread threadProcess(&MeatWagons::drawDeliveries, this, wagonIndex, deliveryIndex);
+    threadProcess.detach();
+    return  next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
+}
+
+bool MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
+    if(wagonIndex > this->wagons.size()) return false;
 
     this->viewer = new GraphVisualizer(600, 600);
     Delivery * delivery = next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
@@ -429,17 +427,20 @@ Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
         this->graph->findVertex(delivery->getDropOff())->setTag(Vertex::INTEREST_POINT);
     }
 
-    return delivery;
+    return true;
 }
+
+
+
 
 /**
  * This iteration 1 wagon with capacity = 1, this is, it only delivers one prisioner at a time
  * It uses dijkstra bidirectional to calculate the shortest path from the central to the drop off node passing through
  * the pick up node and back to the central again.
  */
-void MeatWagons::firstIteration() {
-    if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration! Should only be using 1 wagon");
-    if(wagons.begin()->getCapacity() != 1)  throw MeatWagonsException("Wrong iteration configuration! Should only use a wagon of capacity = 1");
+bool MeatWagons::firstIteration() {
+    if(wagons.size() != 1)  return false;
+    if(wagons.begin()->getCapacity() != 1)  return false;
 
     unordered_set<int> processedEdges, processedInvEdges;
 
@@ -468,7 +469,6 @@ void MeatWagons::firstIteration() {
 
         vector<Edge> edgesForwardTrip;
         vector<Vertex*> pickupNodes;
-
 
         // Calculates the path from the central to the prisioner
         int distToPrisoner = this->graph->getPathFromCentralTo(request->getDest(), edgesForwardTrip);
@@ -502,7 +502,10 @@ void MeatWagons::firstIteration() {
         // wagon now is back at the central
         this->wagons.insert(wagon);
         requestPos++;
+
     }
+
+    return true;
 }
 
 /**
@@ -510,9 +513,9 @@ void MeatWagons::firstIteration() {
  * It uses dijkstra bidirectional to calculate the shortest path through all the nodes that it needs to pass
  * from the central to the drop Off node and back to the central.
  */
-void MeatWagons::secondIteration() {
-    if(wagons.size() != 1)  throw MeatWagonsException("Wrong iteration configuration! Should only be using 1 wagon");
-    if(wagons.begin()->getCapacity() <= 1)  throw MeatWagonsException("Wrong iteration configuration! Should only use a wagon of capacity = 1");
+bool MeatWagons::secondIteration() {
+    if(wagons.size() != 1)  return false;
+    if(wagons.begin()->getCapacity() <= 1)  return false;
 
     unordered_set<int> processedEdges, processedInvEdges;
 
@@ -562,6 +565,8 @@ void MeatWagons::secondIteration() {
         // wagon now is back at the central
         this->wagons.insert(wagon);
     }
+
+    return true;
 }
 
 /**
@@ -569,8 +574,8 @@ void MeatWagons::secondIteration() {
  * It uses dijkstra bidirectional to calculate the shortest path through all the nodes that it needs to pass
  * from the central to the drop Off node and back to the central.
  */
-void MeatWagons::thirdIteration() {
-    if(wagons.size() <= 1)  throw MeatWagonsException("Wrong iteration configuration! Should be using more than 1 wagon");
+bool MeatWagons::thirdIteration() {
+    if(wagons.size() <= 1)  return false;
 
     unordered_set<int> processedEdges, processedInvEdges;
     for(Wagon wagon : this->wagons) wagon.init();
@@ -597,14 +602,12 @@ void MeatWagons::thirdIteration() {
         // The startTime will be changed in tspPath function if the wagon as time to travel to the first pick up node
         Time startTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : groupedRequests[0]->getArrival();
 
-
         // Choose a drop off node
         int dropOffNode = chooseDropOff(tspNodes);
         vector<Edge> tspPath;
 
         // Calculate the distance using dijkstra Bidirectional
         int totalDist = this->tspPath(tspNodes, groupedRequests, tspPath, dropOffNode, startTime);
-
 
         // Calculate the distance from the drop off node back to the central
         this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
@@ -619,6 +622,8 @@ void MeatWagons::thirdIteration() {
         // wagon now is back at the central
         this->wagons.insert(wagon);
     }
+
+    return true;
 }
 
 /**
