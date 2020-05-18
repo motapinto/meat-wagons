@@ -407,7 +407,7 @@ Delivery* MeatWagons::drawDeliveriesFromThread(int wagonIndex, int deliveryIndex
 bool MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     if(wagonIndex > this->wagons.size()) return false;
 
-    this->viewer = new GraphVisualizer(600, 600);
+    this->viewer->newGv();
     Delivery * delivery = next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
 
     for(auto request : delivery->getRequests()) {
