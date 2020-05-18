@@ -59,6 +59,7 @@ void Wagon::init() {
 }
 
 bool Wagon::operator<(const Wagon &wagon) const {
+    if(this->capacity == wagon.capacity) return this->id < wagon.id;
     return this->capacity < wagon.capacity;
 }
 
