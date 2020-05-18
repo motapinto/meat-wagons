@@ -46,7 +46,7 @@ class MeatWagons {
         }
 
         int getCentral() const;
-        void setCentral(const int &id);
+        bool setCentral(const int &id);
         string getGraphName() const;
         int getMaxDist() const;
         void setMaxDist(const int max);
@@ -71,15 +71,16 @@ class MeatWagons {
         void firstIteration();
         void secondIteration();
         void thirdIteration();
-
 };
 
 int MeatWagons::getCentral() const {
     return this->central;
 }
 
-void MeatWagons::setCentral(const int &id) {
+bool MeatWagons::setCentral(const int &id) {
+    if(this->graph->findVertex(id) == nullptr) return false;
     this->central = id;
+    return true;
 }
 
 string MeatWagons::getGraphName() const {
