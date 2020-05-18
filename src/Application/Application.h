@@ -83,9 +83,9 @@ void Application::run()
                     controller->preProcess(controller->getCentral());
                     break;
                 }
-                else if(stoint(input, node) == 0 && controller->getGraph()->findVertex(node) != nullptr) {
-                    controller->preProcess(node);
-                    break;
+                else if(stoint(input, node) == 0) {
+                    if(!controller->preProcess(node)) cout << "\bInput: > ";
+                    else break;
                 }
                 else cout << "\bInput: > ";
             }
@@ -104,19 +104,22 @@ void Application::run()
                 if(input == "back") break;
                 else if(stoint(input, option) == 0 && option >= 1 && option <= 3) {
                     int origin, dest;
+
+                    cout << endl << "Provide <origin node> <destination node> [Example: 90379359 411018963]";
+                    cout << endl << "\bInput: > ";
                     while(true) {
-                        cout << endl << "Provide <origin node> <destination node> [Example: 90379359 411018963]";
-                        cout << endl << "\bInput: > ";
+                        string secondInput;
+                        readline(secondInput);
+                        if(secondInput == "back") break;
 
-                        readline(input);
-                        if(input == "back") break;
-                        stringstream line(input);
-
-                        if (line >> origin && line >> dest && controller->getGraph()->findVertex(origin) != nullptr && controller->getGraph()->findVertex(dest) != nullptr)
-                            controller->shortestPath(option, origin, dest); break;
+                        stringstream line(secondInput);
+                        if (line >> origin && line >> dest && controller->shortestPath(option, origin, dest)) break;
+                        else cout << "\bInput: > ";
                     }
                 }
-                else cout << "\bInput: > ";
+                else { cout << "\bInput: > "; continue; }
+
+                break;
             }
 
             break;
@@ -137,20 +140,25 @@ void Application::run()
                 else if(stoint(input, choice) == 0 && choice >= 0 && choice <= 4) {
                     if (choice != 4) {
                         controller->deliver(choice);
-                        int wagon, delivery;
+
+                        int wagon;
                         while (true) {
                             cout << endl << "--- Choose Wagon ---" << endl;
                             cout << "Wagon Index > ";
-                            readline(input);
-                            if (input == "back") break;
-                            else if (stoint(input, wagon) == 0 && wagon >= 0) {
+
+                            string wagonInput;
+                            readline(wagonInput);
+                            if (wagonInput == "back") break;
+                            else if (stoint(wagonInput, wagon) == 0 && wagon >= 0) {
+                                int delivery;
                                 while (true) {
                                     cout << endl << "--- Choose a Delivery from Wagon[" << wagon << "] --- "<< endl;
                                     cout << "Delivery Index > ";
-                                    readline(input);
-                                    cout << endl;
-                                    if (input == "back") break;
-                                    else if (stoint(input, delivery) == 0 && delivery >= 0) {
+
+                                    string deliveryInput;
+                                    readline(deliveryInput);
+                                    if (deliveryInput == "back") break;
+                                    else if (stoint(deliveryInput, delivery) == 0 && delivery >= 0) {
                                         Delivery *deliveryChosen = controller->drawDeliveries(wagon, delivery);
                                         cout << "Wagon[" << wagon << "] leaves central at: " << deliveryChosen->getStart() << endl;
                                         cout << "Wagon[" << wagon << "] returns to central at: " << deliveryChosen->getEnd() << endl;

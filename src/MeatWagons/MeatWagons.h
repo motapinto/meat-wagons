@@ -155,7 +155,6 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
 
     unordered_set<int> processedEdges, processedEdgesInv;
-
     switch (option) {
         case 1: if (!this->graph->dijkstra(origin, dest, processedEdges)) return false; break;
         case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest, processedEdges)) return false; break;
@@ -165,6 +164,8 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
     vector<Edge> edges;
     this->graph->getPathTo(dest, edges);
     this->viewer->drawShortestPath(processedEdges, processedEdgesInv, edges, this->graph);
+
+    return true;
 }
 
 void MeatWagons::deliver(int iteration) {
