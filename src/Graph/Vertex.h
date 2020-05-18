@@ -50,6 +50,7 @@ public:
     int getId() const;
     Position getPosition() const;
     vector<Edge> getAdj() const;
+    vector<Edge> getInvAdj() const;
     double getDist() const;
     Vertex *getPath() const;
     Edge getEdgePath() const;
@@ -82,6 +83,10 @@ Position Vertex::getPosition() const {
 
 vector<Edge> Vertex::getAdj() const {
     return this->adj;
+}
+
+vector<Edge> Vertex::getInvAdj() const {
+    return this->invAdj;
 }
 
 double Vertex::getDist() const {

@@ -45,9 +45,7 @@ void GraphVisualizer::draw(Graph *graph) {
     for(Vertex *origin : vertexSet)
         gv->addNode(origin->getId(), origin->getPosition().getX() - graph->getOffsetX(), origin->getPosition().getY() - graph->getOffsetY());
 
-    int i = 0;
     for(Vertex *origin : vertexSet) {
-        i++;
         if(origin->getTag() == Vertex::Tag::CENTRAL) {
             gv->setVertexColor(origin->getId(), "red");
             gv->setVertexLabel(origin->getId(), "Meat Wagons Central");
@@ -77,6 +75,10 @@ void GraphVisualizer::draw(Graph *graph) {
 
         for(Edge e : origin->getAdj()) {
             gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::DIRECTED);
+        }
+
+        for(Edge e : origin->getInvAdj()) {
+            gv->addEdge(e.getId() + 100000, origin->getId(), e.getDest()->getId(), EdgeType::DIRECTED);
         }
     }
     gv->rearrange();
