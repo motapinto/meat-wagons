@@ -62,7 +62,6 @@ void GraphVisualizer::draw(Graph *graph) {
 
         else if(origin->getTag() == Vertex::Tag::PICKUP) {
             gv->setVertexColor(origin->getId(), "green");
-            gv->setVertexLabel(origin->getId(), "PICKUP");
             gv->setVertexSize(origin->getId(), 30);
         }
 

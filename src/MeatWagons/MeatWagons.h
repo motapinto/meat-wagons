@@ -368,9 +368,12 @@ Delivery* MeatWagons::drawDeliveries(int wagonIndex, int deliveryIndex) {
     this->viewer = new GraphVisualizer(600, 600);
     Delivery * delivery = next(this->wagons.begin(), wagonIndex)->getDeliveries().at(deliveryIndex);
 
+    int i = 1;
     for(auto request : delivery->getRequests()) {
         this->graph->findVertex(request->getDest())->setTag(Vertex::PICKUP);
+        this->viewer->getViewer()->setVertexLabel(request->getDest(), "PICKUP" + to_string(i));
         this->graph->findVertex(delivery->getDropOff())->setTag(Vertex::DROPOFF);
+        i++;
     }
 
     vector<int> path = Edge::getIds(delivery->getForwardPath());
