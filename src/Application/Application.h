@@ -53,10 +53,6 @@ void Application::run()
 
     // curly brackets are needed to initialize new variables in case scopes
     switch (option) {
-        case 0: {
-            cout << endl << "Exiting..." << endl;
-            exit(0);
-        }
         case 1: {
             cout << endl << "--- Read Graph ---";
             cout << endl << "Provide city name [Example: 'Porto']";
@@ -240,7 +236,12 @@ void Application::run()
 
                 if(choice == 1) {
                     cout << "\n--- Listing Wagons ---" << endl;
-                    controller->listWagons();
+                    multiset<Wagon> wagons = this->controller->getWagons();
+                    for(const auto & wagon : wagons) {
+                        cout << "[Wagon " << wagon.getId() << "] Capacity " << wagon.getCapacity() << " available at "
+                             << wagon.getNextAvailableTime() << endl;
+                    }
+                    cout << endl;
                     break;
                 }
                 else if(choice == 2) {
@@ -271,7 +272,12 @@ void Application::run()
         }
         case 7: {
             cout << "\n--- List Requests ---";
-            controller->listRequests();
+            multiset<Request*> requests = controller->getRequests();
+            for (auto request : requests) {
+                cout << "Prisoner " << request->getPrisoner() << " to be received in node " << request->getDest() << " with priority "
+                     << request->getPriority() << " at " << request->getArrival() << endl << endl;
+            }
+
             break;
         }
         default:

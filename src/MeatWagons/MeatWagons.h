@@ -47,32 +47,25 @@ class MeatWagons {
 
         int getCentral() const;
         void setCentral(const int &id);
-
         string getGraphName() const;
-
-    int getMaxDist() const;
+        int getMaxDist() const;
         void setMaxDist(const int max);
-
         Graph* getGraph() const;
-        void setGraph(const string path);
-        void showGraph();
-
-        void preProcess(int node);
-        void shortestPath(int option, int origin, int dest);
-
-        void listWagons() const;
+        multiset<Wagon> getWagons() const;
         void addWagon(const int capacity);
         void removeWagon(const int id, const int capacity);
-        multiset<Wagon>::iterator getWagon();
+        multiset<Request*> getRequests() const;
 
-        void listRequests() const;
+        bool setGraph(const string path);
+        bool preProcess(const int node);
+        bool shortestPath(const int option, const int origin, const int dest);
+        multiset<Wagon>::iterator getWagon();
 
         void deliver(const int iteration);
         int chooseDropOff(const vector<Vertex*> &pickupNodes);
         vector<Request*> groupRequests(const int capacity);
         Vertex* getNearestNeighbour(Vertex *node,  const vector<Vertex*> &neighbours);
         int tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, vector<Edge> &tspPath, int dropOffNode, Time& startTime);
-        Time setDeliveriesTime(const vector<Edge> &tspPath, vector<Request *> &groupedRequests, const Time &latestRequest);
         Delivery* drawDeliveries(int wagonIndex, int deliveryIndex);
         Request* findRequest(Vertex * vert, vector<Request *> requests);
         void firstIteration();
@@ -105,29 +98,41 @@ Graph* MeatWagons::getGraph() const {
     return this->graph;
 }
 
-void MeatWagons::setGraph(const string graphPath) {
+multiset<Wagon> MeatWagons::getWagons() const {
+    return this->wagons;
+}
+
+void MeatWagons::addWagon(const int capacity) {
+    wagons.insert(Wagon(wagons.size(), capacity));
+}
+
+void MeatWagons::removeWagon(const int id, const int capacity) {
+    wagons.erase(Wagon(id, capacity));
+}
+
+multiset<Request*> MeatWagons::getRequests() const {
+    return this->requests;
+}
+
+bool MeatWagons::setGraph(const string graphPath) {
     Reader graphReader = Reader(graphPath);
     Graph* graphRead = new Graph();
 
     if(!graphReader.readGraph(graphRead, central))
-        throw MeatWagonsException("Graph is null");
+        return false;
     if(!graphReader.readRequests(requests))
-        throw MeatWagonsException("Graph is null");
+        return false;
 
     this->processed = false;
     this->graph = graphRead;
     this->graphName = graphPath.substr(graphPath.find_last_of('/') + 1);
-    //this->showGraph();
-}
-
-void MeatWagons::showGraph() {
-    this->viewer = new GraphVisualizer(600, 600);
     this->viewer->draw(this->graph);
+    return true;
 }
 
-void MeatWagons::preProcess(int node) {
-    if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
-    if(!this->graph->preProcess(node)) throw MeatWagonsException("Vertex does not exist");
+bool MeatWagons::preProcess(const int node) {
+    if(this->graph == nullptr) return false;
+    if(!this->graph->preProcess(node)) return false;
 
     for(int i = 0; i < this->requests.size(); i++) {
         auto it = next(this->requests.begin(), i);
@@ -142,62 +147,24 @@ void MeatWagons::preProcess(int node) {
     }
 
     this->processed = true;
-    //this->showGraph();
+    this->viewer->draw(this->graph);
+    return true;
 }
 
-void MeatWagons::shortestPath(int option, int origin, int dest) {
+bool MeatWagons::shortestPath(const int option, const int origin, const int dest) {
     if(this->graph == nullptr) throw MeatWagonsException("Graph is null");
 
     unordered_set<int> processedEdges, processedEdgesInv;
 
     switch (option) {
-        case 1: if (!this->graph->dijkstra(origin, dest, processedEdges)) throw MeatWagonsException("Vertex not found"); break;
-        case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest, processedEdges)) throw MeatWagonsException("Vertex was not found");break;
-        case 3: if (!this->graph->dijkstraBidirectional(origin, dest, processedEdges, processedEdgesInv)) throw MeatWagonsException("Vertex was not found");break;
+        case 1: if (!this->graph->dijkstra(origin, dest, processedEdges)) return false; break;
+        case 2: if (!this->graph->dijkstraOrientedSearch(origin, dest, processedEdges)) return false; break;
+        case 3: if (!this->graph->dijkstraBidirectional(origin, dest, processedEdges, processedEdgesInv)) return false; break;
     }
 
-    this->viewer = new GraphVisualizer(600, 600);
-
-    // get processed path
-    vector<int> edgesProcessed(processedEdges.begin(), processedEdges.end());
-    this->viewer->setPath(edgesProcessed, "orange", false);
-
-    if(processedEdgesInv.size() != 0) {
-        vector<int> edgesProcessedInv(processedEdgesInv.begin(), processedEdgesInv.end());
-        this->viewer->setPath(edgesProcessedInv, "magenta", false);
-    }
-
-    // get shortest path
     vector<Edge> edges;
     this->graph->getPathTo(dest, edges);
-    vector<int> edgesIds = Edge::getIds(edges);
-    // draw shortest path
-    this->viewer->setPath(edgesIds, "blue", true);
-    this->viewer->draw(this->graph);
-}
-
-void MeatWagons::listWagons() const {
-    for (auto it = wagons.begin(); it != wagons.end(); it++) {
-        cout << "[Wagon " << it->getId() << "] Capacity " << it->getCapacity() << " available at "
-             << it->getNextAvailableTime() << endl;
-    }
-    cout << endl;
-}
-
-void MeatWagons::addWagon(const int capacity) {
-    wagons.insert(Wagon(wagons.size(), capacity));
-}
-
-void MeatWagons::removeWagon(const int id, const int capacity) {
-    wagons.erase(Wagon(id, capacity));
-}
-
-void MeatWagons::listRequests() const {
-    for (auto it = requests.begin(); it != requests.end(); it++) {
-
-        cout << "Prisoner " << (*it)->getPrisoner() << " to be received in node " << (*it)->getDest() << " with priority "
-             << (*it)->getPriority() << " at " << (*it)->getArrival() << endl << endl;
-    }
+    this->viewer->drawShortestPath(processedEdges, processedEdgesInv, edges, this->graph);
 }
 
 void MeatWagons::deliver(int iteration) {
@@ -566,6 +533,5 @@ multiset<Wagon>::iterator MeatWagons::getWagon(){
 
     return it;
 }
-
 
 #endif //MEAT_WAGONS_MEATWAGONS_H

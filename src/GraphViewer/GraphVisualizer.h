@@ -25,6 +25,7 @@ public:
     void draw(Graph *graph);
     void setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath = false);
     void setNode(const int id, const int size, const string color, const string label);
+    void drawShortestPath(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph);
 };
 
 GraphViewer* GraphVisualizer::getViewer() const {
@@ -33,6 +34,8 @@ GraphViewer* GraphVisualizer::getViewer() const {
 
 // no final tentar fazer animacao como na tp com sleeps
 void GraphVisualizer::draw(Graph *graph) {
+    this->gv = new GraphViewer(1, 1, false);
+
     gv->createWindow(width, height);
     //vertexes settings
     gv->defineVertexColor("black");
@@ -94,6 +97,24 @@ void GraphVisualizer::setNode(const int id, const int size, const string color, 
     this->gv->setVertexSize(id, size);
     this->gv->setVertexColor(id, color);
     this->gv->setVertexLabel(id, label);
+}
+
+void GraphVisualizer::drawShortestPath(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph) {
+    this->gv = new GraphViewer(1, 1, false);
+
+    // get processed path
+    vector<int> edgesProcessed(processedEdges.begin(), processedEdges.end());
+    this->setPath(edgesProcessed, "orange", false);
+
+    if(processedEdgesInv.size() != 0) {
+        vector<int> edgesProcessedInv(processedEdgesInv.begin(), processedEdgesInv.end());
+        this->setPath(edgesProcessedInv, "magenta", false);
+    }
+
+    vector<int> edgesIds = Edge::getIds(edges);
+    // draw shortest path
+    this->setPath(edgesIds, "blue", true);
+    this->draw(graph);
 }
 
 #endif //MEAT_WAGONS_GRAPHVISUALIZER_H
