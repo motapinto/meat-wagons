@@ -109,11 +109,24 @@ bool Graph::preProcess(int origin) {
 }
 
 /**************** Usual operations ************/
+
+/**
+ * @brief finds a vertex in the graph
+ * @param id - id of the vertex that we are looking for
+ * @return - a pointer to the vertex corresponding to the id given
+ */
 Vertex* Graph::findVertex(const int &id) const {
     auto it = vertexIndexes.find(id);
     return it == vertexIndexes.end() ? nullptr : it->second;
 }
 
+/**
+ * @brief Adds a vertex to the graph
+ * @param id - id of the vertex to add
+ * @param x - coordinate in the x axis of the vertex
+ * @param y - coordinate in the y axis of the vertex
+ * @return - true if it added successfully
+ */
 bool Graph::addVertex(const int &id, const int &x, const int &y) {
     if (findVertex(id) != nullptr) return false;
 
@@ -124,6 +137,13 @@ bool Graph::addVertex(const int &id, const int &x, const int &y) {
     return true;
 }
 
+/**
+ * @brief Adds an edge to the graph
+ * @param id - id of the edge to add
+ * @param origin - id of the vertex where the edge begins
+ * @param dest - id of the vertex where the edge ends
+ * @return - true if it added successfully
+ */
 bool Graph::addEdge(const int &id, const int &origin, const int &dest) {
     auto v1 = findVertex(origin);
     auto v2 = findVertex(dest);
@@ -160,6 +180,12 @@ vector<Vertex*> Graph::getVertexSet() const {
 }
 
 /**************** Dijkstra ************/
+
+/**
+ * @brief Initializes all the camps of the vertexes related to the central with the default values
+ * @param origin - id of the vertex that represents the origin of the graph
+ * @return a pointer to the vertex that represents the origin of the graph
+ */
 Vertex* Graph::djikstraInitCentral(const int origin) {
     for(auto vertex : vertexSet) {
         vertex->visited = false;
@@ -175,6 +201,11 @@ Vertex* Graph::djikstraInitCentral(const int origin) {
     return start;
 }
 
+/**
+ * @brief Initializes all the camps of the vertexes with the default values
+ * @param origin - id of the vertex that represents the origin of the graph
+ * @return a pointer to the vertex that represents the origin of the graph
+ */
 Vertex* Graph::dijkstraInit(const int origin) {
     for(auto vertex : vertexSet) {
         vertex->visited = false;
@@ -199,6 +230,11 @@ Vertex* Graph::dijkstraInit(const int origin) {
     return start;
 }
 
+/**
+ * @brief Initializes all the camps of the vertexes with the default values related to the invGraph
+ * @param dest
+ * @return
+ */
 Vertex* Graph::dijkstraBackwardsInit(const int dest){
     auto final = findVertex(dest);
     final->invDist = 0;
@@ -207,6 +243,11 @@ Vertex* Graph::dijkstraBackwardsInit(const int dest){
     return final;
 }
 
+/**
+ * @brief Runs the dijkstra algorithm to find the shortest path to all the vertixes
+ * @param origin - int representing the id of the origin of the graph
+ * @return return true if it runned successfully
+ */
 bool Graph::dijkstraOriginal(const int origin)  {
     auto start = djikstraInitCentral(origin);
 
@@ -251,28 +292,41 @@ bool Graph::dijkstraOriginal(const int origin)  {
     return true;
 }
 
+/**
+ * @brief Runs dijkstra algorithm to find the best path between two points
+ * @param origin - integer representing the id of starting node
+ * @param dest - integer representing the id of destination node
+ * @param processedEdges - set that stores the id of th edges that are processed
+ * @return - true if it runs successfully
+ */
 bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges)  {
+    // Initialize all the vertex and find the origin and destination
     auto start = dijkstraInit(origin);
     auto final =  findVertex(dest);
 
     if(start == nullptr || final == nullptr)
         return false;
 
+    // Create the priority queue and insert the first node
     MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
 
     while(!minQueue.empty()) {
+        // Extract the lowest cost vertex
         auto min = minQueue.extractMin();
         min->visited = true;
 
+        // If min equals to the final vertex then end
         if(min == final)
             break;
 
+        // Run though all the neighbours
         for(auto edge : min->adj) {
             auto elem = edge.dest;
 
             processedEdges.insert(edge.getId());
 
+            // Relax the adjacent node
             if(elem->dist > min->dist + edge.weight) {
                 elem->dist = min->dist + edge.weight;
                 elem->path = min;
@@ -283,6 +337,7 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
                 else minQueue.decreaseKey(elem);
             }
         }
+
 
         for(auto edge : min->invAdj) {
             auto elem = edge.origin;
