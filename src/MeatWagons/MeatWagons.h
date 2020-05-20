@@ -362,7 +362,6 @@ int MeatWagons::tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, v
         if(startTime == r->getArrival())
             startTime = startTime - Time(0, 0, totalDist / averageVelocity);
 
-        r->setDistFromCentral(totalDist);
         r->setRealArrival(startTime + Time(0, 0, totalDist / averageVelocity));
     }
 
@@ -376,10 +375,8 @@ int MeatWagons::tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, v
 
         // Set the real arrival time of the request belonging to that vertex
         r = findRequest(next, requests);
-        if(r != nullptr){
-            r->setDistFromCentral(totalDist);
+        if(r != nullptr)
             r->setRealArrival(startTime + Time(0, 0, totalDist / averageVelocity));
-        }
 
         tspNodes.erase(std::find(tspNodes.begin(), tspNodes.end(), next));
         closest = next;
@@ -468,13 +465,12 @@ bool MeatWagons::firstIteration() {
         this->wagons.erase(wagonIt);
 
         vector<Edge> edgesForwardTrip;
-        vector<Vertex*> pickupNodes;
 
         // Calculates the path from the central to the prisioner
         int distToPrisoner = this->graph->getPathFromCentralTo(request->getDest(), edgesForwardTrip);
 
         // Choose a drop off node
-        int dropOffNode = chooseDropOff(pickupNodes);
+        int dropOffNode = chooseDropOff({this->graph->findVertex(request->getDest())});
 
         // Calculate the distance from the prisioner node to the drop off node
         this->graph->dijkstraBidirectional(request->getDest(), dropOffNode, processedEdges, processedInvEdges);
@@ -559,7 +555,6 @@ bool MeatWagons::secondIteration() {
 
         // Add the delivery to the wagon
         Delivery *delivery = new Delivery(startTime, groupedRequests, tspPath, totalDist / averageVelocity, dropOffNode);
-
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central
@@ -587,7 +582,7 @@ bool MeatWagons::thirdIteration() {
         auto wagon = *wagonIt;
         this->wagons.erase(wagonIt);
 
-        // Groupes all the nearest requests into a vector and sorts it by arrival time
+        // Groups all the nearest requests into a vector and sorts it by arrival time
         vector<Request *> groupedRequests = groupRequests(wagon.getCapacity());
         sort(groupedRequests.begin(), groupedRequests.end(), compareRequests);
 
@@ -616,7 +611,6 @@ bool MeatWagons::thirdIteration() {
 
         // Add the delivery to the wagon
         Delivery *delivery = new Delivery(startTime, groupedRequests, tspPath, totalDist / averageVelocity, dropOffNode);
-
         wagon.addDelivery(delivery);
 
         // wagon now is back at the central

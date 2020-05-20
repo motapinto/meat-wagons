@@ -14,7 +14,6 @@ class Request {
         bool assigned = false;
         Time realArrival, realDeliver;
         bool processed;
-        int distFromCentral;
 
     public:
         Request() {}
@@ -38,16 +37,9 @@ class Request {
         void setProcessed(bool t);
 
         void setRealArrival(const Time &time);
-
         void setRealDeliver(const Time &time);
 
-        bool getAssigned() const;
-        void setAssigned(const bool value);
-
-        int getDistFromCentral() const;
-        void setDistFromCentral(int distFromCentral);
-
-    bool operator<(const Request &request) const;
+        bool operator<(const Request &request) const;
 };
 
 string Request::getPrisoner() const {
@@ -64,10 +56,6 @@ int Request::getPriority() const {
 
 Time Request::getArrival() const {
     return this->arrival;
-}
-
-bool Request::getAssigned() const {
-    return this->assigned;
 }
 
 Time Request::getRealArrival() const {
@@ -100,14 +88,6 @@ void Request::setAssigned(const bool value) {
 
 bool Request::operator<(const Request &request) const {
     return this->arrival < request.arrival;
-}
-
-int Request::getDistFromCentral() const {
-    return distFromCentral;
-}
-
-void Request::setDistFromCentral(int distFromCentral) {
-    this->distFromCentral = distFromCentral;
 }
 
 #endif //MEAT_WAGONS_REQUEST_H

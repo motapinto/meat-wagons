@@ -264,6 +264,7 @@ void Application::run()
                     }
                 }
             }
+
             break;
         }
         case 7: {
