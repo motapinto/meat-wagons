@@ -217,16 +217,13 @@ void Application::run()
                 cout << endl << "--- Wagon Operation --- ";
                 cout << endl << "1 - List Wagons";
                 cout << endl << "2 - Add Wagons";
-                cout << endl << "3 - Remove Wagons>";
+                cout << endl << "3 - Remove Wagons";
                 cout << endl << "\bInput: > ";
 
                 int choice;
                 readline(input);
                 if(input == "back") break;
-                else if(stoint(input, choice) || choice < 1 || choice > 3) {
-                    cout << endl << "\bInput: > ";
-                    continue;
-                }
+                else if(stoint(input, choice) || choice < 1 || choice > 3) continue;
 
                 if(choice == 1) {
                     cout << "\n--- Listing Wagons ---" << endl;
@@ -236,30 +233,35 @@ void Application::run()
                              << wagon.getNextAvailableTime() << endl;
                     }
                     cout << endl;
-                    break;
                 }
                 else if(choice == 2) {
-                    cout << endl << "--- Adding a Wagon ---";
-                    cout << endl << "Provide <capacity>";
-                    cout << endl << "\bInput: > ";
+                    while(true) {
+                        cout << endl << "--- Adding a Wagon ---";
+                        cout << endl << "Provide <capacity>";
+                        cout << endl << "\bInput: > ";
 
-                    string secondInput;
-                    readline(secondInput);
-                    if(secondInput == "back") break;
-                    int capacity;
-                    stringstream line(secondInput);
-                    if (line >> capacity) { controller->addWagon(capacity); break; }
+                        string secondInput;
+                        readline(secondInput);
+                        if(secondInput == "back") break;
+                        int capacity;
+                        if(stoint(secondInput, capacity) == 0 && capacity > 0) controller->addWagon(capacity);
+                        else continue;
+                    }
                 }
                 else if(choice == 3) {
-                    cout << "\n--- Removing a Wagon ---" << endl;
-                    cout << "Provide <id> <capacity>\n> [Example: 1 5]";
+                    while(true) {
+                        cout << endl << "--- Removing a Wagon ---" << endl;
+                        cout << endl << "Provide <id> <capacity>" << endl;
+                        cout << endl << "\bInput: > ";
 
-                    string secondInput;
-                    readline(secondInput);
-                    if(secondInput == "back") break;
-                    int id, capacity;
-                    stringstream line(secondInput);
-                    if (line >> id && line >> capacity) { controller->removeWagon(id, capacity); break; }
+                        string secondInput;
+                        readline(secondInput);
+                        if(secondInput == "back") break;
+                        int id, capacity;
+                        stringstream line(secondInput);
+                        if (line >> id && line >> capacity) controller->removeWagon(id, capacity);
+                        else continue;
+                    }
                 }
             }
             break;
