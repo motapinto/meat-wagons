@@ -2,6 +2,7 @@
 #ifndef MEAT_WAGONS_GRAPHVISUALIZER_H
 #define MEAT_WAGONS_GRAPHVISUALIZER_H
 
+#include <thread>
 #include "../Graph/Graph.h"
 #include "GraphViewer/cpp/graphviewer.h"
 
@@ -22,65 +23,70 @@ public:
     }
 
     GraphViewer* getViewer() const ;
+    void drawFromThread(Graph *graph);
     void draw(Graph *graph);
     void setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath = false);
     void setNode(const int id, const int size, const string color, const string label);
+    void drawShortestPathFromThread(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph);
     void drawShortestPath(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph);
+    void newGv();
 };
 
 GraphViewer* GraphVisualizer::getViewer() const {
     return gv;
 }
 
-// no final tentar fazer animacao como na tp com sleeps
-void GraphVisualizer::draw(Graph *graph) {
-    this->gv = new GraphViewer(1, 1, false);
+void GraphVisualizer::drawFromThread(Graph *graph) {
+    newGv();
+    thread threadProcess(&GraphVisualizer::draw, this, graph);
+    threadProcess.detach();
+}
 
-    gv->createWindow(width, height);
+void GraphVisualizer::draw(Graph *graph) {
     //vertexes settings
-    gv->defineVertexColor("black");
+    this->gv->defineVertexColor("black");
     //edges settings
-    gv->defineEdgeColor("gray");
-    gv->defineEdgeCurved(false);
+    this->gv->defineEdgeColor("gray");
+    this->gv->defineEdgeCurved(false);
 
     vector<Vertex*> vertexSet = graph->getVertexSet();
 
     for(Vertex *origin : vertexSet)
-        gv->addNode(origin->getId(), origin->getPosition().getX() - graph->getOffsetX(), origin->getPosition().getY() - graph->getOffsetY());
+        this->gv->addNode(origin->getId(), origin->getPosition().getX() - graph->getOffsetX(), origin->getPosition().getY() - graph->getOffsetY());
 
     for(Vertex *origin : vertexSet) {
         if(origin->getTag() == Vertex::Tag::CENTRAL) {
-            gv->setVertexColor(origin->getId(), "red");
-            gv->setVertexLabel(origin->getId(), "Meat Wagons Central");
-            gv->setVertexSize(origin->getId(), 40);
+            this->gv->setVertexColor(origin->getId(), "red");
+            this->gv->setVertexLabel(origin->getId(), "Meat Wagons Central");
+            this->gv->setVertexSize(origin->getId(), 40);
         }
 
         else if(origin->getTag() == Vertex::Tag::INTEREST_POINT) {
-            gv->setVertexColor(origin->getId(), "yellow");
-            gv->setVertexLabel(origin->getId(), "Point of interest");
-            gv->setVertexSize(origin->getId(), 20);
+            this->gv->setVertexColor(origin->getId(), "yellow");
+            this->gv->setVertexLabel(origin->getId(), "Point of interest");
+            this->gv->setVertexSize(origin->getId(), 20);
         }
 
         else if(origin->getTag() == Vertex::Tag::PICKUP) {
-            gv->setVertexColor(origin->getId(), "green");
-            gv->setVertexSize(origin->getId(), 30);
+            this->gv->setVertexColor(origin->getId(), "green");
+            this->gv->setVertexSize(origin->getId(), 30);
         }
 
         else if(origin->getTag() == Vertex::Tag::DROPOFF) {
-            gv->setVertexColor(origin->getId(), "magenta");
-            gv->setVertexLabel(origin->getId(), "DROPOFF");
-            gv->setVertexSize(origin->getId(), 30);
+            this->gv->setVertexColor(origin->getId(), "magenta");
+            this->gv->setVertexLabel(origin->getId(), "DROPOFF");
+            this->gv->setVertexSize(origin->getId(), 30);
         }
 
         else {
-            gv->setVertexSize(origin->getId(), 5);
+            this->gv->setVertexSize(origin->getId(), 5);
         }
 
         for(Edge e : origin->getAdj()) {
-            gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::UNDIRECTED);
+            this->gv->addEdge(e.getId(), origin->getId(), e.getDest()->getId(), EdgeType::UNDIRECTED);
         }
     }
-    gv->rearrange();
+    this->gv->rearrange();
 }
 
 void GraphVisualizer::setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath) {
@@ -99,9 +105,13 @@ void GraphVisualizer::setNode(const int id, const int size, const string color, 
     this->gv->setVertexLabel(id, label);
 }
 
-void GraphVisualizer::drawShortestPath(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph) {
-    this->gv = new GraphViewer(1, 1, false);
+void GraphVisualizer::drawShortestPathFromThread(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph) {
+    newGv();
+    thread threadProcess(&GraphVisualizer::drawShortestPath, this, processedEdges, processedEdgesInv, edges, graph);
+    threadProcess.detach();
+}
 
+void GraphVisualizer::drawShortestPath(const unordered_set<int> &processedEdges, const unordered_set<int> &processedEdgesInv, const vector<Edge> &edges, Graph *graph) {
     // get processed path
     vector<int> edgesProcessed(processedEdges.begin(), processedEdges.end());
     this->setPath(edgesProcessed, "orange", false);
@@ -115,6 +125,11 @@ void GraphVisualizer::drawShortestPath(const unordered_set<int> &processedEdges,
     // draw shortest path
     this->setPath(edgesIds, "blue", true);
     this->draw(graph);
+}
+
+void GraphVisualizer::newGv() {
+    this->gv = new GraphViewer(600, 600, false);
+    this->gv->createWindow(width, height);
 }
 
 #endif //MEAT_WAGONS_GRAPHVISUALIZER_H

@@ -211,10 +211,10 @@ Vertex* Graph::dijkstraInit(const int origin) {
         vertex->visited = false;
         vertex->invVisited = false;
         vertex->dist = infinite;
-        vertex->path = NULL;
+        vertex->path = nullptr;
         vertex->edgePath = Edge();
         vertex->invDist = infinite;
-        vertex->invPath = NULL;
+        vertex->invPath = nullptr;
         vertex->invEdgePath = Edge();
         vertex->heuristicValue = infinite;
         vertex->invHeuristicValue = infinite;
