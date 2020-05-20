@@ -9,7 +9,7 @@
 
 class Application {
     private:
-        MeatWagons *controller = new MeatWagons(3);
+        MeatWagons *controller = new MeatWagons(1);
 
     public:
         void run();
@@ -122,21 +122,27 @@ void Application::run()
             break;
         }
         case 4: {
-            cout << endl << "--- Delivering ---";
-            cout << endl << "1 - Single Wagon with capacity 1";
-            cout << endl << "2 - Single Wagon that groups requests";
-            cout << endl << "3 - Multiple Wagons that groups requests";
-            cout << endl << "4 - Set Maximum Distance between Deliveries";
-            cout << endl << "Current ZoneMaxDist: " << controller->getMaxDist();
-            cout << endl << "\bInput: > ";
-
-            int choice;
             while(true) {
+                cout << endl << "--- Delivering --- [Number of Wagons = " << controller->getWagons().size() << "]" ;
+                cout << endl << "1 - Single Wagon with capacity 1 [Restrictions: 1 wagon with capacity 1]";
+                cout << endl << "2 - Single Wagon that groups requests [Restrictions: 1 wagon with capacity > 1]";
+                cout << endl << "3 - Multiple Wagons that groups requests [Restrictions: > 1 wagon]";
+                cout << endl << "4 - Set Maximum Distance between Deliveries [Current ZoneMaxDist = " << controller->getMaxDist() << "]" << endl;
+
+                cout << "\n--- Listing Wagons ---" << endl;
+                multiset<Wagon> wagons = this->controller->getWagons();
+                for(const auto & wagon : wagons) {
+                    cout << "[Wagon " << wagon.getId() << "] with capacity " << wagon.getCapacity() << endl;
+                }
+                cout << endl;
+
+                cout << endl << "\bInput: > ";
                 readline(input);
+                int choice;
                 if(input == "back") break;
                 else if(stoint(input, choice) == 0 && choice >= 0 && choice <= 4) {
                     if (choice != 4) {
-                        controller->deliver(choice);
+                        if(!controller->deliver(choice)) { cout << "Wrong iteration configuration"  << endl; continue; }
                         int wagon;
                         while (true) {
                             cout << endl << "--- Choose Wagon ---" << endl;
@@ -185,12 +191,7 @@ void Application::run()
                         break;
                     }
                 }
-                else {
-                    cout << "\bInput: > ";
-                    continue;
-                }
-
-                break;
+                else continue;
             }
 
             break;

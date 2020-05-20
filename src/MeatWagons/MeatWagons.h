@@ -31,7 +31,7 @@ class MeatWagons {
     public:
         MeatWagons(const int wagons) {
             for(int i = 0; i < wagons; i++){
-                this->wagons.insert(Wagon(i, 4));
+                this->wagons.insert(Wagon(i, 1));
             }
             this->zoneMaxDist = 2000;
         }
@@ -52,7 +52,7 @@ class MeatWagons {
         bool shortestPath(const int option, const int origin, const int dest);
         multiset<Wagon>::iterator getWagon();
 
-        void deliver(const int iteration);
+        bool deliver(const int iteration);
         int chooseDropOff(const vector<Vertex*> &pickupNodes);
         vector<Request*> groupRequests(const int capacity);
         Vertex* getNearestNeighbour(Vertex *node,  const vector<Vertex*> &neighbours);
@@ -185,15 +185,15 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
  * Controls which iteration is to be used
  * @param iteration - number of the iteration to use
  */
-void MeatWagons::deliver(int iteration) {
+bool MeatWagons::deliver(int iteration) {
     if(!this->processed) this->preProcess(central);
-    if(this->requests.size() == 0) return;
+    if(this->requests.size() == 0) return false;
 
     switch (iteration) {
-        case 1: this->firstIteration(); break;
-        case 2: this->secondIteration(); break;
-        case 3: this->thirdIteration(); break;
-        default: break;
+        case 1: return this->firstIteration();
+        case 2: return this->secondIteration();
+        case 3: return this->thirdIteration();
+        default: return false;
     }
 }
 
