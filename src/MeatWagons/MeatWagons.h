@@ -539,14 +539,12 @@ bool MeatWagons::secondIteration() {
         // The startTime will be changed in tspPath function if the wagon as time to travel to the first pick up node
         Time startTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : groupedRequests[0]->getArrival();
 
-
         // Choose a drop off node
         int dropOffNode = chooseDropOff(tspNodes);
         vector<Edge> tspPath;
 
         // Calculate the distance using dijkstra Bidirectional
         int totalDist = this->tspPath(tspNodes, groupedRequests, tspPath, dropOffNode, startTime);
-
 
         // Calculate the distance from the drop off node back to the central
         this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
