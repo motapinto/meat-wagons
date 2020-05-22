@@ -486,11 +486,12 @@ bool MeatWagons::firstIteration() {
         totalDist += this->graph->getPathTo(central, edgesForwardTrip);
 
         // The wagon leaves either when it returns from a trip or when it as time to travel to the first pick up node
-        Time startTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : request->getArrival() - Time(0, 0, distToPrisoner / averageVelocity);
+        Time startTime = wagon.getDeliveries().size() > 0 ? wagon.getNextAvailableTime() : request->getArrival() - Time(0, 0, distToPrisoner / averageVelocity);
 
         // Set the real arrival and deliver based on the startTime
         request->setRealArrival(startTime + Time(0, 0 , distToPrisoner / averageVelocity));
         request->setRealDeliver(request->getRealArrival() + Time(0, 0, dropOffDist / averageVelocity));
+        wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 
         vector<Request *> vr;
         vr.push_back(request);
@@ -541,7 +542,7 @@ bool MeatWagons::secondIteration() {
 
         // The wagon leaves either when it returns from a trip or when it as time to travel to the first pick up node
         // The startTime will be changed in tspPath function if the wagon as time to travel to the first pick up node
-        Time startTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : groupedRequests[0]->getArrival();
+        Time startTime = wagon.getDeliveries().size() > 0 ?wagon.getNextAvailableTime() : groupedRequests[0]->getArrival();
 
 
         // Choose a drop off node
@@ -600,7 +601,7 @@ bool MeatWagons::thirdIteration() {
 
         // The wagon leaves either when it returns from a trip or when it as time to travel to the first pick up node
         // The startTime will be changed in tspPath function if the wagon as time to travel to the first pick up node
-        Time startTime = wagon.getDeliveries().size() > 0 ? wagon.getDeliveries().at(wagon.getDeliveries().size() - 1)->getEnd() : groupedRequests[0]->getArrival();
+        Time startTime = wagon.getDeliveries().size() > 0 ? wagon.getNextAvailableTime() : groupedRequests[0]->getArrival();
 
         // Choose a drop off node
         int dropOffNode = chooseDropOff(tspNodes);

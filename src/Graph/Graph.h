@@ -249,40 +249,50 @@ Vertex* Graph::dijkstraBackwardsInit(const int dest){
  * @return return true if it runned successfully
  */
 bool Graph::dijkstraOriginal(const int origin)  {
-    auto start = djikstraInitCentral(origin);
+    // Initializes the vertex variables based on the origin node
+    Vertex* start = djikstraInitCentral(origin);
 
     if(start == nullptr) return false;
 
+    // Initialize the priority queue and insert the first vertex
     MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
 
+    // Iterate over the priority queue
     while(!minQueue.empty()) {
+        // From the queue extract the vertex that has the minimum distance from the origin point
         auto min = minQueue.extractMin();
         min->visited = true;
 
+        // Iterate over all the edges that start in the min vertex
         for(auto edge : min->adj) {
             auto elem = edge.dest;
 
+            // For each child of the min vertex, if the distance to the central is bigger then the
+            // distance of the new path, then this is the new best path
             if(elem->distCentral > min->distCentral + edge.weight) {
                 elem->distCentral = min->distCentral + edge.weight;
                 elem->pathCentral = min;
                 elem->edgePathCentral = edge;
 
-                // if elem is not in queue (old dist(w) was infinite)
+                // if elem is not in queue, insert it, otherwise, update the queue with the new path
                 if(elem->queueIndex == 0) minQueue.insert(elem);
                 else minQueue.decreaseKey(elem);
             }
         }
 
+        // Since our graph is bidirectional we iterate over all the edges that end in the min vertex
         for(auto edge : min->invAdj) {
             auto elem = edge.origin;
 
+            // For each father of the min vertex, if the distance to the central is bigger then the
+            // distance of the new path, then this is the new best path
             if(elem->distCentral > min->distCentral + edge.weight) {
                 elem->distCentral = min->distCentral + edge.weight;
                 elem->pathCentral = min;
                 elem->edgePathCentral = edge;
 
-                // if elem is not in queue (old dist(w) was infinite)
+                // if elem is not in queue, insert it, otherwise, update the queue with the new path
                 if(elem->queueIndex == 0) minQueue.insert(elem);
                 else minQueue.decreaseKey(elem);
             }
