@@ -3,6 +3,7 @@
 #define POSITION_H_
 
 #include <cmath>
+#include <algorithm>
 
 class Position {
     private:
@@ -18,6 +19,7 @@ class Position {
         void setY(double y);
         double euclideanDistance(const Position &pos2) const;
         double manhattanDistance(const Position &pos2) const;
+        double chebyshevDistance(const Position &pos2) const;
 };
 
 double Position::getX() const {
@@ -42,6 +44,10 @@ double Position::euclideanDistance(const Position &pos2) const {
 
 double Position::manhattanDistance(const Position &pos2) const {
     return (abs(pos2.x - x) + abs(pos2.y - y));
+}
+
+double Position::chebyshevDistance(const Position &pos2) const {
+    return max((x - pos2.x), (y - pos2.y));
 }
 
 #endif
