@@ -9,7 +9,7 @@
 
 class Application {
     private:
-        MeatWagons *controller = new MeatWagons(3);
+        MeatWagons *controller = new MeatWagons(1);
 
     public:
         void run();
@@ -18,7 +18,7 @@ class Application {
 
 void Application::displayMenu()
 {
-    cout << "---------------------------------------------------------------------" << endl;
+    cout << "\n---------------------------------------------------------------------" << endl;
     cout << "Menu Options: [Type 'back' to go back in any menu]" << endl;
     cout << "1 - Read Graph" << endl;
     if(controller->getGraph() != nullptr) {cout << "2 - Pre Process" << endl;}
@@ -29,13 +29,14 @@ void Application::displayMenu()
     if(controller->getGraph() != nullptr) {cout << "7 - List Requests" << endl;}
     cout << "0 - Exit" << endl << endl;
 
-    if(controller->getGraph() == nullptr) {cout << "Graph not read yet!" << endl << endl;}
+    if(controller->getGraph() == nullptr) cout << "Graph not read yet!" << endl;
     else {
         cout << "Graph read for: '" << controller->getGraphName() << "'" << endl;
         cout << "Central node ID: " << controller->getCentral() << endl;
     }
 
-    cout << endl << "\bInput: > ";
+    cout << "---------------------------------------------------------------------" << endl;
+    cout << "\bInput: > ";
 }
 
 void Application::run() 
@@ -46,26 +47,37 @@ void Application::run()
     displayMenu();
     while(true) {
         readline(input);
-        if((stoint(input, option) == 0 && controller->getGraph() == nullptr && (option == 0 || option == 1))) break;
+        if(stoint(input, option) == 0 && controller->getGraph() == nullptr && (option == 0 || option == 1)) break;
         if(stoint(input, option) == 0 && controller->getGraph() != nullptr && option >= 0 && option <= 7) break;
         else cout << "\bInput: > ";
     }
 
     // curly brackets are needed to initialize new variables in case scopes
     switch (option) {
+        case 0: exit(0);
         case 1: {
             cout << endl << "--- Read Graph ---";
             cout << endl << "Provide city name [Example: 'Porto']";
             cout << endl << "\bInput: > ";
 
+            int tries = 0;
             while(true) {
                 readline(input);
+                tries++;
                 if(input == "back") break;
                 else if (input == "Aveiro" || input == "Braga" || input == "Coimbra" || input == "Ermesinde" || input == "Fafe" || input == "Gondomar" || input == "Lisboa" || input == "Maia" || input == "Porto" || input == "Viseu" || input == "Portugal") {
                     controller->setGraph("maps/PortugalMaps/" + input);
                     break;
                 }
-                else cout << "\bInput: > ";
+                else if(input == "4x4" || input == "8x8" || input == "16x16") {
+                    controller->setGraph("maps/GridGraphs/" + input);
+                    break;
+                }
+                else if(tries < 3) cout << "\bInput: > ";
+                else {
+                    controller->setGraph("input");
+                    break;
+                }
             }
 
             break;
@@ -93,18 +105,19 @@ void Application::run()
             break;
         }
         case 3: {
+            bool back;
             while(true) {
                 cout << endl << "--- Shortest Path ---";
-                cout << endl << "1 - Original Dijkstra";
+                cout << endl << "1 - Classic Dijkstra";
                 cout << endl << "2 - Oriented Dijkstra (A*)";
-                cout << endl << "3 - Bidirectional Oriented Dijkstra(Oriented A*)";
+                cout << endl << "3 - Bidirectional Dijkstra";
                 cout << endl << "\bInput: > ";
                 readline(input);
+
                 if(input == "back") break;
                 else if(stoint(input, option) == 0 && option >= 1 && option <= 3) {
                     int origin, dest;
-
-                    cout << endl << "Provide <origin node> <destination node> [Example: 90379359 411018963]";
+                    cout << endl << "\nProvide <origin node> <destination node> [Example: 90379359 411018963]";
                     cout << endl << "\bInput: > ";
                     while(true) {
                         string secondInput;
@@ -112,31 +125,43 @@ void Application::run()
                         if(secondInput == "back") break;
 
                         stringstream line(secondInput);
-                        if (line >> origin && line >> dest && controller->shortestPath(option, origin, dest)) break;
+                        if (line >> origin && line >> dest && controller->shortestPath(option, origin, dest)) {
+                            back = true;
+                            break;
+                        }
                         else cout << "\bInput: > ";
                     }
                 }
-                else continue;
+                else {
+                    cout << "\bInput: > ";
+                    continue;
+                }
+                if(back) break;
             }
-
             break;
         }
         case 4: {
-            cout << endl << "--- Delivering ---";
-            cout << endl << "1 - Single Wagon with capacity 1";
-            cout << endl << "2 - Single Wagon that groups requests";
-            cout << endl << "3 - Multiple Wagons that groups requests";
-            cout << endl << "4 - Set Maximum Distance between Deliveries";
-            cout << endl << "Current ZoneMaxDist: " << controller->getMaxDist();
-            cout << endl << "\bInput: > ";
-
-            int choice;
             while(true) {
+                cout << endl << "--- Delivering --- [Number of Wagons = " << controller->getWagons().size() << "]" ;
+                cout << endl << "1 - Single Wagon with capacity 1 [Restrictions: 1 wagon with capacity 1]";
+                cout << endl << "2 - Single Wagon that groups requests [Restrictions: 1 wagon with capacity > 1]";
+                cout << endl << "3 - Multiple Wagons that groups requests [Restrictions: > 1 wagon]";
+                cout << endl << "4 - Set Maximum Distance between Deliveries [Current ZoneMaxDist = " << controller->getMaxDist() << "]" << endl;
+
+                cout << "\n--- Listing Wagons ---" << endl;
+                multiset<Wagon> wagons = this->controller->getWagons();
+                for(const auto & wagon : wagons) {
+                    cout << "[Wagon " << wagon.getId() << "] with capacity " << wagon.getCapacity() << endl;
+                }
+                cout << endl;
+
+                cout << endl << "\bInput: > ";
                 readline(input);
+                int choice;
                 if(input == "back") break;
                 else if(stoint(input, choice) == 0 && choice >= 0 && choice <= 4) {
                     if (choice != 4) {
-                        controller->deliver(choice);
+                        if(!controller->deliver(choice)) { cout << "Wrong iteration configuration"  << endl; continue; }
                         int wagon;
                         while (true) {
                             cout << endl << "--- Choose Wagon ---" << endl;
@@ -185,12 +210,7 @@ void Application::run()
                         break;
                     }
                 }
-                else {
-                    cout << "\bInput: > ";
-                    continue;
-                }
-
-                break;
+                else continue;
             }
 
             break;
@@ -216,16 +236,13 @@ void Application::run()
                 cout << endl << "--- Wagon Operation --- ";
                 cout << endl << "1 - List Wagons";
                 cout << endl << "2 - Add Wagons";
-                cout << endl << "3 - Remove Wagons>";
+                cout << endl << "3 - Remove Wagons";
                 cout << endl << "\bInput: > ";
 
                 int choice;
                 readline(input);
                 if(input == "back") break;
-                else if(stoint(input, choice) || choice < 1 || choice > 3) {
-                    cout << endl << "\bInput: > ";
-                    continue;
-                }
+                else if(stoint(input, choice) || choice < 1 || choice > 3) continue;
 
                 if(choice == 1) {
                     cout << "\n--- Listing Wagons ---" << endl;
@@ -235,32 +252,38 @@ void Application::run()
                              << wagon.getNextAvailableTime() << endl;
                     }
                     cout << endl;
-                    break;
                 }
                 else if(choice == 2) {
-                    cout << endl << "--- Adding a Wagon ---";
-                    cout << endl << "Provide <capacity>";
-                    cout << endl << "\bInput: > ";
+                    while(true) {
+                        cout << endl << "--- Adding a Wagon ---";
+                        cout << endl << "Provide <capacity>";
+                        cout << endl << "\bInput: > ";
 
-                    string secondInput;
-                    readline(secondInput);
-                    if(secondInput == "back") break;
-                    int capacity;
-                    stringstream line(secondInput);
-                    if (line >> capacity) { controller->addWagon(capacity); break; }
+                        string secondInput;
+                        readline(secondInput);
+                        if(secondInput == "back") break;
+                        int capacity;
+                        if(stoint(secondInput, capacity) == 0 && capacity > 0) controller->addWagon(capacity);
+                        else continue;
+                    }
                 }
                 else if(choice == 3) {
-                    cout << "\n--- Removing a Wagon ---" << endl;
-                    cout << "Provide <id> <capacity>\n> [Example: 1 5]";
+                    while(true) {
+                        cout << endl << "--- Removing a Wagon ---" << endl;
+                        cout << endl << "Provide <id> <capacity>" << endl;
+                        cout << endl << "\bInput: > ";
 
-                    string secondInput;
-                    readline(secondInput);
-                    if(secondInput == "back") break;
-                    int id, capacity;
-                    stringstream line(secondInput);
-                    if (line >> id && line >> capacity) { controller->removeWagon(id, capacity); break; }
+                        string secondInput;
+                        readline(secondInput);
+                        if(secondInput == "back") break;
+                        int id, capacity;
+                        stringstream line(secondInput);
+                        if (line >> id && line >> capacity) controller->removeWagon(id, capacity);
+                        else continue;
+                    }
                 }
             }
+
             break;
         }
         case 7: {
