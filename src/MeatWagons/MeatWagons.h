@@ -177,9 +177,7 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
     }
 
     vector<Edge> edges;
-    cout << this->graph->getPathTo(dest, edges) << endl;
-    for(auto a : edges) cout << a.getId() << " ";
-
+    this->graph->getPathTo(dest, edges);
     this->viewer->drawShortestPathFromThread(processedEdges, processedEdgesInv, edges, this->graph);
 
     return true;

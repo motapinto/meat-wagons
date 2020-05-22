@@ -330,9 +330,11 @@ bool Graph::dijkstraOriginal(const int origin)  {
  * @return - true if it runs successfully
  */
 bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges)  {
-    // Initializes the vertex variables based on the origin node and finds the final vertex
-    Vertex* start = dijkstraInit(origin);
-    Vertex* final = findVertex(dest);
+    auto start_time = high_resolution_clock::now();
+    // Initialize all the vertex and find the origin and destination
+    auto start = dijkstraInit(origin);
+    auto final = findVertex(dest);
+	processedEdges.clear();
 
     // If it can't find the start vertex or the final vertex then it can't execute the algorithm
     if(start == nullptr || final == nullptr) return false;
@@ -406,6 +408,14 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
             }
         }
     }
+    auto stop_time = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop_time - start_time);
+
+    cout << endl;
+//    cout << "Dijkstra iterations: " << i << endl;
+    cout << "Dijkstra path cost: " << final->dist << endl;
+    cout << "Dijkstra duration time: " << duration.count()
+         << " microseconds" << endl;
 
     return true;
 }
@@ -499,7 +509,9 @@ double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
  * @param processedEdges - set that stores the id of th edges that are processed
  * @return - true if it runs successfully
  */
-bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_set<int> &processedEdges) {
+bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_set<int> &processedEdges) 
+{
+    auto start_time = high_resolution_clock::now();
     /*
      * Some notation to help the understanding of the comments of this algorithm
      * G(Vertex* v) --> distance from v to the start vertex, that is, cumulative sum of the weights of the edges
@@ -510,15 +522,16 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
      */
 
     // Initializes the vertex variables based on the origin node and finds the final vertex
-    Vertex* start = dijkstraInitCentral(origin);
+    Vertex* start = dijkstraInit(origin);
     Vertex* final = findVertex(dest);
+    processedEdges.clear();
 
     // If it can't find the start vertex or the final vertex then it can't execute the algorithm
     if(start == nullptr || final == nullptr) return false;
 
-    // Initialize the priority queue and insert the start vertex
+    int i = 0;
     MutablePriorityQueue<Vertex> minQueue;
-    minQueue.insert(start);
+    minQueue.insert(start); // Initialize the priority queue and insert the start vertex
 
     // Iterate over the priority queue until it is empty or we find the final vertex
     while(!minQueue.empty()) {
@@ -526,9 +539,8 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
         Vertex* min = minQueue.extractMin();
         min->visited = true;
 
-        // The algorithm ends when we dequeue the final vertex
         if(min->getId() == final->getId())
-            break;
+            break; // The algorithm ends when we dequeue the final vertex
 
         // Iterate over all the edges that start in the min vertex
         for(Edge edge : min->adj) {
@@ -544,7 +556,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
             // Relax the Child Vertex
             // If the distance to the start node is bigger then the distance of the new path,
             // then this is the new best path
-            if(min->dist + weight < childVertex->dist){
+            if(min->dist + weight < childVertex->dist) {
                 // The path is the vertex that leads to the Child Vertex by taking the edge saved in edgePath
                 childVertex->path = min;
                 childVertex->edgePath = edge;
@@ -592,12 +604,21 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
             }
         }
     }
+    auto stop_time = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop_time - start_time);
+
+    cout << endl;
+//    cout << "A* iterations: " << i << endl;
+    cout << "A* path cost: " << final->dist << endl;
+	cout << "A* duration time: " << duration.count() << endl;
 
     return true;
 }
 
 // Upgrades the optimization using a* with bidirectional search
-bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_set<int> &processedEdges, unordered_set<int> &processedEdgesInv) {
+bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_set<int> &processedEdges, unordered_set<int> &processedEdgesInv) 
+{
+    auto start_time = high_resolution_clock::now();
     /*
      * Some notation to help the understanding of the comments of this algorithm
      * G(Vertex* v) --> distance from v to the start vertex (or final vertex if it is used in the backward search),
@@ -624,17 +645,12 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
 
     // Initialize the forward priority queue
     MutablePriorityQueue<Vertex> forwardMinQueue;
-    // Let the queue know that it is the forward queue
-    forwardMinQueue.setInv(false);
-    // Add the start vertex to it
-    forwardMinQueue.insert(start);
+    forwardMinQueue.setInv(false); // Let the queue know that it is the forward queue
+    forwardMinQueue.insert(start); // Add the start vertex to it
 
-    // Initialize the backward priority queue
-    MutablePriorityQueue<Vertex> backwardMinQueue;
-    // Let the queue know that it is the backward queue
-    backwardMinQueue.setInv(true);
-    // Add the final vertex to it
-    backwardMinQueue.insert(final);
+    MutablePriorityQueue<Vertex> backwardMinQueue; // Initialize the backward priority queue
+    backwardMinQueue.setInv(true);  // Let the queue know that it is the backward queue
+    backwardMinQueue.insert(final); // Add the final vertex to it
 
     // Vectors representing a closed list of the vertexes that have been processed in each search
     vector<int> processed;
@@ -643,9 +659,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     // Initialize the forward search and backward search minimum vertex
     Vertex *forwardMin = nullptr;
     Vertex *backwardMin = nullptr;
-
-    // Initialize the vertex where both searches will meet
-    Vertex *middle_vertex = nullptr;
+    Vertex *middle_vertex = nullptr; // Initialize the vertex where both searches will meet
 
     // Iterate over both priority queues until one of them is empty or when they process the same vertex
     while(!forwardMinQueue.empty() && !backwardMinQueue.empty()) {
@@ -851,6 +865,13 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
         middle_vertex->invPath->dist = middle_vertex->dist + middle_vertex->invEdgePath.getWeight();
         middle_vertex = middle_vertex->invPath;
     }
+	auto stop_time = high_resolution_clock::now();
+	auto duration = duration_cast<microseconds>(stop_time - start_time);
+
+    cout << endl;
+//    cout << "Bidir iterations: " << i << endl;
+    cout << "Bidir path cost: " << middle_vertex->dist << endl;
+	cout << "Bidir duration time: " << duration.count() << endl;
 
     return true;
 }
