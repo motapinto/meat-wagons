@@ -331,7 +331,7 @@ bool Graph::dijkstraOriginal(const int origin)  {
  */
 bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges)  {
     // Initializes the vertex variables based on the origin node and finds the final vertex
-    Vertex* start = djikstraInitCentral(origin);
+    Vertex* start = dijkstraInit(origin);
     Vertex* final = findVertex(dest);
 
     // If it can't find the start vertex or the final vertex then it can't execute the algorithm
