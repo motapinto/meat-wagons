@@ -18,7 +18,7 @@ class Application {
 
 void Application::displayMenu()
 {
-    cout << "---------------------------------------------------------------------" << endl;
+    cout << "\n---------------------------------------------------------------------" << endl;
     cout << "Menu Options: [Type 'back' to go back in any menu]" << endl;
     cout << "1 - Read Graph" << endl;
     if(controller->getGraph() != nullptr) {cout << "2 - Pre Process" << endl;}
@@ -29,13 +29,14 @@ void Application::displayMenu()
     if(controller->getGraph() != nullptr) {cout << "7 - List Requests" << endl;}
     cout << "0 - Exit" << endl << endl;
 
-    if(controller->getGraph() == nullptr) {cout << "Graph not read yet!" << endl << endl;}
+    if(controller->getGraph() == nullptr) cout << "Graph not read yet!" << endl;
     else {
         cout << "Graph read for: '" << controller->getGraphName() << "'" << endl;
         cout << "Central node ID: " << controller->getCentral() << endl;
     }
 
-    cout << endl << "\bInput: > ";
+    cout << "---------------------------------------------------------------------" << endl;
+    cout << "\bInput: > ";
 }
 
 void Application::run() 
@@ -46,26 +47,37 @@ void Application::run()
     displayMenu();
     while(true) {
         readline(input);
-        if((stoint(input, option) == 0 && controller->getGraph() == nullptr && (option == 0 || option == 1))) break;
+        if(stoint(input, option) == 0 && controller->getGraph() == nullptr && (option == 0 || option == 1)) break;
         if(stoint(input, option) == 0 && controller->getGraph() != nullptr && option >= 0 && option <= 7) break;
         else cout << "\bInput: > ";
     }
 
     // curly brackets are needed to initialize new variables in case scopes
     switch (option) {
+        case 0: exit(0);
         case 1: {
             cout << endl << "--- Read Graph ---";
             cout << endl << "Provide city name [Example: 'Porto']";
             cout << endl << "\bInput: > ";
 
+            int tries = 0;
             while(true) {
                 readline(input);
+                tries++;
                 if(input == "back") break;
                 else if (input == "Aveiro" || input == "Braga" || input == "Coimbra" || input == "Ermesinde" || input == "Fafe" || input == "Gondomar" || input == "Lisboa" || input == "Maia" || input == "Porto" || input == "Viseu" || input == "Portugal") {
                     controller->setGraph("maps/PortugalMaps/" + input);
                     break;
                 }
-                else cout << "\bInput: > ";
+                else if(input == "4x4" || input == "8x8" || input == "16x16") {
+                    controller->setGraph("maps/GridGraphs/" + input);
+                    break;
+                }
+                else if(tries < 3) cout << "\bInput: > ";
+                else {
+                    controller->setGraph("input");
+                    break;
+                }
             }
 
             break;
@@ -93,18 +105,19 @@ void Application::run()
             break;
         }
         case 3: {
+            bool back;
             while(true) {
                 cout << endl << "--- Shortest Path ---";
-                cout << endl << "1 - Original Dijkstra";
+                cout << endl << "1 - Classic Dijkstra";
                 cout << endl << "2 - Oriented Dijkstra (A*)";
-                cout << endl << "3 - Bidirectional Oriented Dijkstra(Oriented A*)";
+                cout << endl << "3 - Bidirectional Dijkstra";
                 cout << endl << "\bInput: > ";
                 readline(input);
+
                 if(input == "back") break;
                 else if(stoint(input, option) == 0 && option >= 1 && option <= 3) {
                     int origin, dest;
-
-                    cout << endl << "Provide <origin node> <destination node> [Example: 90379359 411018963]";
+                    cout << endl << "\nProvide <origin node> <destination node> [Example: 90379359 411018963]";
                     cout << endl << "\bInput: > ";
                     while(true) {
                         string secondInput;
@@ -112,13 +125,19 @@ void Application::run()
                         if(secondInput == "back") break;
 
                         stringstream line(secondInput);
-                        if (line >> origin && line >> dest && controller->shortestPath(option, origin, dest)) break;
+                        if (line >> origin && line >> dest && controller->shortestPath(option, origin, dest)) {
+                            back = true;
+                            break;
+                        }
                         else cout << "\bInput: > ";
                     }
                 }
-                else continue;
+                else {
+                    cout << "\bInput: > ";
+                    continue;
+                }
+                if(back) break;
             }
-
             break;
         }
         case 4: {

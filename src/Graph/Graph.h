@@ -8,10 +8,11 @@
 #include <limits>
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 #include "MutablePriorityQueue.h"
 #include "Vertex.h"
-
 using namespace std;
+using namespace std::chrono;
 
 class Graph {
 private:
@@ -77,6 +78,7 @@ void Graph::dfsVisit(Vertex *origin) const {
 }
 
 bool Graph::preProcess(int origin) {
+    cout << "\bOriginal graph node total: " << vertexSet.size() << endl;
     auto orig = findVertex(origin);
     if (orig == nullptr) return false;
 
@@ -105,6 +107,7 @@ bool Graph::preProcess(int origin) {
             }
     }
 
+    cout << "Pre processed graph node total: " << vertexSet.size() << endl;
     return true;
 }
 
@@ -248,9 +251,9 @@ Vertex* Graph::dijkstraBackwardsInit(const int dest){
  * @param origin - int representing the id of the origin of the graph
  * @return return true if it runned successfully
  */
-bool Graph::dijkstraOriginal(const int origin)  {
-    auto start = djikstraInitCentral(origin);
+bool Graph::dijkstraOriginal(const int origin) {
 
+    auto start = djikstraInitCentral(origin);
     if(start == nullptr) return false;
 
     MutablePriorityQueue<Vertex> minQueue;
@@ -300,15 +303,16 @@ bool Graph::dijkstraOriginal(const int origin)  {
  * @return - true if it runs successfully
  */
 bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges)  {
+    auto start_time = high_resolution_clock::now();
     // Initialize all the vertex and find the origin and destination
     auto start = dijkstraInit(origin);
-    auto final =  findVertex(dest);
+    auto final = findVertex(dest);
 
     if(start == nullptr || final == nullptr)
         return false;
 
-    // Create the priority queue and insert the first node
-    MutablePriorityQueue<Vertex> minQueue;
+    int i = 0;
+    MutablePriorityQueue<Vertex> minQueue; // Create the priority queue and insert the first node
     minQueue.insert(start);
 
     while(!minQueue.empty()) {
@@ -324,6 +328,7 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
         for(auto edge : min->adj) {
             auto elem = edge.dest;
 
+            if(elem->visited) continue;
             processedEdges.insert(edge.getId());
 
             // Relax the adjacent node
@@ -337,11 +342,10 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
                 else minQueue.decreaseKey(elem);
             }
         }
-
-
         for(auto edge : min->invAdj) {
             auto elem = edge.origin;
 
+            if(elem->visited) continue;
             processedEdges.insert(edge.getId());
 
             if(elem->dist > min->dist + edge.weight) {
@@ -350,11 +354,18 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
                 elem->edgePath = edge;
 
                 // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) minQueue.insert(elem);
-                else minQueue.decreaseKey(elem);
+              if(elem->queueIndex == 0) minQueue.insert(elem);
+              else minQueue.decreaseKey(elem);
             }
         }
+        i++;
     }
+    auto stop_time = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop_time - start_time);
+
+    cout << endl;
+    cout << "Dijkstra iterations: " << i << endl;
+    cout << "Dijkstra path cost: " << final->dist << endl << endl;
 
     return true;
 }
@@ -409,6 +420,8 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
     if(start == nullptr || final == nullptr)
         return false;
 
+    int i = 0;
+    double cost;
     MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
 
@@ -435,6 +448,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
                 // if elem is not in queue (old dist(w) was infinite)
                 if(elem->queueIndex == 0) minQueue.insert(elem);
                 else minQueue.decreaseKey(elem);
+                cost = elem->dist;
             }
         }
 
@@ -445,7 +459,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
             if(elem->visited) continue;
             processedEdges.insert(edge.getId());
 
-            if(min->dist + weight  < elem->dist){
+            if(min->dist + weight  < elem->dist) {
                 elem->path = min;
                 elem->edgePath = edge;
                 elem->dist = min->dist + weight;
@@ -456,7 +470,15 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
                 else minQueue.decreaseKey(elem);
             }
         }
+        i++;
     }
+
+    cost = final->dist;
+
+    cout << endl;
+    cout << "A* iterations: " << i << endl;
+    cout << "A* path cost: " << cost << endl << endl;
+
     return true;
 }
 
@@ -486,6 +508,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     Vertex *middle_vertex = nullptr;
 
     int i=0;
+    double cost;
     // strict alternation between forward and backward search
     while(!forwardMinQueue.empty() && !backwardMinQueue.empty()) {
         //forward search
@@ -623,6 +646,11 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
         middle_vertex = middle_vertex->invPath;
     }
 
+    cost = middle_vertex->dist;
+
+    cout << endl;
+    cout << "A* iterations: " << i << endl;
+    cout << "A* path cost: " << cost << endl << endl;
 
     return true;
 }

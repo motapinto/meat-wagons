@@ -23,19 +23,16 @@ class Request {
         }
 
         string getPrisoner() const;
-
         int getDest() const;
-
         int getPriority() const;
-
         Time getArrival() const;
-
         Time getRealArrival() const;
-
         Time getRealDeliver() const;
+
         bool isProcessed();
         void setProcessed(bool t);
 
+        void setAssigned(const bool value);
         void setRealArrival(const Time &time);
         void setRealDeliver(const Time &time);
 

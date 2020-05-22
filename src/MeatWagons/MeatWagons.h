@@ -124,9 +124,9 @@ bool MeatWagons::setGraph(const string graphPath) {
     this->processed = false;
     this->graph = graphRead;
     this->graphName = graphPath.substr(graphPath.find_last_of('/') + 1);
-
     this->viewer->drawFromThread(this->graph);
     this->processed = false;
+
     return true;
 }
 
@@ -155,6 +155,7 @@ bool MeatWagons::preProcess(const int node) {
 
     this->processed = true;
     this->viewer->drawFromThread(this->graph);
+    // this->showGraph();
     return true;
 }
 
@@ -175,7 +176,9 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
     }
 
     vector<Edge> edges;
-    this->graph->getPathTo(dest, edges);
+    cout << this->graph->getPathTo(dest, edges) << endl;
+    for(auto a : edges) cout << a.getId() << " ";
+
     this->viewer->drawShortestPathFromThread(processedEdges, processedEdgesInv, edges, this->graph);
 
     return true;
