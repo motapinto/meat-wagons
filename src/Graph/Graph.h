@@ -46,7 +46,7 @@ public:
     bool preProcess(int origin);
 
     // dijkstra
-    Vertex* djikstraInitCentral(const int origin);
+    Vertex* dijkstraInitCentral(const int origin);
     Vertex* dijkstraInit(const int origin);
     Vertex* dijkstraBackwardsInit(const int dest);
     bool dijkstraOriginal(const int origin);
@@ -203,7 +203,7 @@ vector<Vertex*> Graph::getVertexSet() const {
  * @param origin - id of the vertex that represents the origin of the graph
  * @return a pointer to the vertex that represents the origin of the graph
  */
-Vertex* Graph::djikstraInitCentral(const int origin) {
+Vertex* Graph::dijkstraInitCentral(const int origin) {
     for(auto vertex : vertexSet) {
         vertex->visited = false;
         vertex->distCentral = infinite;
@@ -268,7 +268,7 @@ Vertex* Graph::dijkstraBackwardsInit(const int dest){
 
 bool Graph::dijkstraOriginal(const int origin)  {
     // Initializes the vertex variables based on the origin node
-    Vertex* start = djikstraInitCentral(origin);
+    Vertex* start = dijkstraInitCentral(origin);
 
     if(start == nullptr) return false;
 
@@ -510,7 +510,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
      */
 
     // Initializes the vertex variables based on the origin node and finds the final vertex
-    Vertex* start = djikstraInitCentral(origin);
+    Vertex* start = dijkstraInitCentral(origin);
     Vertex* final = findVertex(dest);
 
     // If it can't find the start vertex or the final vertex then it can't execute the algorithm
