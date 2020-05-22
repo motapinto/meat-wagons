@@ -131,8 +131,9 @@ bool MeatWagons::setGraph(const string graphPath) {
 }
 
 /**
- *
- * @param node
+ * Pre processes graph and eliminates all the requests in which the destination is a node that was removed
+ * after the pre processement of the graph
+ * @param node to be processed
  * @return
  */
 bool MeatWagons::preProcess(const int node) {

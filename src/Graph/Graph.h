@@ -77,6 +77,12 @@ void Graph::dfsVisit(Vertex *origin) const {
             dfsVisit(edge.origin);
 }
 
+/**
+ * Eliminates all nodes from the graph that do not belong to the strongly connected component
+ * that the node(origin) belongs.
+ * @param origin vertex do be processed
+ * @return
+ */
 bool Graph::preProcess(int origin) {
     cout << "\bOriginal graph node total: " << vertexSet.size() << endl;
     auto orig = findVertex(origin);
