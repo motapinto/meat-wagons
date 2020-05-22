@@ -572,7 +572,6 @@ bool MeatWagons::thirdIteration() {
 
     unordered_set<int> processedEdges, processedInvEdges;
     for(Wagon wagon : this->wagons) wagon.init();
-    Time departureTime = Time();
 
     while(!requests.empty()) {
         // get wagon with max capacity and the sooner available
