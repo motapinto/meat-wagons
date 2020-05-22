@@ -65,14 +65,22 @@ public:
 };
 
 /**************** Pre processing ************/
+/**
+ * @brief Starts from the origin vertex and runs through the graph using depth first search
+ * @param origin - Pointer to where the vertex starts
+ */
 void Graph::dfsVisit(Vertex *origin) const {
+    // Set the vertex as visited
     origin->visited = true;
 
+    // Iterate over all the neighbours
     for(auto edge : origin->adj)
+        // If the neighbour hasn't been visited, run dfsVisit with that vertex
         if(!edge.dest->visited)
             dfsVisit(edge.dest);
 
     for(auto edge : origin->invAdj)
+        // If the neighbour hasn't been visited, run dfsVisit with that vertex
         if(!edge.origin->visited)
             dfsVisit(edge.origin);
 }
