@@ -8,10 +8,11 @@
 #include <limits>
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 #include "MutablePriorityQueue.h"
 #include "Vertex.h"
-
 using namespace std;
+using namespace std::chrono;
 
 class Graph {
 private:
@@ -77,6 +78,7 @@ void Graph::dfsVisit(Vertex *origin) const {
 }
 
 bool Graph::preProcess(int origin) {
+    cout << "\bOriginal graph node total: " << vertexSet.size() << endl;
     auto orig = findVertex(origin);
     if (orig == nullptr) return false;
 
@@ -105,6 +107,7 @@ bool Graph::preProcess(int origin) {
             }
     }
 
+    cout << "Pre processed graph node total: " << vertexSet.size() << endl;
     return true;
 }
 
@@ -248,43 +251,56 @@ Vertex* Graph::dijkstraBackwardsInit(const int dest){
  * @param origin - int representing the id of the origin of the graph
  * @return return true if it runned successfully
  */
+
 bool Graph::dijkstraOriginal(const int origin)  {
-    auto start = djikstraInitCentral(origin);
+    // Initializes the vertex variables based on the origin node
+    Vertex* start = djikstraInitCentral(origin);
 
     if(start == nullptr) return false;
 
+    // Initialize the priority queue and insert the first vertex
     MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
 
+    // Iterate over the priority queue until it is empty
     while(!minQueue.empty()) {
-        auto min = minQueue.extractMin();
+        // From the queue extract the vertex that has the minimum distance from the origin point
+        Vertex* min = minQueue.extractMin();
         min->visited = true;
 
-        for(auto edge : min->adj) {
-            auto elem = edge.dest;
+        // Iterate over all the edges that start in the min vertex
+        for(Edge edge : min->adj) {
+            auto childVertex = edge.dest;
 
-            if(elem->distCentral > min->distCentral + edge.weight) {
-                elem->distCentral = min->distCentral + edge.weight;
-                elem->pathCentral = min;
-                elem->edgePathCentral = edge;
+            // For each child of the min vertex, if the distance to the central is bigger then the
+            // distance of the new path, then this is the new best path
+            if(childVertex->distCentral > min->distCentral + edge.weight) {
+                // The distance of the child vertex is equal to the distance from the start point to the father vertex
+                // plus the distance to from the father vertex to the child (denoted as the weight of the edge that connects them)
+                childVertex->distCentral = min->distCentral + edge.weight;
+                childVertex->pathCentral = min;
+                childVertex->edgePathCentral = edge;
 
-                // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) minQueue.insert(elem);
-                else minQueue.decreaseKey(elem);
+                // if childVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(childVertex->queueIndex == 0) minQueue.insert(childVertex);
+                else minQueue.decreaseKey(childVertex);
             }
         }
 
-        for(auto edge : min->invAdj) {
-            auto elem = edge.origin;
+        // Since our graph is bidirectional we iterate over all the edges that end in the min vertex
+        for(Edge edge : min->invAdj) {
+            Vertex* fatherVertex = edge.origin;
 
-            if(elem->distCentral > min->distCentral + edge.weight) {
-                elem->distCentral = min->distCentral + edge.weight;
-                elem->pathCentral = min;
-                elem->edgePathCentral = edge;
+            // For each fatherVertex of the min vertex, if the distance to the central is bigger then the
+            // distance of the new path, then this is the new best path
+            if(fatherVertex->distCentral > min->distCentral + edge.weight) {
+                fatherVertex->distCentral = min->distCentral + edge.weight;
+                fatherVertex->pathCentral = min;
+                fatherVertex->edgePathCentral = edge;
 
-                // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) minQueue.insert(elem);
-                else minQueue.decreaseKey(elem);
+                // if fatherVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(fatherVertex->queueIndex == 0) minQueue.insert(fatherVertex);
+                else minQueue.decreaseKey(fatherVertex);
             }
         }
     }
@@ -300,58 +316,79 @@ bool Graph::dijkstraOriginal(const int origin)  {
  * @return - true if it runs successfully
  */
 bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges)  {
-    // Initialize all the vertex and find the origin and destination
-    auto start = dijkstraInit(origin);
-    auto final =  findVertex(dest);
+    // Initializes the vertex variables based on the origin node and finds the final vertex
+    Vertex* start = djikstraInitCentral(origin);
+    Vertex* final = findVertex(dest);
 
-    if(start == nullptr || final == nullptr)
-        return false;
+    // If it can't find the start vertex or the final vertex then it can't execute the algorithm
+    if(start == nullptr || final == nullptr) return false;
 
-    // Create the priority queue and insert the first node
+    // Initialize the priority queue and insert the first vertex
     MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
 
+    // Iterate over the priority queue until it is empty or we find the final vertex
     while(!minQueue.empty()) {
-        // Extract the lowest cost vertex
-        auto min = minQueue.extractMin();
+        // From the queue extract the vertex that has the minimum distance from the origin point
+        Vertex* min = minQueue.extractMin();
         min->visited = true;
 
-        // If min equals to the final vertex then end
+        // The algorithm ends when we dequeue the final vertex
         if(min == final)
             break;
 
-        // Run though all the neighbours
+        // Iterate over all the edges that start in the min vertex
         for(auto edge : min->adj) {
-            auto elem = edge.dest;
+            auto childVertex = edge.dest;
 
+            // If the childVertex as already been dequeued then we can skip it
+            if(childVertex->visited) continue;
+
+            // Save the edge that has been processed to be drawn later
             processedEdges.insert(edge.getId());
 
-            // Relax the adjacent node
-            if(elem->dist > min->dist + edge.weight) {
-                elem->dist = min->dist + edge.weight;
-                elem->path = min;
-                elem->edgePath = edge;
+            // Relax the Child Vertex
+            // If the distance to the start vertex is bigger then the distance of the new path,
+            // then this is the new best path
+            if(childVertex->dist > min->dist + edge.weight) {
+                // The distance of the child vertex is equal to the distance from the start point to the father vertex
+                // plus the distance from the father vertex to the child (denoted as the weight of the edge that connects them)
+                childVertex->dist = min->dist + edge.weight;
 
-                // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) minQueue.insert(elem);
-                else minQueue.decreaseKey(elem);
+                // The path is the vertex that leads to the Child Vertex by taking the edge saved in edgePath
+                childVertex->path = min;
+                childVertex->edgePath = edge;
+
+                // if childVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(childVertex->queueIndex == 0) minQueue.insert(childVertex);
+                else minQueue.decreaseKey(childVertex);
             }
         }
 
-
+        // Since our graph is bidirectional we iterate over all the edges that end in the min vertex
         for(auto edge : min->invAdj) {
-            auto elem = edge.origin;
+            auto FatherVertex = edge.origin;
+            // If the Father Vertex as already been dequeued then we can skip it
+            if(FatherVertex->visited) continue;
 
+            // Save the edge that has been processed to be drawn later
             processedEdges.insert(edge.getId());
 
-            if(elem->dist > min->dist + edge.weight) {
-                elem->dist = min->dist + edge.weight;
-                elem->path = min;
-                elem->edgePath = edge;
+            // Relax the Father Vertex
+            // If the distance to the start vertex is bigger then the distance of the new path,
+            // then this is the new best path
+            if(FatherVertex->dist > min->dist + edge.weight) {
+                // The distance of the father vertex is equal to the distance from the start point to the child vertex
+                // plus the distance from the father vertex to the child (denoted as the weight of the edge that connects them)
+                FatherVertex->dist = min->dist + edge.weight;
 
-                // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) minQueue.insert(elem);
-                else minQueue.decreaseKey(elem);
+                // The path is the vertex that leads to the Father Vertex by taking the edge saved in edgePath
+                FatherVertex->path = min;
+                FatherVertex->edgePath = edge;
+
+                // if FatherVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(FatherVertex->queueIndex == 0) minQueue.insert(FatherVertex);
+                else minQueue.decreaseKey(FatherVertex);
             }
         }
     }
@@ -359,37 +396,71 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
     return true;
 }
 
+/**
+ * @brief Saves the edges that make the path from the a vertex to the other into a vector
+ * after running one of the dijkstra algorithms
+ * @param dest - integer representing the id of the vertex where the path ends
+ * @param edges - vector of Edges where we save the edges that belong to the path
+ * @return integer representing the distance from the start vertex to the destination
+ */
 int Graph::getPathTo(const int dest, vector<Edge> &edges) const {
-    Vertex *final = findVertex(dest);
+    // Searches for the destination vertex
+    Vertex *destination = findVertex(dest);
 
-    if(final == nullptr || (final->path == nullptr && final->invPath == nullptr))
+    // If we can't find the destination vertex or if the destination has no path that goes to it
+    // Then we can run the algorithm
+    if(destination == nullptr || (destination->path == nullptr && destination->invPath == nullptr))
         return false;
 
-    int dist = final->dist;
+    // The total distance of the trip is the attribute dist that we calculate in each of the algorithm
+    int dist = destination->dist;
 
-    while(final->path != nullptr) {
-        edges.push_back(final->getEdgePath());
-        final = final->path;
+    // Iterate until the destination has no vertex that lead to it
+    // This means that it is the start vertex
+    while(destination->path != nullptr) {
+        // Save the edge that leads to the previous vertex into edges
+        edges.push_back(destination->getEdgePath());
+
+        // Set destination equal to the vertex that leads to him
+        destination = destination->path;
 
     }
-    
+
+    // Since we start from the end, rather then the beginning, we must reverse the vector so it has the correct order
     reverse(edges.begin(), edges.end());
 
     return dist;
 }
 
+/**
+ * @brief Saves the edges that make the path from the a vertex to the central after running the dijkstraOriginal algorithms (line 255)
+ * @param dest - integer representing the id of the vertex that we want to calculate the distance to the central
+ * @param edges - vector of Edges where we save the edges that belong to the path to the central
+ * @return integer representing the distance from the central to the destination
+ */
 int Graph::getPathFromCentralTo(const int dest, vector<Edge> &edges) const {
-    Vertex *final = findVertex(dest);
+    // Searches for the destination vertex
+    Vertex *destination = findVertex(dest);
 
-    if(final == nullptr || final->pathCentral == nullptr)
+    // If we can't find the destination vertex or if the destination has no path that goes to it
+    // Then we can run the algorithm
+    if(destination == nullptr || destination->pathCentral == nullptr)
         return false;
 
-    int dist = final->distCentral;
-    while(final->pathCentral != nullptr) {
-        edges.push_back(final->edgePathCentral);
-        final = final->pathCentral;
+    // The total distance to the central equal to the attribute distCentral that we calculate in dijsktraOriginal (line 255)
+    int dist = destination->distCentral;
+
+    // Iterate until the destination has no vertex that lead to it
+    // This means that it is the central vertex
+    while(destination->pathCentral != nullptr) {
+        // Save the edge that leads to the previous vertex into edges
+        edges.push_back(destination->edgePathCentral);
+
+        // Set destination equal to the vertex that leads to him
+        destination = destination->pathCentral;
     }
 
+    // Since we start from the end, rather then the beginning, we must reverse the vector so it has the correct order
     reverse(edges.begin(), edges.end());
 
     return dist;
@@ -397,232 +468,375 @@ int Graph::getPathFromCentralTo(const int dest, vector<Edge> &edges) const {
 
 /**************** Optimizing Dijkstra ************/
 
+/**
+ * @brief Calls a function to calculate the euclidean distance from one vertex to the other
+ * @param origin - integer representing the id of the vertex that is the origin of the path
+ * @param dest - integer representing the id of the vertex that is the destination of the path
+ * @return integer representing the euclidian distance from the origin vertex to the destination vertex
+ */
 double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
     return origin->getPosition().euclideanDistance(dest->getPosition());
 }
 
-// Uses a heuristic to optimize dijkstra(A*)
+/**
+ * @brief Optimization of the regular dijkstra algorithm by using an heuristic function to aid the search
+ * @param origin - integer representing the id of starting node
+ * @param dest - integer representing the id of destination node
+ * @param processedEdges - set that stores the id of th edges that are processed
+ * @return - true if it runs successfully
+ */
 bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_set<int> &processedEdges) {
-    auto start = dijkstraInit(origin);
-    auto final = findVertex(dest);
+    /*
+     * Some notation to help the understanding of the comments of this algorithm
+     * G(Vertex* v) --> distance from v to the start vertex, that is, cumulative sum of the weights of the edges
+     * that go from the start vertex to v;
+     * H(Vertex* v) --> heuristic distance from v to the final vertex;
+     * F(Vertex* v) --> G(v) + H(v), sum of the real distance from the start to v and the speculative distance from
+     * v to the final vertex. This is what it is used when selecting the minimum vertex of the queue.
+     */
 
-    if(start == nullptr || final == nullptr)
-        return false;
+    // Initializes the vertex variables based on the origin node and finds the final vertex
+    Vertex* start = djikstraInitCentral(origin);
+    Vertex* final = findVertex(dest);
 
+    // If it can't find the start vertex or the final vertex then it can't execute the algorithm
+    if(start == nullptr || final == nullptr) return false;
+
+    // Initialize the priority queue and insert the start vertex
     MutablePriorityQueue<Vertex> minQueue;
     minQueue.insert(start);
 
+    // Iterate over the priority queue until it is empty or we find the final vertex
     while(!minQueue.empty()) {
-        auto min = minQueue.extractMin();
+        // From the queue extract the vertex that has the minimum F()
+        Vertex* min = minQueue.extractMin();
         min->visited = true;
 
+        // The algorithm ends when we dequeue the final vertex
         if(min->getId() == final->getId())
             break;
 
-        for(auto edge : min->adj) {
-            auto elem = edge.dest;
+        // Iterate over all the edges that start in the min vertex
+        for(Edge edge : min->adj) {
+            Vertex* childVertex = edge.dest;
             int weight = edge.weight;
 
-            if(elem->visited) continue;
+            // If the childVertex as already been dequeued then we can skip it
+            if(childVertex->visited) continue;
+
+            // Save the edge that has been processed to be drawn later
             processedEdges.insert(edge.getId());
 
-            if(min->dist + weight < elem->dist){
-                elem->path = min;
-                elem->edgePath = edge;
-                elem->dist = min->dist + weight;
-                elem->heuristicValue = elem->dist + heuristicDistance(elem, final);
+            // Relax the Child Vertex
+            // If the distance to the start node is bigger then the distance of the new path,
+            // then this is the new best path
+            if(min->dist + weight < childVertex->dist){
+                // The path is the vertex that leads to the Child Vertex by taking the edge saved in edgePath
+                childVertex->path = min;
+                childVertex->edgePath = edge;
 
-                // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) minQueue.insert(elem);
-                else minQueue.decreaseKey(elem);
+                // Recalculate G(childVertex)
+                childVertex->dist = min->dist + weight;
+
+                // Recalculate F(childVertex)
+                childVertex->heuristicValue = childVertex->dist + heuristicDistance(childVertex, final);
+
+                // if childVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(childVertex->queueIndex == 0) minQueue.insert(childVertex);
+                else minQueue.decreaseKey(childVertex);
             }
         }
 
-        for(auto edge : min->invAdj) {
-            auto elem = edge.origin;
+        // Since our graph is bidirectional we iterate over all the edges that end in the min vertex
+        for(Edge edge : min->invAdj) {
+            Vertex* fatherVertex = edge.origin;
             int weight = edge.weight;
 
-            if(elem->visited) continue;
+            // If the Father Vertex as already been dequeued then we can skip it
+            if(fatherVertex->visited) continue;
+
+            // Save the edge that has been processed to be drawn later
             processedEdges.insert(edge.getId());
 
-            if(min->dist + weight  < elem->dist){
-                elem->path = min;
-                elem->edgePath = edge;
-                elem->dist = min->dist + weight;
-                elem->heuristicValue = elem->dist + heuristicDistance(elem, final);
+            // Relax the Father Vertex
+            // If the distance to the central is bigger then the distance of the new path,
+            // then this is the new best path
+            if(min->dist + weight  < fatherVertex->dist) {
+                // The path is the vertex that leads to the Child Vertex by taking the edge saved in edgePath
+                fatherVertex->path = min;
+                fatherVertex->edgePath = edge;
 
-                // if elem is not in queue (old dist(w) was infinite)
-                if(elem->queueIndex == 0) minQueue.insert(elem);
-                else minQueue.decreaseKey(elem);
+                // Recalculate G(fatherVertex)
+                fatherVertex->dist = min->dist + weight;
+
+                // Recalculate F(fatherVertex)
+                fatherVertex->heuristicValue = fatherVertex->dist + heuristicDistance(fatherVertex, final);
+
+                // if fatherVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(fatherVertex->queueIndex == 0) minQueue.insert(fatherVertex);
+                else minQueue.decreaseKey(fatherVertex);
             }
         }
     }
+
     return true;
 }
 
 // Upgrades the optimization using a* with bidirectional search
 bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_set<int> &processedEdges, unordered_set<int> &processedEdgesInv) {
+    /*
+     * Some notation to help the understanding of the comments of this algorithm
+     * G(Vertex* v) --> distance from v to the start vertex (or final vertex if it is used in the backward search),
+     * that is, cumulative sum of the weights of the edges that go from the start vertex to v;
+     * H(Vertex* v) --> heuristic distance from v to the final vertex (or the start vertex if it is used in the backward search);
+     * F(Vertex* v) --> G(v) + H(v), sum of the real distance from the start to v and the speculative distance from
+     * v to the final vertex. This is what it is used when selecting the minimum vertex of the queue.
+     * All the vertex attributes that have "inv" in the name represent the same thing as the ones that don't have it,
+     * the only difference is that they are used as if we were travelling to the inverse graph. This lets us not have to
+     * invert the graph itself.
+     */
+
+    // Initializes the vertex variables based on the origin node and finds the final vertex (while setting the correct
+    // inv values to it)
     auto start = dijkstraInit(origin);
     auto final = dijkstraBackwardsInit(dest);
 
+    // Make sure the sets don't have anything in them
     processedEdges.clear();
     processedEdgesInv.clear();
 
+    // If it can't find the start vertex or the final vertex then it can't execute the algorithm
     if(start == nullptr || final == nullptr) return false;
 
+    // Initialize the forward priority queue
     MutablePriorityQueue<Vertex> forwardMinQueue;
+    // Let the queue know that it is the forward queue
     forwardMinQueue.setInv(false);
+    // Add the start vertex to it
     forwardMinQueue.insert(start);
 
+    // Initialize the backward priority queue
     MutablePriorityQueue<Vertex> backwardMinQueue;
+    // Let the queue know that it is the backward queue
     backwardMinQueue.setInv(true);
+    // Add the final vertex to it
     backwardMinQueue.insert(final);
 
+    // Vectors representing a closed list of the vertexes that have been processed in each search
     vector<int> processed;
     vector<int> backward_processed;
 
+    // Initialize the forward search and backward search minimum vertex
     Vertex *forwardMin = nullptr;
     Vertex *backwardMin = nullptr;
+
+    // Initialize the vertex where both searches will meet
     Vertex *middle_vertex = nullptr;
 
-    int i=0;
-    // strict alternation between forward and backward search
+    // Iterate over both priority queues until one of them is empty or when they process the same vertex
     while(!forwardMinQueue.empty() && !backwardMinQueue.empty()) {
-        //forward search
+        /*
+         * Forward Search
+         */
+
+        // Extract the vertex with the minimum F() from the forward queue
         forwardMin = forwardMinQueue.extractMin();
         forwardMin->visited = true;
+
+        // Add it to the processed vector
         processed.push_back(forwardMin->id);
 
-        for(auto edge : forwardMin->adj) {
-            auto elem = edge.dest;
-            auto weight = edge.weight;
+        // Iterate over all the edges that start in the vertex
+        for(Edge edge : forwardMin->adj) {
+            Vertex* childVertex = edge.dest;
+            int weight = edge.weight;
 
-            if(elem->visited) continue;
+            // If the childVertex as already been dequeued then we can skip it
+            if(childVertex->visited) continue;
+
+            // Save the edge that has been processed to be drawn later
             processedEdges.insert(edge.getId());
 
-            if(forwardMin->dist + weight < elem->dist ) {
-                elem->dist = forwardMin->dist + weight;
-                elem->path = forwardMin;
-                elem->edgePath = edge;
-                elem->heuristicValue = elem->dist + heuristicDistance(elem, final);
-                elem->inv = false;
+            // Relax the Child Vertex
+            // If the distance to the start node is bigger then the distance of the new path,
+            // then this is the new best path
+            if(forwardMin->dist + weight < childVertex->dist ) {
+                // The path is the vertex that leads to the Child Vertex by taking the edge saved in edgePath
+                childVertex->path = forwardMin;
+                childVertex->edgePath = edge;
 
-                // if elem is not in queue  [old dist(w) was infinite]
-                if(elem->queueIndex == 0) forwardMinQueue.insert(elem);
-                else forwardMinQueue.decreaseKey(elem);
+                // Recalculate G(childVertex)
+                childVertex->dist = forwardMin->dist + weight;
+
+                // Recalculate F(childVertex)
+                childVertex->heuristicValue = childVertex->dist + heuristicDistance(childVertex, final);
+
+
+                // if childVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(childVertex->queueIndex == 0) forwardMinQueue.insert(childVertex);
+                else forwardMinQueue.decreaseKey(childVertex);
             }
         }
 
-        for(auto edge : forwardMin->invAdj) {
-            auto elem = edge.origin;
-            auto weight = edge.weight;
+        // Since our graph is bidirectional we iterate over all the edges that end in the vertex
+        for(Edge edge : forwardMin->invAdj) {
+            Vertex* fatherVertex = edge.origin;
+            int weight = edge.weight;
 
-            if(elem->visited) continue;
+            // If the Father Vertex as already been dequeued then we can skip it
+            if(fatherVertex->visited) continue;
+
+            // Save the edge that has been processed to be drawn later
             processedEdges.insert(edge.getId());
 
-            if(forwardMin->dist + weight < elem->dist ) {
-                elem->dist = forwardMin->dist + weight;
-                elem->path = forwardMin;
-                elem->edgePath = edge;
-                elem->heuristicValue = elem->dist + heuristicDistance(elem, final);
-                elem->inv = false;
+            // Relax the Father Vertex
+            // If the distance to the central is bigger then the distance of the new path,
+            // then this is the new best path
+            if(forwardMin->dist + weight < fatherVertex->dist ) {
+                // The path is the vertex that leads to the Father Vertex by taking the edge saved in edgePath
+                fatherVertex->path = forwardMin;
+                fatherVertex->edgePath = edge;
 
-                // if elem is not in queue  [old dist(w) was infinite]
-                if(elem->queueIndex == 0) forwardMinQueue.insert(elem);
-                else forwardMinQueue.decreaseKey(elem);
+                // Recalculate G(fatherVertex)
+                fatherVertex->dist = forwardMin->dist + weight;
+
+                // Recalculate F(fatherVertex)
+                fatherVertex->heuristicValue = fatherVertex->dist + heuristicDistance(fatherVertex, final);
+
+                // if fatherVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(fatherVertex->queueIndex == 0) forwardMinQueue.insert(fatherVertex);
+                else forwardMinQueue.decreaseKey(fatherVertex);
             }
         }
 
+        // If the vertex was already processed in the backward search then save the vertex and end the search
         if(find(backward_processed.begin(), backward_processed.end(), forwardMin->id) != backward_processed.end()) {
             middle_vertex = forwardMin;
             break;
         }
 
-        //backward search
+        /*
+         * Backward Search
+         */
+
+        // Extract the vertex with the minimum F() from the backward queue
         backwardMin = backwardMinQueue.extractMin();
         backwardMin->invVisited = true;
+
+        // Add it to the processed vector
         backward_processed.push_back(backwardMin->id);
 
-        for(auto edge : backwardMin->invAdj) {
-            auto elem = edge.origin;
-            auto weight = edge.weight;
+        // Iterate over all the edges that end in the vertex
+        for(Edge edge : backwardMin->invAdj) {
+            Vertex* fatherVertex = edge.origin;
+            int weight = edge.weight;
 
-            if(elem->invVisited) continue;
+            // If the Father Vertex as already been dequeued then we can skip it
+            if(fatherVertex->invVisited) continue;
+
+            // Save the edge that has been processed to be drawn later
             processedEdgesInv.insert(edge.getId());
 
-            if(backwardMin->invDist  < elem->invDist) {
-                elem->invDist = backwardMin->invDist + weight;
-                elem->invHeuristicValue = elem->invDist + heuristicDistance(elem, start);
-                elem->invPath = backwardMin;
-                elem->invEdgePath = edge;
-                elem->inv = true;
+            // Relax the Father Vertex
+            // If the distance to the final node is bigger then the distance of the new path,
+            // then this is the new best path
+            if(backwardMin->invDist + weight < fatherVertex->invDist) {
+                // The invPath is the vertex that leads to the Father Vertex by taking the edge saved in invEdgePath
+                fatherVertex->invPath = backwardMin;
+                fatherVertex->invEdgePath = edge;
 
-                // if elem is not in queue  [old dist(w) was infinite]
-                if(elem->invQueueIndex == 0) backwardMinQueue.insert(elem);
-                else backwardMinQueue.decreaseKey(elem);
+                // Recalculate G(fatherVertex)
+                fatherVertex->invDist = backwardMin->invDist + weight;
+
+                // Recalculate F(fatherVertex)
+                fatherVertex->invHeuristicValue = fatherVertex->invDist + heuristicDistance(fatherVertex, start);
+
+                // if fatherVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(fatherVertex->invQueueIndex == 0) backwardMinQueue.insert(fatherVertex);
+                else backwardMinQueue.decreaseKey(fatherVertex);
 
                 continue;
             }
         }
 
-        for(auto edge : backwardMin->adj) {
-            auto elem = edge.dest;
-            auto weight = edge.weight;
+        // Since our graph is bidirectional we iterate over all the edges that begin in the vertex
+        for(Edge edge : backwardMin->adj) {
+            Vertex* childVertex = edge.dest;
+            int weight = edge.weight;
 
-            if(elem->invVisited) continue;
+            // If the childVertex as already been dequeued then we can skip it
+            if(childVertex->invVisited) continue;
+
+            // Save the edge that has been processed to be drawn later
             processedEdgesInv.insert(edge.getId());
 
-            if(backwardMin->invDist < elem->invDist) {
-                elem->invDist = backwardMin->invDist + weight;
-                elem->invHeuristicValue = elem->invDist + heuristicDistance(elem, start);
-                elem->invPath = backwardMin;
-                elem->invEdgePath = edge;
-                elem->inv = true;
+            // Relax the Child Vertex
+            // If the distance to the start node is bigger then the distance of the new path,
+            // then this is the new best path
+            if(backwardMin->invDist + weight < childVertex->invDist) {
+                // The path is the vertex that leads to the Child Vertex by taking the edge saved in edgePath
+                childVertex->invPath = backwardMin;
+                childVertex->invEdgePath = edge;
 
-                // if elem is not in queue [old dist(w) was infinite]
-                if(elem->invQueueIndex == 0) backwardMinQueue.insert(elem);
-                else backwardMinQueue.decreaseKey(elem);
+                // Recalculate G(childVertex)
+                childVertex->invDist = backwardMin->invDist + weight;
+
+                // Recalculate F(childVertex)
+                childVertex->invHeuristicValue = childVertex->invDist + heuristicDistance(childVertex, start);
+
+                // if childVertex is not in queue, insert it, otherwise, update the queue with the new path
+                if(childVertex->invQueueIndex == 0) backwardMinQueue.insert(childVertex);
+                else backwardMinQueue.decreaseKey(childVertex);
 
                 continue;
             }
         }
 
+        // If the vertex was already processed in the forward search then save the vertex and end the search
         if(find(processed.begin(), processed.end(), backwardMin->id) != processed.end()){
             middle_vertex = backwardMin;
             break;
         }
-        i+=2;
     }
 
+    // Save the distance from the start vertex to the final vertex to the middle vertex
     int min_dist = middle_vertex->heuristicValue + middle_vertex->invHeuristicValue;
 
-    // the intersected point of the two queues may not be part of the shortest path
+    // Search the forward queue to find a vertex that as a smaller distance from the start vertex
+    // to the final vertex
     while(!forwardMinQueue.empty()) {
+        // Extract a vertex from the queue
         forwardMin = forwardMinQueue.extractMin();
 
+        // If the new vertex has a smaller distance then set it has the middle vertex
         if(forwardMin->heuristicValue + forwardMin->invHeuristicValue < min_dist) {
             min_dist = forwardMin->heuristicValue + forwardMin->invHeuristicValue;
             middle_vertex = forwardMin;
         }
     }
 
-    // the intersected point of the two queues may not be part of the shortest path
+    // Search the backward queue to find a vertex that as a smaller distance from the start vertex
+    // to the final vertex
     while(!backwardMinQueue.empty()) {
+        // Extract a vertex from the queue
         backwardMin = backwardMinQueue.extractMin();
 
+        // If the new vertex has a smaller distance then set it has the middle vertex
         if(backwardMin->heuristicValue+ backwardMin->invHeuristicValue < min_dist){
             min_dist = backwardMin->heuristicValue+ backwardMin->invHeuristicValue;
             middle_vertex = backwardMin;
         }
     }
 
+    // Convert the invPath and invEdgePath to path and edgePath to be used in getPathTo (line 404)
     while(middle_vertex->invPath != nullptr) {
+        // The invPath is the vertex that leads to midle_vertex from the backward search
+        // So we set path, edgePath, and dist of that vertex with the middle_vertex values
         middle_vertex->invPath->path = middle_vertex;
         middle_vertex->invPath->edgePath = middle_vertex->invEdgePath;
         middle_vertex->invPath->dist = middle_vertex->dist + middle_vertex->invEdgePath.getWeight();
         middle_vertex = middle_vertex->invPath;
     }
-
 
     return true;
 }
