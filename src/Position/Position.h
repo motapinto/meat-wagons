@@ -17,7 +17,7 @@ class Position {
         double getY() const;
         void setY(double y);
         double euclideanDistance(const Position &pos2) const;
-        double manhattanDistance(const Position &pos2) const
+        double manhattanDistance(const Position &pos2) const;
 };
 
 double Position::getX() const {
