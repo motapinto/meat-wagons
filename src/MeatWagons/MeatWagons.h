@@ -48,7 +48,7 @@ class MeatWagons {
         multiset<Request*> getRequests() const;
 
         bool setGraph(const string path);
-        bool preProcess(const int node);
+        bool preProcess(const int node, const bool draw);
         bool shortestPath(const int option, const int origin, const int dest);
         multiset<Wagon>::iterator getWagon();
 
@@ -108,7 +108,7 @@ multiset<Request*> MeatWagons::getRequests() const {
 }
 
 /**
- *
+ * Reads a graph from a map with nodes and edges and reads the respective requests
  * @param graphPath
  * @return
  */
@@ -136,7 +136,7 @@ bool MeatWagons::setGraph(const string graphPath) {
  * @param node to be processed
  * @return
  */
-bool MeatWagons::preProcess(const int node) {
+bool MeatWagons::preProcess(const int node, const bool draw) {
     if(this->graph == nullptr) return false;
     if(!this->graph->preProcess(node)) return false;
     if(!this->graph->dijkstraOriginal(central)) return false;
@@ -155,7 +155,7 @@ bool MeatWagons::preProcess(const int node) {
     }
 
     this->processed = true;
-    this->viewer->drawFromThread(this->graph);
+    if(draw) this->viewer->drawFromThread(this->graph);
     // this->showGraph();
     return true;
 }
@@ -188,7 +188,7 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
  * @param iteration - number of the iteration to use
  */
 bool MeatWagons::deliver(int iteration) {
-    if(!this->processed) this->preProcess(central);
+    if(!this->processed) this->preProcess(central, false);
     if(this->requests.size() == 0) return false;
 
     switch (iteration) {

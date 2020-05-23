@@ -92,11 +92,11 @@ void Application::run()
                 readline(input);
                 if(input == "back") break;
                 else if(input == "central") {
-                    controller->preProcess(controller->getCentral());
+                    controller->preProcess(controller->getCentral(), true);
                     break;
                 }
                 else if(stoint(input, node) == 0) {
-                    if(!controller->preProcess(node)) cout << "\bInput: > ";
+                    if(!controller->preProcess(node, true)) cout << "\bInput: > ";
                     else break;
                 }
                 else cout << "\bInput: > ";

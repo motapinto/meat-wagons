@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <chrono>
+#include <thread>
 #include "MutablePriorityQueue.h"
 #include "Vertex.h"
 using namespace std;
@@ -27,6 +28,9 @@ private:
     void dfsVisit(Vertex *origin) const;      // pre processing
 
     const static int infinite = 99999999;
+
+    vector<int> processed;                // for bidirectional
+    vector<int> backward_processed;       // for bidirectional
 
 public:
     Vertex* findVertex(const int &id) const;
@@ -58,6 +62,8 @@ public:
     double heuristicDistance(Vertex *origin, Vertex *dest);
     bool dijkstraOrientedSearch(const int origin, const int dest, unordered_set<int> &processedEdges) ;
     bool dijkstraBidirectional(const int origin, const int dest, unordered_set<int> &processedEdges, unordered_set<int> &processedEdgesInv);
+    bool dijkstraBidirectional2(const int origin, const int dest, unordered_set<int> processedEdges, unordered_set<int> processedEdgesInv);
+
 
     // all pairs
     void floydWarshallShortestPath();
@@ -636,10 +642,6 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     auto start = dijkstraInit(origin);
     auto final = dijkstraBackwardsInit(dest);
 
-    // Make sure the sets don't have anything in them
-    processedEdges.clear();
-    processedEdgesInv.clear();
-
     // If it can't find the start vertex or the final vertex then it can't execute the algorithm
     if(start == nullptr || final == nullptr) return false;
 
@@ -648,31 +650,31 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     forwardMinQueue.setInv(false); // Let the queue know that it is the forward queue
     forwardMinQueue.insert(start); // Add the start vertex to it
 
-    MutablePriorityQueue<Vertex> backwardMinQueue; // Initialize the backward priority queue
-    backwardMinQueue.setInv(true);  // Let the queue know that it is the backward queue
-    backwardMinQueue.insert(final); // Add the final vertex to it
-
-    // Vectors representing a closed list of the vertexes that have been processed in each search
-    vector<int> processed;
-    vector<int> backward_processed;
-
     // Initialize the forward search and backward search minimum vertex
     Vertex *forwardMin = nullptr;
-    Vertex *backwardMin = nullptr;
     Vertex *middle_vertex = nullptr; // Initialize the vertex where both searches will meet
 
-    // Iterate over both priority queues until one of them is empty or when they process the same vertex
-    while(!forwardMinQueue.empty() && !backwardMinQueue.empty()) {
-        /*
-         * Forward Search
-         */
+    //thread threadProcess(&Graph::dijkstraBidirectional2, this, origin, dest, processedEdges, processedEdgesInv);
+    thread threadProcess = thread([this, origin, dest, processedEdges, processedEdgesInv] {
+        this->dijkstraBidirectional2(origin, dest, processedEdges, processedEdgesInv);
+    });
 
+    /*
+     * Forward Search
+     */
+    while(!forwardMinQueue.empty()) {
         // Extract the vertex with the minimum F() from the forward queue
         forwardMin = forwardMinQueue.extractMin();
         forwardMin->visited = true;
 
         // Add it to the processed vector
-        processed.push_back(forwardMin->id);
+        this->processed.push_back(forwardMin->id);
+
+        // If the vertex was already processed in the backward search then save the vertex and end the search
+        if(find(this->backward_processed.begin(), this->backward_processed.end(), forwardMin->id) != this->backward_processed.end()) {
+            middle_vertex = forwardMin;
+            break;
+        }
 
         // Iterate over all the edges that start in the vertex
         for(Edge edge : forwardMin->adj) {
@@ -736,23 +738,79 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
                 else forwardMinQueue.decreaseKey(fatherVertex);
             }
         }
+    }
 
-        // If the vertex was already processed in the backward search then save the vertex and end the search
-        if(find(backward_processed.begin(), backward_processed.end(), forwardMin->id) != backward_processed.end()) {
+    // Save the distance from the start vertex to the final vertex to the middle vertex
+    int min_dist = middle_vertex->heuristicValue + middle_vertex->invHeuristicValue;
+
+    // Search the forward queue to find a vertex that as a smaller distance from the start vertex
+    // to the final vertex
+    while(!forwardMinQueue.empty()) {
+        // Extract a vertex from the queue
+        forwardMin = forwardMinQueue.extractMin();
+
+        // If the new vertex has a smaller distance then set it has the middle vertex
+        if(forwardMin->heuristicValue + forwardMin->invHeuristicValue < min_dist) {
+            min_dist = forwardMin->heuristicValue + forwardMin->invHeuristicValue;
             middle_vertex = forwardMin;
-            break;
         }
+    }
 
-        /*
-         * Backward Search
-         */
+    threadProcess.join();
 
+    // Convert the invPath and invEdgePath to path and edgePath to be used in getPathTo (line 404)
+    while(middle_vertex->invPath != nullptr) {
+        // The invPath is the vertex that leads to midle_vertex from the backward search
+        // So we set path, edgePath, and dist of that vertex with the middle_vertex values
+        middle_vertex->invPath->path = middle_vertex;
+        middle_vertex->invPath->edgePath = middle_vertex->invEdgePath;
+        middle_vertex->invPath->dist = middle_vertex->dist + middle_vertex->invEdgePath.getWeight();
+        middle_vertex = middle_vertex->invPath;
+    }
+	auto stop_time = high_resolution_clock::now();
+	auto duration = duration_cast<microseconds>(stop_time - start_time);
+
+    cout << endl;
+//    cout << "Bidir iterations: " << i << endl;
+    cout << "Bidir path cost: " << middle_vertex->dist << endl;
+	cout << "Bidir duration time: " << duration.count() << endl;
+
+    return true;
+}
+
+bool Graph::dijkstraBidirectional2(const int origin, const int dest, unordered_set<int> processedEdges, unordered_set<int> processedEdgesInv) {
+    // Initializes the vertex variables based on the origin node and finds the final vertex (while setting the correct
+    // inv values to it)
+    auto start = dijkstraInit(origin);
+    auto final = dijkstraBackwardsInit(dest);
+
+    // If it can't find the start vertex or the final vertex then it can't execute the algorithm
+    if(start == nullptr || final == nullptr) return false;
+
+    MutablePriorityQueue<Vertex> backwardMinQueue; // Initialize the backward priority queue
+    backwardMinQueue.setInv(true);  // Let the queue know that it is the backward queue
+    backwardMinQueue.insert(final); // Add the final vertex to it
+
+    // Initialize the forward search and backward search minimum vertex
+    Vertex *backwardMin = nullptr;
+    Vertex *middle_vertex = nullptr; // Initialize the vertex where both searches will meet
+
+    /*
+     * Backward Search
+     */
+    while(!backwardMinQueue.empty()) {
         // Extract the vertex with the minimum F() from the backward queue
         backwardMin = backwardMinQueue.extractMin();
         backwardMin->invVisited = true;
 
         // Add it to the processed vector
-        backward_processed.push_back(backwardMin->id);
+        this->backward_processed.push_back(backwardMin->id);
+
+        // If the vertex was already processed in the forward search then save the vertex and end the search
+        if(find(this->processed.begin(), this->processed.end(), backwardMin->id) != this->processed.end()){
+            middle_vertex = backwardMin;
+            break;
+        }
 
         // Iterate over all the edges that end in the vertex
         for(Edge edge : backwardMin->invAdj) {
@@ -819,29 +877,10 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
                 continue;
             }
         }
-
-        // If the vertex was already processed in the forward search then save the vertex and end the search
-        if(find(processed.begin(), processed.end(), backwardMin->id) != processed.end()){
-            middle_vertex = backwardMin;
-            break;
-        }
     }
 
     // Save the distance from the start vertex to the final vertex to the middle vertex
     int min_dist = middle_vertex->heuristicValue + middle_vertex->invHeuristicValue;
-
-    // Search the forward queue to find a vertex that as a smaller distance from the start vertex
-    // to the final vertex
-    while(!forwardMinQueue.empty()) {
-        // Extract a vertex from the queue
-        forwardMin = forwardMinQueue.extractMin();
-
-        // If the new vertex has a smaller distance then set it has the middle vertex
-        if(forwardMin->heuristicValue + forwardMin->invHeuristicValue < min_dist) {
-            min_dist = forwardMin->heuristicValue + forwardMin->invHeuristicValue;
-            middle_vertex = forwardMin;
-        }
-    }
 
     // Search the backward queue to find a vertex that as a smaller distance from the start vertex
     // to the final vertex
@@ -855,23 +894,6 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
             middle_vertex = backwardMin;
         }
     }
-
-    // Convert the invPath and invEdgePath to path and edgePath to be used in getPathTo (line 404)
-    while(middle_vertex->invPath != nullptr) {
-        // The invPath is the vertex that leads to midle_vertex from the backward search
-        // So we set path, edgePath, and dist of that vertex with the middle_vertex values
-        middle_vertex->invPath->path = middle_vertex;
-        middle_vertex->invPath->edgePath = middle_vertex->invEdgePath;
-        middle_vertex->invPath->dist = middle_vertex->dist + middle_vertex->invEdgePath.getWeight();
-        middle_vertex = middle_vertex->invPath;
-    }
-	auto stop_time = high_resolution_clock::now();
-	auto duration = duration_cast<microseconds>(stop_time - start_time);
-
-    cout << endl;
-//    cout << "Bidir iterations: " << i << endl;
-    cout << "Bidir path cost: " << middle_vertex->dist << endl;
-	cout << "Bidir duration time: " << duration.count() << endl;
 
     return true;
 }
