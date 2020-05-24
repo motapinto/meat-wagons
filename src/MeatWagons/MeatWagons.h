@@ -22,6 +22,7 @@ class MeatWagons {
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
         vector<Vertex*> pointsOfInterest;
         string graphName;
+        string graphPath;
         multiset<Wagon> wagons;
         multiset<Request*> requests;
         int zoneMaxDist;
@@ -113,12 +114,12 @@ multiset<Request*> MeatWagons::getRequests() const {
  * @return
  */
 bool MeatWagons::setGraph(const string graphPath) {
+    this->graphPath = graphPath;
+
     Reader graphReader = Reader(graphPath);
     Graph* graphRead = new Graph();
 
     if(!graphReader.readGraph(graphRead, central))
-        return false;
-    if(!graphReader.readRequests(requests))
         return false;
 
     this->processed = false;
@@ -190,6 +191,10 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
 bool MeatWagons::deliver(int iteration) {
     if(!this->processed) this->preProcess(central);
     if(this->requests.size() == 0) return false;
+
+    Reader graphReader = Reader(this->graphPath);
+    if(!graphReader.readRequests(requests))
+        return false;
 
     switch (iteration) {
         case 1: return this->firstIteration();

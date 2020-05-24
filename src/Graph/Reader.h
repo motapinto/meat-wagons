@@ -148,6 +148,11 @@ bool Reader::setCentral(Graph *graph, int &central) {
         centralVertex->setTag(Vertex::CENTRAL);
         central = 27114564;
     }
+    else {
+        centralVertex = graph->findVertex(1);
+        centralVertex->setTag(Vertex::CENTRAL);
+        central = 1;
+    }
    /*else if(city == "Portugal") {
         centralVertex = graph->findVertex();
         centralVertex->setTag(Vertex::CENTRAL);
