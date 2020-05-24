@@ -142,6 +142,7 @@ bool MeatWagons::preProcess(const int node, const bool draw) {
     if(!this->graph->dijkstraOriginal(central)) return false;
 
 
+    auto start_time = high_resolution_clock::now();
     for(int i = 0; i < this->requests.size(); i++) {
         auto it = next(this->requests.begin(), i);
         Request *r = *it;
@@ -153,6 +154,9 @@ bool MeatWagons::preProcess(const int node, const bool draw) {
             this->pointsOfInterest.push_back(vert);
         }
     }
+    auto stop_time = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop_time - start_time);
+    cout << "duration: " << duration.count() << endl;
 
     this->processed = true;
     if(draw) this->viewer->drawFromThread(this->graph);
@@ -190,13 +194,21 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
 bool MeatWagons::deliver(int iteration) {
     if(!this->processed) this->preProcess(central, false);
     if(this->requests.size() == 0) return false;
+    bool return_code;
+
+    auto start_time = high_resolution_clock::now();
 
     switch (iteration) {
-        case 1: return this->firstIteration();
-        case 2: return this->secondIteration();
-        case 3: return this->thirdIteration();
+        case 1: return_code = this->firstIteration();
+        case 2: return_code = this->secondIteration();
+        case 3: return_code = this->thirdIteration();
         default: return false;
     }
+
+    auto stop_time = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop_time - start_time);
+    cout << "duration: " << duration.count() << endl;
+    return return_code;
 }
 
 /**
@@ -372,7 +384,7 @@ int MeatWagons::tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, v
         Vertex *next = getNearestNeighbour(closest, tspNodes);
 
         //Calculate the distance from the previous point to the new one using Dijkstra Bidirectional
-        this->graph->dijkstraBidirectional(closest->getId(), next->getId(), processedEdges, processedInvEdges);
+        this->graph->dijkstra(closest->getId(), next->getId(), processedEdges);
         totalDist += this->graph->getPathTo(next->getId(), tspPath);
 
         // Set the real arrival time of the request belonging to that vertex
@@ -385,7 +397,7 @@ int MeatWagons::tspPath(vector<Vertex*> &tspNodes, vector<Request *> requests, v
     }
 
     // Calculate the distance from the last point to the drop off point
-    this->graph->dijkstraBidirectional(closest->getId(), dropOffNode, processedEdges, processedInvEdges);
+    this->graph->dijkstra(closest->getId(), dropOffNode, processedEdges);
     totalDist += this->graph->getPathTo(dropOffNode, tspPath);
 
     // Set the real deliver time all the requests (they are all delivered at the same point so it will be equal to everyone)
@@ -475,12 +487,12 @@ bool MeatWagons::firstIteration() {
         int dropOffNode = chooseDropOff({this->graph->findVertex(request->getDest())});
 
         // Calculate the distance from the prisioner node to the drop off node
-        this->graph->dijkstraBidirectional(request->getDest(), dropOffNode, processedEdges, processedInvEdges);
+        this->graph->dijkstra(request->getDest(), dropOffNode, processedEdges);
         int dropOffDist = graph->getPathTo(dropOffNode, edgesForwardTrip);
         int totalDist = dropOffDist + distToPrisoner;
 
         // Calculate the distance from the drop off node back to the central
-        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
+        this->graph->dijkstra(dropOffNode, central, processedEdges);
         totalDist += this->graph->getPathTo(central, edgesForwardTrip);
 
         // The wagon leaves either when it returns from a trip or when it as time to travel to the first pick up node
@@ -550,7 +562,7 @@ bool MeatWagons::secondIteration() {
         int totalDist = this->tspPath(tspNodes, groupedRequests, tspPath, dropOffNode, startTime);
 
         // Calculate the distance from the drop off node back to the central
-        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
+        this->graph->dijkstra(dropOffNode, central, processedEdges);
         totalDist += this->graph->getPathTo(central, tspPath);
         wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 
@@ -605,7 +617,7 @@ bool MeatWagons::thirdIteration() {
         int totalDist = this->tspPath(tspNodes, groupedRequests, tspPath, dropOffNode, startTime);
 
         // Calculate the distance from the drop off node back to the central
-        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
+        this->graph->dijkstra(dropOffNode, central, processedEdges);
         totalDist += this->graph->getPathTo(central, tspPath);
         wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 
