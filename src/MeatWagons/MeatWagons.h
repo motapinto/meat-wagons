@@ -684,11 +684,9 @@ multiset<Wagon>::iterator MeatWagons::getWagon(){
 int MeatWagons::objectiveFunction() {
     int sum = 0;
 
-    for(Wagon w : this->wagons){
-        for(Delivery *d: w.getDeliveries()){
-            sum += d->getTotalDist() - w.getSpaceLeft();
-        }
-    }
+    for(Wagon w : this->wagons)
+        for(Delivery *d: w.getDeliveries())
+            sum += d->getTotalDist() + w.getSpaceLeft();
 
     return sum;
 }
