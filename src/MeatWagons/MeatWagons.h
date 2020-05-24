@@ -23,6 +23,7 @@ class MeatWagons {
         string graphName;
         multiset<Wagon> wagons;
         multiset<Request*> requests;
+        multiset<Request*> constantRequests;
         int zoneMaxDist;
         bool processed = false;
         const static int averageVelocity = 9;
@@ -31,7 +32,7 @@ class MeatWagons {
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
         MeatWagons(const int wagons) {
             for(int i = 0; i < wagons; i++){
-                this->wagons.insert(Wagon(i, 1));
+                this->wagons.insert(Wagon(i, 5));
             }
             this->zoneMaxDist = 2000;
         }
@@ -137,7 +138,8 @@ bool MeatWagons::setGraph(const string graphPath) {
         return false;
     if(!graphReader.readRequests(requests))
         return false;
-
+    
+    this->constantRequests = requests;
     this->processed = false;
     this->graph = graphRead;
     this->graphName = graphPath.substr(graphPath.find_last_of('/') + 1);
@@ -205,7 +207,21 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
  */
 bool MeatWagons::deliver(int iteration) {
     if(!this->processed) this->preProcess(central);
-    if(this->requests.size() == 0) return false;
+    if(this->constantRequests.size() == 0) return false;
+    if(this->requests.size() == 0) {
+        this->requests = this->constantRequests;
+        for (int i = 0; i < this->requests.size(); i++) {
+            auto it = next(this->requests.begin(), i);
+            Request *r = *it;
+            Vertex *vert = this->graph->findVertex((r)->getDest());
+            if (vert == nullptr) {
+                this->requests.erase(it);
+                i--;
+            }
+            else this->pointsOfInterest.push_back(vert);
+        }
+    }
+
 
     switch (iteration) {
         case 1: return this->firstIteration();

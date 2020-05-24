@@ -10,7 +10,7 @@
 class Application {
     private:
 		string input;
-        MeatWagons *controller = new MeatWagons(1);
+        MeatWagons *controller = new MeatWagons(2);
     public:
         void run();
         void displayMenu();
@@ -144,22 +144,22 @@ void Application::shortestPath() {
 	return;
 }
 void Application::deliver() {
-	while(true) {
+	while(true) { //option 1 and 2 dont require configuration 
 		cout << endl << "--- Delivering --- [Number of Wagons = " << controller->getWagons().size() << "]" ;
 		cout << endl << "1 - Single Wagon with capacity 1 [Restrictions: 1 wagon with capacity 1]";
 		cout << endl << "2 - Single Wagon that groups requests [Restrictions: 1 wagon with capacity > 1]";
 		cout << endl << "3 - Multiple Wagons that groups requests [Restrictions: > 1 wagon]";
 		cout << endl << "4 - Set Maximum Distance between Deliveries [Current ZoneMaxDist = " << controller->getMaxDist() << "]" << endl;
-		cout << endl << "\bInput: > ";
-		readline(input);
-		
-		cout << "\n\n--- Wagons List ---" << endl;
+		cout << "\n\t--- Current Wagons List ---" << endl;
 		multiset<Wagon> wagons = this->controller->getWagons();
 		for(const auto & wagon : wagons) {
-			cout << "[Wagon " << wagon.getId() << "] with capacity " << wagon.getCapacity() << endl;
+			cout << "\t[Wagon " << wagon.getId() << "] with capacity " << wagon.getCapacity() << endl;
 		}
 		cout << endl;
 		
+        cout << endl << "\bInput: > ";
+		readline(input);
+
 		int choice = -1;
 		if(input == "back") break;
 		else if(stoint(input, choice) == 0 && choice >= 0 && choice <= 4) {
@@ -186,9 +186,9 @@ void Application::deliver() {
 				if(!controller->deliver(choice)) { cout << "Wrong iteration configuration"  << endl; continue; }
                 // LIST WAGONS
                 wagons = this->controller->getWagons();
-                cout << "\n\n--- Wagons List ---" << endl;
+                cout << "\n\n\t--- Current Wagons List ---" << endl;
 				for(const auto & wagon : wagons) {
-					cout << "[Wagon " << wagon.getId() << "] with capacity " << wagon.getCapacity() << endl;
+					cout << "\t[Wagon " << wagon.getId() << "] with capacity " << wagon.getCapacity() << endl;
 				}
 				cout << endl;
 
@@ -312,14 +312,11 @@ void Application::wagonOperation() {
                 cout << endl << "--- Removing a Wagon ---";
                 cout << endl << "Provide <id>";
 				cout << endl << "\bInput: > ";
-
-                auto w = controller->getWagons();
-                
-
+				
                 string secondInput;
 				readline(secondInput);
 				if(secondInput == "back") break;
-				int id, capacity;
+				int id;
 				stringstream line(secondInput);
 				if (line >> id) controller->removeWagon(id);
                 else continue;

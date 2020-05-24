@@ -330,7 +330,6 @@ bool Graph::dijkstraOriginal(const int origin)  {
  * @return - true if it runs successfully
  */
 bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &processedEdges)  {
-    auto start_time = high_resolution_clock::now();
     // Initialize all the vertex and find the origin and destination
     auto start = dijkstraInit(origin);
     auto final = findVertex(dest);
@@ -408,9 +407,6 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
             }
         }
     }
-    auto stop_time = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop_time - start_time);
-    cout << "Dijkstra duration time: " << duration.count() << " microseconds" << endl;
 
     return true;
 }
@@ -506,7 +502,6 @@ double Graph::heuristicDistance(Vertex *origin, Vertex *dest) {
  */
 bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_set<int> &processedEdges) 
 {
-    auto start_time = high_resolution_clock::now();
     /*
      * Some notation to help the understanding of the comments of this algorithm
      * G(Vertex* v) --> distance from v to the start vertex, that is, cumulative sum of the weights of the edges
@@ -599,9 +594,6 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
             }
         }
     }
-    auto stop_time = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop_time - start_time);
-    cout << "A* duration time: " << duration.count() << " microseconds" << endl;
 
     return true;
 }
