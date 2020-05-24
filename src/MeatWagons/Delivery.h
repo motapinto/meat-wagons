@@ -7,15 +7,17 @@ class Delivery {
         Time start, end;
         vector<Request*> requests;
         vector<Edge> forwardPath;
-        int dropOff;
+        int dropOff, totalDist;
 
     public:
-        Delivery(const Time &start, vector<Request*> &requests, const vector<Edge> &forwardPath, const int weight, const int dropOff) {
+        Delivery(Time &start, vector<Request*> &requests, vector<Edge> &forwardPath, int weight, int dropOff, int totalDist = 0) {
             this->start = start;
             this->requests = requests;
             this->forwardPath = forwardPath;
             this->end = start + Time(0, 0, weight);
             this->dropOff = dropOff;
+            this->totalDist = totalDist;
+
         }
 
         Time getStart() const;
@@ -23,6 +25,7 @@ class Delivery {
         vector<Request*> getRequests() const;
         vector<Edge> getForwardPath() const;
         int getDropOff() const;
+        int getTotalDist() const;
 };
 
 Time Delivery::getStart() const {
@@ -31,6 +34,10 @@ Time Delivery::getStart() const {
 
 Time Delivery::getEnd() const {
     return this->end;
+}
+
+int Delivery::getTotalDist() const {
+    return this->totalDist;
 }
 
 vector<Request*> Delivery::getRequests() const {

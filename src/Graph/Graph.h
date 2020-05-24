@@ -410,12 +410,7 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
     }
     auto stop_time = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop_time - start_time);
-
-    cout << endl;
-//    cout << "Dijkstra iterations: " << i << endl;
-    cout << "Dijkstra path cost: " << final->dist << endl;
-    cout << "Dijkstra duration time: " << duration.count()
-         << " microseconds" << endl;
+    cout << "Dijkstra duration time: " << duration.count() << " microseconds" << endl;
 
     return true;
 }
@@ -606,11 +601,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
     }
     auto stop_time = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop_time - start_time);
-
-    cout << endl;
-//    cout << "A* iterations: " << i << endl;
-    cout << "A* path cost: " << final->dist << endl;
-	cout << "A* duration time: " << duration.count() << endl;
+    cout << "A* duration time: " << duration.count() << " microseconds" << endl;
 
     return true;
 }
@@ -867,11 +858,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     }
 	auto stop_time = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop_time - start_time);
-
-    cout << endl;
-//    cout << "Bidir iterations: " << i << endl;
-    cout << "Bidir path cost: " << middle_vertex->dist << endl;
-	cout << "Bidir duration time: " << duration.count() << endl;
+    cout << "Bidir duration time: " << duration.count() << " microseconds" << endl;
 
     return true;
 }

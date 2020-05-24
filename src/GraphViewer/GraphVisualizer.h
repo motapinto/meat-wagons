@@ -8,6 +8,7 @@
 
 class GraphVisualizer {
 private:
+    bool isActive = true;
     int width, height;
     GraphViewer *gv;
 
@@ -21,8 +22,10 @@ public:
     ~GraphVisualizer() {
         delete gv;
     }
-
-    GraphViewer* getViewer() const ;
+	
+    bool getStatus();
+    void setStatus(bool status);
+    GraphViewer* getViewer() const;
     void drawFromThread(Graph *graph);
     void draw(Graph *graph);
     void setPath(const vector<int> &edges, const string &edgeColor, const bool isShortestPath = false);
@@ -32,11 +35,21 @@ public:
     void newGv();
 };
 
+bool GraphVisualizer::getStatus() {
+    return isActive;
+}
+
+void GraphVisualizer::setStatus(bool status) {
+    isActive = status;
+}
+
+
 GraphViewer* GraphVisualizer::getViewer() const {
     return gv;
 }
 
 void GraphVisualizer::drawFromThread(Graph *graph) {
+	if(!isActive) return;
     newGv();
     thread threadProcess(&GraphVisualizer::draw, this, graph);
     threadProcess.detach();
