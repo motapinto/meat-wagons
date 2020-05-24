@@ -160,12 +160,39 @@ void Application::deliver() {
 		}
 		cout << endl;
 		
-		int choice;
+		int choice = -1;
 		if(input == "back") break;
 		else if(stoint(input, choice) == 0 && choice >= 0 && choice <= 4) {
 			if (choice != 4) {
+				if(choice == 1) controller->setWagons(1, 1);
+				if(choice == 2) {
+					bool brk = false;
+					int capacity;
+					string capacity_str;
+					cout << "\nProvide <wagon capacity>" << endl;
+					while(true) {
+						cout << "\bInput: > ";
+						readline(capacity_str);
+						if(capacity_str == "back") {
+							brk = true;
+							break;
+						}
+						if(stoint(capacity_str, capacity) == 0 && capacity > 0) break;
+					}
+					if(brk) break;
+					controller->setWagons(1, capacity);
+				}
+
 				if(!controller->deliver(choice)) { cout << "Wrong iteration configuration"  << endl; continue; }
-				int wagon;
+                // LIST WAGONS
+                wagons = this->controller->getWagons();
+                cout << "\n\n--- Wagons List ---" << endl;
+				for(const auto & wagon : wagons) {
+					cout << "[Wagon " << wagon.getId() << "] with capacity " << wagon.getCapacity() << endl;
+				}
+				cout << endl;
+
+                int wagonID;
 				while (true) {
 					cout << endl << "--- Choose Wagon --- [0, " << wagons.size()-1 << "]" << endl;
 					cout << "Wagon Index > ";
@@ -173,26 +200,26 @@ void Application::deliver() {
 					string wagonInput;
 					readline(wagonInput);
 					if (wagonInput == "back") break;
-					else if (stoint(wagonInput, wagon) == 0 && wagon >= 0) {
+					else if (stoint(wagonInput, wagonID) == 0 && wagonID >= 0) {
 						int delivery;
 						while (true) {
-							cout << endl << "--- Choose a Delivery done by Wagon #" << wagon << " --- ";
+							cout << endl << "--- Choose a Delivery done by Wagon #" << wagonID << " --- ";
                             int delivIndexMax;
                             for(auto w : wagons)
-                                if(wagon == w.getId()) {
-                                    delivIndexMax = (int)controller->getRequests().size()/w.getDeliveries().size();
+                                if(wagonID == w.getId()) {
+                                    delivIndexMax = w.getDeliveries().size()-1;
                                 }
-                            cout << "[0, " << delivIndexMax-1 << "]" << endl;
+                            cout << "[0, " << delivIndexMax << "]" << endl;
 							cout << "Delivery Index > ";
 							
 							string deliveryInput;
 							readline(deliveryInput);
 							if (deliveryInput == "back") break;
-							else if (stoint(deliveryInput, delivery) == 0 && delivery >= 0) {
-								Delivery *deliveryChosen = controller->drawDeliveriesFromThread(wagon, delivery);
+							else if (stoint(deliveryInput, delivery) == 0 && delivery >= 0 && delivery <= delivIndexMax) {
+								Delivery *deliveryChosen = controller->drawDeliveriesFromThread(wagonID, delivery);
                                 cout << endl;
-								cout << "Wagon[" << wagon << "] leaves central at: " << deliveryChosen->getStart() << endl;
-								cout << "Wagon[" << wagon << "] returns to central at: " << deliveryChosen->getEnd() << endl;
+								cout << "Wagon[" << wagonID << "] leaves central at: " << deliveryChosen->getStart() << endl;
+								cout << "Wagon[" << wagonID << "] returns to central at: " << deliveryChosen->getEnd() << endl;
 								cout << "\nRequests done:" << endl;
 								for (const Request *r : deliveryChosen->getRequests()) {
 									cout << "| Prisoner: " << setfill(' ') << left << setw(11) << r->getPrisoner();
@@ -201,9 +228,9 @@ void Application::deliver() {
                                     cout << " | Delivered at: " << left << setw(10) << r->getRealDeliver() << " |" << endl;
                                 }
 							}
-							else cout << endl << "\bInput: > ";
+							else cout << endl;
 						}
-					} else cout << endl << "\bInput: > ";
+					} else cout << endl;
 				}
 			} else {
 				int newMaxDist;
@@ -294,13 +321,7 @@ void Application::wagonOperation() {
 				if(secondInput == "back") break;
 				int id, capacity;
 				stringstream line(secondInput);
-				if (line >> id) {
-                    for (auto wit = w.begin(); wit != w.end(); wit++)
-                        if (id == wit->getId()) {
-                            controller->removeWagon(id, wit->getCapacity());
-                            break;
-                        }
-				}
+				if (line >> id) controller->removeWagon(id);
                 else continue;
 			}
 		}

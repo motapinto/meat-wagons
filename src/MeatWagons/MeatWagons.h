@@ -41,10 +41,11 @@ class MeatWagons {
         string getGraphName() const;
         int getMaxDist() const;
         void setMaxDist(const int max);
+        void setWagons(const int n, const int capacity);
         Graph* getGraph() const;
         multiset<Wagon> getWagons() const;
         void addWagon(const int capacity);
-        void removeWagon(const int id, const int capacity);
+        void removeWagon(const int id);
         multiset<Request*> getRequests() const;
 
         bool setGraph(const string path);
@@ -100,12 +101,24 @@ multiset<Wagon> MeatWagons::getWagons() const {
     return this->wagons;
 }
 
+void MeatWagons::setWagons(const int n, const int capacity) {
+    this->wagons.clear();
+    for(int i=0; i < n; ++i) {
+        this->wagons.insert(Wagon(i, capacity));
+    }
+}
+
 void MeatWagons::addWagon(const int capacity) {
     wagons.insert(Wagon(wagons.size(), capacity));
 }
 
-void MeatWagons::removeWagon(const int id, const int capacity) {
-    wagons.erase(Wagon(id, capacity));
+void MeatWagons::removeWagon(const int id) {
+    for (auto wit = wagons.begin(); wit != wagons.end(); wit++)
+        if (id == wit->getId()) {
+            wagons.erase(Wagon(id, wit->getCapacity()));
+            return;
+        }
+    
 }
 
 multiset<Request*> MeatWagons::getRequests() const {
