@@ -644,6 +644,8 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
 
     // If it can't find the start vertex or the final vertex then it can't execute the algorithm
     if(start == nullptr || final == nullptr) return false;
+    this->processed.clear();
+    this->backward_processed.clear();
 
     // Initialize the forward priority queue
     MutablePriorityQueue<Vertex> forwardMinQueue;
@@ -700,7 +702,6 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
 
                 // Recalculate F(childVertex)
                 childVertex->heuristicValue = childVertex->dist + heuristicDistance(childVertex, final);
-
 
                 // if childVertex is not in queue, insert it, otherwise, update the queue with the new path
                 if(childVertex->queueIndex == 0) forwardMinQueue.insert(childVertex);
