@@ -487,12 +487,12 @@ bool MeatWagons::firstIteration() {
         int dropOffNode = chooseDropOff({this->graph->findVertex(request->getDest())});
 
         // Calculate the distance from the prisioner node to the drop off node
-        this->graph->dijkstra(request->getDest(), dropOffNode, processedEdges);
+        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         int dropOffDist = graph->getPathTo(dropOffNode, edgesForwardTrip);
         int totalDist = dropOffDist + distToPrisoner;
 
         // Calculate the distance from the drop off node back to the central
-        this->graph->dijkstra(dropOffNode, central, processedEdges);
+        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, edgesForwardTrip);
 
         // The wagon leaves either when it returns from a trip or when it as time to travel to the first pick up node
@@ -562,7 +562,7 @@ bool MeatWagons::secondIteration() {
         int totalDist = this->tspPath(tspNodes, groupedRequests, tspPath, dropOffNode, startTime);
 
         // Calculate the distance from the drop off node back to the central
-        this->graph->dijkstra(dropOffNode, central, processedEdges);
+        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, tspPath);
         wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 
@@ -617,7 +617,7 @@ bool MeatWagons::thirdIteration() {
         int totalDist = this->tspPath(tspNodes, groupedRequests, tspPath, dropOffNode, startTime);
 
         // Calculate the distance from the drop off node back to the central
-        this->graph->dijkstra(dropOffNode, central, processedEdges);
+        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, tspPath);
         wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 

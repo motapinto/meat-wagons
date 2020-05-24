@@ -613,10 +613,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
     auto stop_time = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop_time - start_time);
 
-    cout << endl;
-//    cout << "A* iterations: " << i << endl;
-    cout << "A* path cost: " << final->dist << endl;
-	cout << "A* duration time: " << duration.count() << endl;
+	cout << "endl << A* duration time: " << duration.count() << endl;
 
     return true;
 }
@@ -652,7 +649,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     forwardMinQueue.setInv(false); // Let the queue know that it is the forward queue
     forwardMinQueue.insert(start); // Add the start vertex to it
 
-    MutablePriorityQueue<Vertex>* backwardMinQueue; // Initialize the backward priority queue
+    MutablePriorityQueue<Vertex>* backwardMinQueue = new MutablePriorityQueue<Vertex>; // Initialize the backward priority queue
     backwardMinQueue->setInv(true);  // Let the queue know that it is the backward queue
     backwardMinQueue->insert(final); // Add the final vertex to it
 
@@ -792,10 +789,7 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
 	auto stop_time = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop_time - start_time);
 
-    cout << endl;
-//    cout << "Bidir iterations: " << i << endl;
-    cout << "Bidir path cost: " << middle_vertex->dist << endl;
-	cout << "Bidir duration time: " << duration.count() << endl;
+	cout << endl << "Bidir duration time: " << duration.count();
 
     return true;
 }
