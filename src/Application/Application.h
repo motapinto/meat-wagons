@@ -173,7 +173,6 @@ void Application::deliver() {
 					while(true) {
 						cout << "\bInput: > ";
 						readline(capacity_str);
-                        cout << capacity_str << endl;
 						if(capacity_str == "back") {
 							brk = true;
 							break;

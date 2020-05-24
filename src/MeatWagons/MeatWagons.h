@@ -273,8 +273,6 @@ vector<Request *> MeatWagons::groupRequests(const int capacity){
     it++;
     // Iterate over the requests to find the nearest to the first one
     while(it != requests.end()) {
-        if((*it)->isProcessed()) continue;
-
         // Get the vertex of the pick up node related to the request
         Vertex *vert = this->graph->findVertex((*it)->getDest());
 
@@ -482,20 +480,10 @@ bool MeatWagons::firstIteration() {
     // Initialize the wagons that will be used
     for(Wagon wagon : this->wagons) wagon.init();
 
-    // Get an iterator to the first request
-    auto requestPos = requests.begin();
-
     // Iterate until all the requests are processed
-    while(requestPos != requests.end()) {
-        // if the request is already processed, pass to the next one
-        if((*requestPos)->isProcessed()){
-            requestPos++;
-            continue;
-        }
-
+    while(!requests.empty()) {
         // requests are ordered by pickup time
-        Request *request = *requestPos;
-        request->setProcessed(true);
+        Request *request = *requests.begin();
 
         // Get the wagon that has the maximum capacity (the wagons are ordered)
         auto wagonIt = --this->wagons.end();
@@ -536,7 +524,7 @@ bool MeatWagons::firstIteration() {
 
         // wagon now is back at the central
         this->wagons.insert(wagon);
-        requestPos++;
+        requests.erase(request);
     }
 
     return true;
