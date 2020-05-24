@@ -10,7 +10,7 @@
 class Application {
     private:
 		string input;
-        MeatWagons *controller = new MeatWagons(1);
+        MeatWagons *controller = new MeatWagons(2);
     public:
         void run();
         void displayMenu();
