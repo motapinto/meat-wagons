@@ -62,7 +62,7 @@ public:
     double heuristicDistance(Vertex *origin, Vertex *dest);
     bool dijkstraOrientedSearch(const int origin, const int dest, unordered_set<int> &processedEdges) ;
     bool dijkstraBidirectional(const int origin, const int dest, unordered_set<int> &processedEdges, unordered_set<int> &processedEdgesInv);
-    bool dijkstraBidirectional2(const int origin, const int dest, unordered_set<int> processedEdges, unordered_set<int> processedEdgesInv);
+    bool dijkstraBackwardBidirectional(Vertex * start, Vertex * final, unordered_set<int> processedEdges, unordered_set<int> processedEdgesInv, Vertex* middle_vertex, MutablePriorityQueue<Vertex>* backwardMinQueue);
 
 
     // all pairs
@@ -639,8 +639,8 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
 
     // Initializes the vertex variables based on the origin node and finds the final vertex (while setting the correct
     // inv values to it)
-    auto start = dijkstraInit(origin);
-    auto final = dijkstraBackwardsInit(dest);
+    Vertex* start = dijkstraInit(origin);
+    Vertex* final = dijkstraBackwardsInit(dest);
 
     // If it can't find the start vertex or the final vertex then it can't execute the algorithm
     if(start == nullptr || final == nullptr) return false;
@@ -652,13 +652,17 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     forwardMinQueue.setInv(false); // Let the queue know that it is the forward queue
     forwardMinQueue.insert(start); // Add the start vertex to it
 
+    MutablePriorityQueue<Vertex>* backwardMinQueue; // Initialize the backward priority queue
+    backwardMinQueue->setInv(true);  // Let the queue know that it is the backward queue
+    backwardMinQueue->insert(final); // Add the final vertex to it
+
     // Initialize the forward search and backward search minimum vertex
     Vertex *forwardMin = nullptr;
     Vertex *middle_vertex = nullptr; // Initialize the vertex where both searches will meet
 
     //thread threadProcess(&Graph::dijkstraBidirectional2, this, origin, dest, processedEdges, processedEdgesInv);
-    thread threadProcess = thread([this, origin, dest, processedEdges, processedEdgesInv] {
-        this->dijkstraBidirectional2(origin, dest, processedEdges, processedEdgesInv);
+    thread threadProcess = thread([this, start, final, processedEdges, processedEdgesInv, middle_vertex, backwardMinQueue] {
+        this->dijkstraBackwardBidirectional(start, final, processedEdges, processedEdgesInv, middle_vertex, backwardMinQueue);
     });
 
     /*
@@ -672,11 +676,6 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
         // Add it to the processed vector
         this->processed.push_back(forwardMin->id);
 
-        // If the vertex was already processed in the backward search then save the vertex and end the search
-        if(find(this->backward_processed.begin(), this->backward_processed.end(), forwardMin->id) != this->backward_processed.end()) {
-            middle_vertex = forwardMin;
-            break;
-        }
 
         // Iterate over all the edges that start in the vertex
         for(Edge edge : forwardMin->adj) {
@@ -739,7 +738,16 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
                 else forwardMinQueue.decreaseKey(fatherVertex);
             }
         }
+
+        // If the vertex was already processed in the backward search then save the vertex and end the search
+        if(find(this->backward_processed.begin(), this->backward_processed.end(), forwardMin->id) != this->backward_processed.end()) {
+            middle_vertex = forwardMin;
+            break;
+        }
     }
+
+    threadProcess.join();
+
 
     // Save the distance from the start vertex to the final vertex to the middle vertex
     int min_dist = middle_vertex->heuristicValue + middle_vertex->invHeuristicValue;
@@ -757,7 +765,20 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
         }
     }
 
-    threadProcess.join();
+    Vertex * backwardMin;
+
+    // Search the backward queue to find a vertex that as a smaller distance from the start vertex
+    // to the final vertex
+    while(!backwardMinQueue->empty()) {
+        // Extract a vertex from the queue
+        backwardMin = backwardMinQueue->extractMin();
+
+        // If the new vertex has a smaller distance then set it has the middle vertex
+        if(backwardMin->heuristicValue+ backwardMin->invHeuristicValue < min_dist){
+            min_dist = backwardMin->heuristicValue+ backwardMin->invHeuristicValue;
+            middle_vertex = backwardMin;
+        }
+    }
 
     // Convert the invPath and invEdgePath to path and edgePath to be used in getPathTo (line 404)
     while(middle_vertex->invPath != nullptr) {
@@ -779,39 +800,27 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     return true;
 }
 
-bool Graph::dijkstraBidirectional2(const int origin, const int dest, unordered_set<int> processedEdges, unordered_set<int> processedEdgesInv) {
-    // Initializes the vertex variables based on the origin node and finds the final vertex (while setting the correct
-    // inv values to it)
-    auto start = dijkstraInit(origin);
-    auto final = dijkstraBackwardsInit(dest);
+bool Graph::dijkstraBackwardBidirectional(Vertex * start, Vertex * final, unordered_set<int> processedEdges, unordered_set<int> processedEdgesInv, Vertex* middle_vertex,MutablePriorityQueue<Vertex>* backwardMinQueue) {
 
     // If it can't find the start vertex or the final vertex then it can't execute the algorithm
     if(start == nullptr || final == nullptr) return false;
 
-    MutablePriorityQueue<Vertex> backwardMinQueue; // Initialize the backward priority queue
-    backwardMinQueue.setInv(true);  // Let the queue know that it is the backward queue
-    backwardMinQueue.insert(final); // Add the final vertex to it
 
     // Initialize the forward search and backward search minimum vertex
     Vertex *backwardMin = nullptr;
-    Vertex *middle_vertex = nullptr; // Initialize the vertex where both searches will meet
+
 
     /*
      * Backward Search
      */
-    while(!backwardMinQueue.empty()) {
+    while(!backwardMinQueue->empty()) {
         // Extract the vertex with the minimum F() from the backward queue
-        backwardMin = backwardMinQueue.extractMin();
+        backwardMin = backwardMinQueue->extractMin();
         backwardMin->invVisited = true;
 
         // Add it to the processed vector
         this->backward_processed.push_back(backwardMin->id);
 
-        // If the vertex was already processed in the forward search then save the vertex and end the search
-        if(find(this->processed.begin(), this->processed.end(), backwardMin->id) != this->processed.end()){
-            middle_vertex = backwardMin;
-            break;
-        }
 
         // Iterate over all the edges that end in the vertex
         for(Edge edge : backwardMin->invAdj) {
@@ -839,8 +848,8 @@ bool Graph::dijkstraBidirectional2(const int origin, const int dest, unordered_s
                 fatherVertex->invHeuristicValue = fatherVertex->invDist + heuristicDistance(fatherVertex, start);
 
                 // if fatherVertex is not in queue, insert it, otherwise, update the queue with the new path
-                if(fatherVertex->invQueueIndex == 0) backwardMinQueue.insert(fatherVertex);
-                else backwardMinQueue.decreaseKey(fatherVertex);
+                if(fatherVertex->invQueueIndex == 0) backwardMinQueue->insert(fatherVertex);
+                else backwardMinQueue->decreaseKey(fatherVertex);
 
                 continue;
             }
@@ -872,29 +881,21 @@ bool Graph::dijkstraBidirectional2(const int origin, const int dest, unordered_s
                 childVertex->invHeuristicValue = childVertex->invDist + heuristicDistance(childVertex, start);
 
                 // if childVertex is not in queue, insert it, otherwise, update the queue with the new path
-                if(childVertex->invQueueIndex == 0) backwardMinQueue.insert(childVertex);
-                else backwardMinQueue.decreaseKey(childVertex);
+                if(childVertex->invQueueIndex == 0) backwardMinQueue->insert(childVertex);
+                else backwardMinQueue->decreaseKey(childVertex);
 
                 continue;
             }
         }
-    }
 
-    // Save the distance from the start vertex to the final vertex to the middle vertex
-    int min_dist = middle_vertex->heuristicValue + middle_vertex->invHeuristicValue;
-
-    // Search the backward queue to find a vertex that as a smaller distance from the start vertex
-    // to the final vertex
-    while(!backwardMinQueue.empty()) {
-        // Extract a vertex from the queue
-        backwardMin = backwardMinQueue.extractMin();
-
-        // If the new vertex has a smaller distance then set it has the middle vertex
-        if(backwardMin->heuristicValue+ backwardMin->invHeuristicValue < min_dist){
-            min_dist = backwardMin->heuristicValue+ backwardMin->invHeuristicValue;
+        // If the vertex was already processed in the forward search then save the vertex and end the search
+        if(find(this->processed.begin(), this->processed.end(), backwardMin->id) != this->processed.end()){
             middle_vertex = backwardMin;
+            break;
         }
     }
+
+
 
     return true;
 }
