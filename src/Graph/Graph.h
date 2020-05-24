@@ -411,6 +411,7 @@ bool Graph::dijkstra(const int origin, const int dest, unordered_set<int> &proce
     auto stop_time = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop_time - start_time);
     cout << "Dijkstra duration time: " << duration.count() << " microseconds" << endl;
+    cout << "Dist: " << final->dist;
 
     return true;
 }
@@ -602,6 +603,7 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
     auto stop_time = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop_time - start_time);
     cout << "A* duration time: " << duration.count() << " microseconds" << endl;
+    cout << "Dist: " << final->dist;
 
     return true;
 }
@@ -858,6 +860,9 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
     }
 	auto stop_time = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop_time - start_time);
+
+	cout << "Dist: " << middle_vertex->dist;
+    cout << "Dist: " << final->dist;
     cout << "Bidir duration time: " << duration.count() << " microseconds" << endl;
 
     return true;
