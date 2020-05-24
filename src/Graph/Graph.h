@@ -601,7 +601,6 @@ bool Graph::dijkstraOrientedSearch(const int origin, const int dest, unordered_s
 // Upgrades the optimization using a* with bidirectional search
 bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_set<int> &processedEdges, unordered_set<int> &processedEdgesInv) 
 {
-    auto start_time = high_resolution_clock::now();
     /*
      * Some notation to help the understanding of the comments of this algorithm
      * G(Vertex* v) --> distance from v to the start vertex (or final vertex if it is used in the backward search),
@@ -848,9 +847,6 @@ bool Graph::dijkstraBidirectional(const int origin, const int dest, unordered_se
         middle_vertex->invPath->dist = middle_vertex->dist + middle_vertex->invEdgePath.getWeight();
         middle_vertex = middle_vertex->invPath;
     }
-	auto stop_time = high_resolution_clock::now();
-	auto duration = duration_cast<microseconds>(stop_time - start_time);
-    cout << "Bidir duration time: " << duration.count() << " microseconds" << endl;
 
     return true;
 }
