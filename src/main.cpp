@@ -1,5 +1,4 @@
 #include <iostream>
-#include <string>
 #include "Application/Application.h"
 
 using namespace std;

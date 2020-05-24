@@ -24,6 +24,7 @@ class MeatWagons {
         string graphPath;
         multiset<Wagon> wagons;
         multiset<Request*> requests;
+        multiset<Request*> constantRequests;
         int zoneMaxDist;
         bool processed = false;
         const static int averageVelocity = 9;
@@ -32,7 +33,7 @@ class MeatWagons {
         GraphVisualizer *viewer = new GraphVisualizer(600, 600);
         MeatWagons(const int wagons) {
             for(int i = 0; i < wagons; i++){
-                this->wagons.insert(Wagon(i, 1));
+                this->wagons.insert(Wagon(i, 5));
             }
             this->zoneMaxDist = 2000;
         }
@@ -50,7 +51,7 @@ class MeatWagons {
         multiset<Request*> getRequests() const;
 
         bool setGraph(const string path);
-        bool preProcess(const int node);
+        bool preProcess(const int node, const bool draw);
         bool shortestPath(const int option, const int origin, const int dest);
         multiset<Wagon>::iterator getWagon();
 
@@ -138,7 +139,10 @@ bool MeatWagons::setGraph(const string graphPath) {
 
     if(!graphReader.readGraph(graphRead, central))
         return false;
-
+    if(!graphReader.readRequests(requests))
+        return false;
+    
+    this->constantRequests = requests;
     this->processed = false;
     this->graph = graphRead;
     this->graphName = graphPath.substr(graphPath.find_last_of('/') + 1);
@@ -154,7 +158,7 @@ bool MeatWagons::setGraph(const string graphPath) {
  * @param node to be processed
  * @return
  */
-bool MeatWagons::preProcess(const int node) {
+bool MeatWagons::preProcess(const int node, const bool draw) {
     if(this->graph == nullptr) return false;
     if(!this->graph->preProcess(node)) return false;
     if(!this->graph->dijkstraOriginal(central)) return false;
@@ -173,7 +177,7 @@ bool MeatWagons::preProcess(const int node) {
     }
 
     this->processed = true;
-    this->viewer->drawFromThread(this->graph);
+    if(draw) this->viewer->drawFromThread(this->graph);
     return true;
 }
 
@@ -205,8 +209,21 @@ bool MeatWagons::shortestPath(const int option, const int origin, const int dest
  * @param iteration - number of the iteration to use
  */
 bool MeatWagons::deliver(int iteration) {
-    if(!this->processed) this->preProcess(central);
-    if(this->requests.size() == 0) return false;
+    if(!this->processed) this->preProcess(central, false);
+    if(this->constantRequests.size() == 0) return false;
+    if(this->requests.size() == 0) {
+        this->requests = this->constantRequests;
+        for (int i = 0; i < this->requests.size(); i++) {
+            auto it = next(this->requests.begin(), i);
+            Request *r = *it;
+            Vertex *vert = this->graph->findVertex((r)->getDest());
+            if (vert == nullptr) {
+                this->requests.erase(it);
+                i--;
+            }
+            else this->pointsOfInterest.push_back(vert);
+        }
+    }
 
     Reader graphReader = Reader(this->graphPath);
     if(!graphReader.readRequests(requests))
@@ -493,19 +510,19 @@ bool MeatWagons::firstIteration() {
         int distToPrisoner = this->graph->getPathFromCentralTo(request->getDest(), edgesForwardTrip);
 
         // Choose a drop off node
-        int dropOffNode = chooseDropOff({this->graph->findVertex(request->getDest())});
+        int dropOffNode = central;
 
         /* Calculate the distance from the prisioner node to the drop off node */
-        this->graph->dijkstra(request->getDest(), dropOffNode, processedEdges);
-        // this->graph->dijkstraOrientedSearch(request->getDest(), dropOffNode, processedEdges);
-        // this->graph->dijkstraBidirectional(request->getDest(), dropOffNode, processedEdges, processedInvEdges);
+        //this->graph->dijkstra(request->getDest(), dropOffNode, processedEdges);
+        this->graph->dijkstraOrientedSearch(request->getDest(), dropOffNode, processedEdges);
+        //this->graph->dijkstraBidirectional(request->getDest(), dropOffNode, processedEdges, processedInvEdges);
         int dropOffDist = graph->getPathTo(dropOffNode, edgesForwardTrip);
         int totalDist = dropOffDist + distToPrisoner;
 
         /* Calculate the distance from the drop off node back to the central */
-        this->graph->dijkstra(request->getDest(), dropOffNode, processedEdges);
-        // this->graph->dijkstraOrientedSearch(dropOffNode, central, processedEdges);
-        // this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
+        //this->graph->dijkstra(request->getDest(), dropOffNode, processedEdges);
+        this->graph->dijkstraOrientedSearch(dropOffNode, central, processedEdges);
+        //this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, edgesForwardTrip);
 
         // The wagon leaves either when it returns from a trip or when it as time to travel to the first pick up node
@@ -576,7 +593,8 @@ bool MeatWagons::secondIteration() {
         int totalDist = this->tspPath(tspNodes, groupedRequests, tspPath, dropOffNode, startTime);
 
         // Calculate the distance from the drop off node back to the central
-        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
+        this->graph->dijkstraOrientedSearch(dropOffNode, central, processedEdges);
+        // this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, tspPath);
         wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 
@@ -589,7 +607,7 @@ bool MeatWagons::secondIteration() {
     }
 
     int score = objectiveFunction();
-    cout << "Score: " << score << endl; // D A B:
+    cout << "Score: " << score << endl;
 
     return true;
 }
@@ -634,7 +652,8 @@ bool MeatWagons::thirdIteration() {
         int totalDist = this->tspPath(tspNodes, groupedRequests, tspPath, dropOffNode, startTime);
 
         // Calculate the distance from the drop off node back to the central
-        this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
+        this->graph->dijkstraOrientedSearch(dropOffNode, central, processedEdges);
+        // this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, tspPath);
         wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 
@@ -689,11 +708,9 @@ multiset<Wagon>::iterator MeatWagons::getWagon(){
 int MeatWagons::objectiveFunction() {
     int sum = 0;
 
-    for(Wagon w : this->wagons){
-        for(Delivery *d: w.getDeliveries()){
-            sum += d->getTotalDist() - w.getSpaceLeft();
-        }
-    }
+    for(Wagon w : this->wagons)
+        for(Delivery *d: w.getDeliveries())
+            sum += d->getTotalDist() + w.getSpaceLeft();
 
     return sum;
 }
