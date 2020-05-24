@@ -167,12 +167,13 @@ void Application::deliver() {
 				if(choice == 1) controller->setWagons(1, 1);
 				if(choice == 2) {
 					bool brk = false;
-					int capacity;
+					int capacity = -1;
 					string capacity_str;
 					cout << "\nProvide <wagon capacity>" << endl;
 					while(true) {
 						cout << "\bInput: > ";
 						readline(capacity_str);
+                        cout << capacity_str << endl;
 						if(capacity_str == "back") {
 							brk = true;
 							break;
@@ -200,7 +201,7 @@ void Application::deliver() {
 					string wagonInput;
 					readline(wagonInput);
 					if (wagonInput == "back") break;
-					else if (stoint(wagonInput, wagonID) == 0 && wagonID >= 0) {
+					else if (stoint(wagonInput, wagonID) == 0 && wagonID >= 0 & wagonID <= wagons.size()-1) {
 						int delivery;
 						while (true) {
 							cout << endl << "--- Choose a Delivery done by Wagon #" << wagonID << " --- ";
@@ -326,9 +327,9 @@ void Application::wagonOperation() {
 	return;
 }
 void Application::listRequests() {
-	multiset<Request*> requests = controller->getRequests();
+	multiset<Request*> requests = controller->getConstantRequests();
     if(!requests.empty()) {
-        cout << "\n--- List Requests ---";
+        cout << "\n--- List Requests ---" << endl;
         for (auto request : requests) {
             cout << "Prisoner " << request->getPrisoner() << " to be received in node " << request->getDest() << " with priority "
                 << request->getPriority() << " at " << request->getArrival() << endl;
