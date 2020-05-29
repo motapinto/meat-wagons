@@ -17,6 +17,7 @@
 * C++
 * [GraphViewer](https://github.com/STEMS-group/GraphViewer)
 
-**For more information download the code and read our report in doc/**
+* **For more information download the code and read our report in doc/**
+* **If you'll use an IDEA to try it, make sure the working directory ends in /meat-wagon**
 
 **Disclaimer** - This repository was created for educational purposes and we do not take any responsibility for anything related to its content. You are free to use any code or algorithm you find, but do so at your own risk.
