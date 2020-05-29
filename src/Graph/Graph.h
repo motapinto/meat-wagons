@@ -92,7 +92,6 @@ void Graph::dfsVisit(Vertex *origin) const {
  * @return
  */
 bool Graph::preProcess(int origin) {
-    cout << "\bOriginal graph node total: " << vertexSet.size() << endl;
     auto orig = findVertex(origin);
     if (orig == nullptr) return false;
 
@@ -121,7 +120,6 @@ bool Graph::preProcess(int origin) {
             }
     }
 
-    cout << "Pre processed graph node total: " << vertexSet.size() << endl;
     return true;
 }
 

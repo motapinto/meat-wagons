@@ -29,10 +29,6 @@ class Request {
         Time getRealArrival() const;
         Time getRealDeliver() const;
 
-        bool isProcessed();
-        void setProcessed(bool t);
-
-        void setAssigned(const bool value);
         void setRealArrival(const Time &time);
         void setRealDeliver(const Time &time);
 
@@ -63,24 +59,12 @@ Time Request::getRealDeliver() const {
     return this->realDeliver;
 }
 
-bool Request::isProcessed() {
-    return processed;
-}
-
-void Request::setProcessed(bool t) {
-    processed = t;
-}
-
 void Request::setRealArrival(const Time &time){
     this->realArrival = time;
 }
 
 void Request::setRealDeliver(const Time &time){
     this->realDeliver = time;
-}
-
-void Request::setAssigned(const bool value) {
-    this->assigned = value;
 }
 
 bool Request::operator<(const Request &request) const {

@@ -49,6 +49,7 @@ class MeatWagons {
         void addWagon(const int capacity);
         void removeWagon(const int id);
         multiset<Request*> getRequests() const;
+        multiset<Request*> getConstantRequests() const;
 
         bool setGraph(const string path);
         bool preProcess(const int node, const bool draw);
@@ -120,16 +121,19 @@ void MeatWagons::removeWagon(const int id) {
             wagons.erase(Wagon(id, wit->getCapacity()));
             return;
         }
-    
 }
 
 multiset<Request*> MeatWagons::getRequests() const {
     return this->requests;
 }
 
+multiset<Request*> MeatWagons::getConstantRequests() const {
+    return this->constantRequests;
+}
+
 /**
- * @param graphPath
- * @return
+ * @param graphPath path to graph
+ * @return true upon success
  */
 bool MeatWagons::setGraph(const string graphPath) {
     this->graphPath = graphPath;
@@ -249,6 +253,7 @@ int MeatWagons::chooseDropOff(const vector<Vertex*> &pickupNodes) {
     while(true){
         randomId = (rand() % this->requests.size());
         id = this->pointsOfInterest.at(randomId)->getId();
+        if(id == central) continue;
 
         auto it = find_if(begin(pickupNodes), end(pickupNodes), [=](const Vertex* v) {
             return v->getId() == id && (find(begin(pickupNodes), end(pickupNodes), v) != pickupNodes.end());
@@ -275,8 +280,6 @@ vector<Request *> MeatWagons::groupRequests(const int capacity){
     it++;
     // Iterate over the requests to find the nearest to the first one
     while(it != requests.end()) {
-        if((*it)->isProcessed()) continue;
-
         // Get the vertex of the pick up node related to the request
         Vertex *vert = this->graph->findVertex((*it)->getDest());
 
@@ -484,20 +487,10 @@ bool MeatWagons::firstIteration() {
     // Initialize the wagons that will be used
     for(Wagon wagon : this->wagons) wagon.init();
 
-    // Get an iterator to the first request
-    auto requestPos = requests.begin();
-
     // Iterate until all the requests are processed
-    while(requestPos != requests.end()) {
-        // if the request is already processed, pass to the next one
-        if((*requestPos)->isProcessed()){
-            requestPos++;
-            continue;
-        }
-
+    while(!requests.empty()) {
         // requests are ordered by pickup time
-        Request *request = *requestPos;
-        request->setProcessed(true);
+        Request *request = *requests.begin();
 
         // Get the wagon that has the maximum capacity (the wagons are ordered)
         auto wagonIt = --this->wagons.end();
@@ -510,19 +503,15 @@ bool MeatWagons::firstIteration() {
         int distToPrisoner = this->graph->getPathFromCentralTo(request->getDest(), edgesForwardTrip);
 
         // Choose a drop off node
-        int dropOffNode = central;
+        int dropOffNode = chooseDropOff({this->graph->findVertex(request->getDest())});
 
         /* Calculate the distance from the prisioner node to the drop off node */
-        //this->graph->dijkstra(request->getDest(), dropOffNode, processedEdges);
         this->graph->dijkstraOrientedSearch(request->getDest(), dropOffNode, processedEdges);
-        //this->graph->dijkstraBidirectional(request->getDest(), dropOffNode, processedEdges, processedInvEdges);
         int dropOffDist = graph->getPathTo(dropOffNode, edgesForwardTrip);
         int totalDist = dropOffDist + distToPrisoner;
 
         /* Calculate the distance from the drop off node back to the central */
-        //this->graph->dijkstra(request->getDest(), dropOffNode, processedEdges);
         this->graph->dijkstraOrientedSearch(dropOffNode, central, processedEdges);
-        //this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, edgesForwardTrip);
 
         // The wagon leaves either when it returns from a trip or when it as time to travel to the first pick up node
@@ -542,10 +531,8 @@ bool MeatWagons::firstIteration() {
 
         // wagon now is back at the central
         this->wagons.insert(wagon);
-        requestPos++;
+        requests.erase(request);
     }
-
-    cout << "Score: " << objectiveFunction() << endl;
 
     return true;
 }
@@ -594,7 +581,6 @@ bool MeatWagons::secondIteration() {
 
         // Calculate the distance from the drop off node back to the central
         this->graph->dijkstraOrientedSearch(dropOffNode, central, processedEdges);
-        // this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, tspPath);
         wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 
@@ -605,9 +591,6 @@ bool MeatWagons::secondIteration() {
         // wagon now is back at the central
         this->wagons.insert(wagon);
     }
-
-    int score = objectiveFunction();
-    cout << "Score: " << score << endl;
 
     return true;
 }
@@ -653,7 +636,6 @@ bool MeatWagons::thirdIteration() {
 
         // Calculate the distance from the drop off node back to the central
         this->graph->dijkstraOrientedSearch(dropOffNode, central, processedEdges);
-        // this->graph->dijkstraBidirectional(dropOffNode, central, processedEdges, processedInvEdges);
         totalDist += this->graph->getPathTo(central, tspPath);
         wagon.setNextAvailableTime(startTime + Time(0, 0, totalDist / averageVelocity));
 
@@ -664,9 +646,6 @@ bool MeatWagons::thirdIteration() {
         // wagon now is back at the central
         this->wagons.insert(wagon);
     }
-
-    int score = objectiveFunction();
-    cout << "Score: " << score << endl; // D A B:1378515
 
     return true;
 }
