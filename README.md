@@ -5,22 +5,13 @@
 > **Course:** Concepção e Análise de Algoritmos: [CAL page in sigarra](https://sigarra.up.pt/feup/en/ucurr_geral.ficha_uc_view?pv_ocorrencia_id=436441) | Algorithm Design and Analysis
 >
 > **Project developed by:**\
-> Martim Silva ([motapinto](https://github.com/motapinto))
-> Bernardo Ramanlho ([BernardoRamalho](https://github.com/BernardoRamalho))
+> Martim Silva ([motapinto](https://github.com/motapinto)) \
+> Bernardo Ramanlho ([BernardoRamalho](https://github.com/BernardoRamalho)) \
 > Francisco Gonçalves ([kiko-g](https://github.com/kiko-g))
 >
 > **Any problems?**\
 > Start an Issue please.
 
-## Gallery
-### Menu
-[<img src="/doc/img/menu.jpg">](/doc/img/menu.jpg) 
-
-### Djikstra Bidirectional
-[<img src="/doc/img/bidirectional.jpg">](/doc/img/bidirectional.jpg)
-
-### Delivery of Prisioners
-[<img src="/doc/img/deliveries.jpg">](/doc/img/deliveries.jpg)
 
 ## Technologies 
 * C++
