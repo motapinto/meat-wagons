@@ -21,7 +21,6 @@ class MeatWagons {
         Graph *graph = nullptr;
         vector<Vertex*> pointsOfInterest;
         string graphName;
-        string graphPath;
         multiset<Wagon> wagons;
         multiset<Request*> requests;
         multiset<Request*> constantRequests;
@@ -136,8 +135,6 @@ multiset<Request*> MeatWagons::getConstantRequests() const {
  * @return true upon success
  */
 bool MeatWagons::setGraph(const string graphPath) {
-    this->graphPath = graphPath;
-
     Reader graphReader = Reader(graphPath);
     Graph* graphRead = new Graph();
 
@@ -228,10 +225,6 @@ bool MeatWagons::deliver(int iteration) {
             else this->pointsOfInterest.push_back(vert);
         }
     }
-
-    Reader graphReader = Reader(this->graphPath);
-    if(!graphReader.readRequests(requests))
-        return false;
 
     switch (iteration) {
         case 1: return this->firstIteration();
