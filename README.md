@@ -6,34 +6,26 @@
 >
 > **Project developed by:**\
 > Martim Silva ([motapinto](https://github.com/motapinto))
+> Bernardo Ramanlho ([BernardoRamalho](https://github.com/BernardoRamalho))
+> Francisco Gonçalves ([kiko-g](https://github.com/kiko-g))
 >
 > **Any problems?**\
 > Start an Issue please.
 
 ## Gallery
+### Menu
+[<img src="/doc/img/menu.jpg">](/doc/img/menu.jpg) 
 
-[<img src="/docs/res/index.png">](/docs/res/index.png)                                                                                   
-[<img src="/docs/res/profile.png">](/docs/res/profile.png)                                                                               [<img src="/docs/res/answer.png">](/docs/res/answer.png) 
+### Djikstra Bidirectional
+[<img src="/doc/img/bidirectional.jpg">](/doc/img/bidirectional.jpg)
 
-## Development
-### Technologies 
+### Delivery of Prisioners
+[<img src="/doc/img/deliveries.jpg">](/doc/img/deliveries.jpg)
+
+## Technologies 
 * C++
 * [GraphViewer](https://github.com/STEMS-group/GraphViewer)
 
-## How to Run
-### Install dependencies and compile assets
-```
-$ composer install
-$ npm install
-$ npm run prod
-$ php artisan clear-compiled
-$ php artisan optimize
-```
-
-### Run
-```
-$ docker-compose up
-$ php artisan serve
-```
+**For more information download the code and read our report in doc/**
 
 **Disclaimer** - This repository was created for educational purposes and we do not take any responsibility for anything related to its content. You are free to use any code or algorithm you find, but do so at your own risk.
